@@ -64,7 +64,7 @@ body.on main{background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,2
 <script>
 // [nombre, lat, lon] — localidades de España (aprox.)
 var P=[["Madrid",40.417,-3.704],["Barcelona",41.387,2.170],["Valencia",39.470,-0.376],["Sevilla",37.389,-5.984],["Zaragoza",41.649,-0.887],["Málaga",36.721,-4.421],["Murcia",37.992,-1.131],["Palma",39.570,2.650],["Bilbao",43.263,-2.935],["Alicante",38.346,-0.483],["Córdoba",37.888,-4.779],["Valladolid",41.652,-4.724],["Vigo",42.240,-8.721],["Gijón",43.532,-5.661],["A Coruña",43.362,-8.411],["Granada",37.177,-3.599],["Vitoria",42.847,-2.673],["Elche",38.267,-0.698],["Oviedo",43.361,-5.849],["Cartagena",37.600,-0.986],["Jerez de la Frontera",36.686,-6.137],["Pamplona",42.812,-1.645],["Almería",36.834,-2.464],["San Sebastián",43.318,-1.981],["Burgos",42.344,-3.697],["Santander",43.462,-3.810],["Castellón",39.986,-0.037],["Albacete",38.995,-1.859],["Logroño",42.466,-2.445],["Badajoz",38.879,-6.970],["Salamanca",40.970,-5.664],["Huelva",37.261,-6.945],["Lleida",41.617,0.620],["Tarragona",41.119,1.245],["León",42.599,-5.567],["Cádiz",36.527,-6.289],["Jaén",37.779,-3.785],["Ourense",42.336,-7.864],["Girona",41.979,2.821],["Lugo",43.012,-7.556],["Cáceres",39.476,-6.372],["Toledo",39.863,-4.027],["Ciudad Real",38.986,-3.927],["Guadalajara",40.633,-3.167],["Cuenca",40.070,-2.137],["Segovia",40.943,-4.109],["Ávila",40.656,-4.700],["Soria",41.764,-2.469],["Teruel",40.345,-1.107],["Huesca",42.140,-0.408],["Palencia",42.010,-4.531],["Zamora",41.503,-5.744],["Pontevedra",42.431,-8.644],["Santiago de Compostela",42.878,-8.544],["Ronda",36.742,-5.167],["Marbella",36.510,-4.886],["Antequera",37.019,-4.561],["Úbeda",38.013,-3.370],["Baeza",37.994,-3.470],["Guadix",37.300,-3.140],["Motril",36.745,-3.518],["Lorca",37.671,-1.701],["Benidorm",38.538,-0.131],["Dénia",38.841,0.106],["Gandía",38.968,-0.181],["Sagunto",39.680,-0.278],["Xàtiva",38.990,-0.520],["Alcoy",38.705,-0.474],["Aranjuez",40.031,-3.603],["Alcalá de Henares",40.482,-3.364],["Talavera de la Reina",39.963,-4.831],["Mérida",38.916,-6.343],["Plasencia",40.030,-6.088],["Peñíscola",40.358,0.408],["Morella",40.620,-0.100],["Albarracín",40.408,-1.442],["Calatayud",41.353,-1.643],["Tortosa",40.812,0.521],["Reus",41.156,1.107],["Vic",41.930,2.255],["Figueres",42.267,2.961],["Manresa",41.730,1.826],["Andújar",38.039,-4.051],["Linares",38.095,-3.636],["Lucena",37.409,-4.485],["Écija",37.542,-5.082],["Carmona",37.471,-5.646],["Algeciras",36.133,-5.455],["Tarifa",36.014,-5.606],["Sanlúcar de Barrameda",36.778,-6.352],["Vélez-Málaga",36.775,-4.100],["Nerja",36.745,-3.875],["Baza",37.490,-2.771],["Loja",37.168,-4.150],["Órgiva",36.900,-3.425],["Mojácar",37.139,-1.851]];
-var TOL=8,pos=null,hd=0,sm=null;
+var TOL=5,pos=null,hd=0,sm=null;
 var $=function(i){return document.getElementById(i)};
 var R=Math.PI/180;
 function brg(a,b,c,d){var L=(d-b)*R,y=Math.sin(L)*Math.cos(c*R),x=Math.cos(a*R)*Math.sin(c*R)-Math.sin(a*R)*Math.cos(c*R)*Math.cos(L);return (Math.atan2(y,x)/R+360)%360}
@@ -72,20 +72,63 @@ function dst(a,b,c,d){var p=(c-a)*R,q=(d-b)*R,h=Math.sin(p/2)*Math.sin(p/2)+Math
 function dif(a,b){return Math.abs(((a-b+540)%360)-180)}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 
+var cacheV={},enCurso={},sinRelieve=false,pit=0;
+var SZ={city:40,town:36,village:32,hamlet:28},SZL={city:19,town:17,village:15,hamlet:13};
+function clave(p){return p.n+"|"+pos.latitude.toFixed(2)+","+pos.longitude.toFixed(2)+"|"+Math.round((pos.altitude||0)/300)}
+// Comprueba si el pueblo p se ve desde aquí: relieve + curvatura de la Tierra (con refracción)
+async function verificar(p){
+  var k=clave(p);
+  if(enCurso[k]||cacheV[k]!==undefined)return;
+  enCurso[k]=1;
+  var la=pos.latitude,lo=pos.longitude,D=p.k*1000;
+  var n=Math.max(6,Math.min(60,Math.ceil(p.k/1.5)));
+  var lats=[],lons=[],ds=[],i;
+  for(i=0;i<=n;i++){var f=i/n;lats.push((la+(p.la-la)*f).toFixed(5));lons.push((lo+(p.lo-lo)*f).toFixed(5));ds.push(D*f)}
+  var h=null;
+  try{
+    var resp=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
+    var j=await resp.json();
+    h=j.elevation;
+    if(!h||h.length!==n+1)h=null;
+  }catch(e){}
+  if(!h){h=[];for(i=0;i<=n;i++)h.push(0);sinRelieve=true}else sinRelieve=false;
+  var gps=pos.altitude;
+  var H0=(typeof gps==="number"&&gps>h[0]+30)?gps:h[0]+2;
+  var H1=h[n]+10;
+  var RT=7300000,ok=true;
+  for(i=1;i<n;i++){
+    var d=ds[i],bulto=d*(D-d)/(2*RT);
+    if(h[i]+bulto>H0+(H1-H0)*d/D){ok=false;break}
+  }
+  cacheV[k]=ok;
+  delete enCurso[k];
+  pintar();
+}
 function pintar(){
   if(!pos){return}
-  $("rumbo").textContent="Rumbo: "+Math.round(hd)+"°";
-  var r=P.map(function(p){return{t:p[3]||"city",n:p[0],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hd),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
-    .filter(function(p){return p.d<=TOL&&p.k>0.5}).sort(function(a,b){return a.d-b.d}).slice(0,3);
-  $("mejor").textContent=r[0]?r[0].n:"—";$("mejor").style.fontSize=(r[0]?({city:40,town:36,village:32,hamlet:28}[r[0].t]||32):34)+"px";
-  $("lista").innerHTML=r.map(function(p){return '<div class="it"><span style="font-size:'+({city:19,town:17,village:15,hamlet:13}[p.t]||15)+'px">'+esc(p.n)+'</span><span>'+p.k.toFixed(0)+' km · ±'+p.d.toFixed(1)+'°</span></div>'}).join("");
-  if(!r.length)$("msg").textContent="Nada en esa dirección. Prueba a girar un poco.";else $("msg").textContent="";
+  $("rumbo").textContent="Rumbo: "+Math.round(hd)+"° · Inclinación: "+Math.round(pit)+"°";
+  var r=[],vis=null,pend=false,i,fuera=(pit<-40||pit>30);
+  if(!fuera){
+    r=P.map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hd),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
+      .filter(function(p){return p.d<=TOL&&p.k>0.5}).sort(function(a,b){return a.k-b.k}).slice(0,8);
+    for(i=0;i<r.length;i++)if(cacheV[clave(r[i])]===undefined)verificar(r[i]);
+    for(i=0;i<r.length;i++){
+      var v=cacheV[clave(r[i])];
+      if(v===true){vis=r[i];break}
+      if(v===undefined){pend=true;break}
+    }
+  }
+  $("mejor").textContent=vis?vis.n:"—";
+  $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
+  $("lista").innerHTML=vis?'<div class="it"><span style="font-size:'+(SZL[vis.t]||15)+'px">'+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
+  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"Sin datos de relieve: visibilidad aproximada.":""):pend?"Comprobando visibilidad…":"No veo ningún pueblo en esa dirección.";
 }
 function setH(n){
   if(sm===null)sm=n;
   var d=((n-sm+540)%360)-180; sm=(sm+0.2*d+360)%360; hd=sm; pintar();
 }
 function onOri(e){
+  if(typeof e.beta==="number")pit=e.beta-90;
   if(typeof e.webkitCompassHeading==="number"){setH(e.webkitCompassHeading);return}
   if(e.alpha===null||e.beta===null||e.gamma===null)return;
   var a=e.alpha*R,b=e.beta*R,g=e.gamma*R;
