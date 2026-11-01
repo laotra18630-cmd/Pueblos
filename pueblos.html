@@ -58,6 +58,8 @@ body.on #prov{display:none}
 #dl{margin-top:10px;background:rgba(255,255,255,.22);box-shadow:none;font-size:15px;padding:11px}
 #dl:disabled{opacity:.6}
 body.on #dl{display:none}
+#salir{display:none}
+body.on #salir{display:block;position:fixed;z-index:5;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:auto;padding:12px 28px;font-size:17px;background:rgba(0,0,0,.55);box-shadow:0 4px 14px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -74,6 +76,7 @@ body.on #dl{display:none}
 <div id="lista"></div>
 <div id="msg"></div>
 <div id="info"></div>
+<button id="salir" type="button">✕ Salir</button>
 </main>
 <script>
 // [nombre, lat, lon] — localidades de España (aprox.)
@@ -106,6 +109,7 @@ async function verificar(p){
     if(!h||h.length!==n+1)h=null;
   }catch(e){}
   if(!h){h=[];for(i=0;i<=n;i++)h.push(0);sinRelieve=true}else sinRelieve=false;
+  if(!pos){delete enCurso[k];return}
   var gps=pos.altitude;
   var H0=(typeof gps==="number"&&gps>h[0]+30)?gps:h[0]+2;
   var H1=h[n]+10;
@@ -178,10 +182,11 @@ async function camara(){
   // Cámara trasera de fondo, para ver hacia dónde apunta la mira. Si se deniega, la mira sigue funcionando.
   try{
     var st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
-    var v=$("cam");v.srcObject=st;v.play();
+    stream=st;var v=$("cam");v.srcObject=st;v.play();
   }catch(e){}
 }
 // ---- Base de datos local por provincias (IndexedDB) ----
+var watchId=null,stream=null;
 var BD=null,BDlisto=false,tp=0,hechas={};
 var PROV=[["C","A Coruña"],["VI","Álava"],["AB","Albacete"],["A","Alicante"],["AL","Almería"],["O","Asturias"],["AV","Ávila"],["BA","Badajoz"],["PM","Baleares"],["B","Barcelona"],["BI","Bizkaia"],["BU","Burgos"],["CC","Cáceres"],["CA","Cádiz"],["S","Cantabria"],["CS","Castellón"],["CR","Ciudad Real"],["CO","Córdoba"],["CU","Cuenca"],["GI","Girona"],["GR","Granada"],["GU","Guadalajara"],["SS","Gipuzkoa"],["H","Huelva"],["HU","Huesca"],["J","Jaén"],["LO","La Rioja"],["GC","Las Palmas"],["LE","León"],["L","Lleida"],["LU","Lugo"],["M","Madrid"],["MA","Málaga"],["MU","Murcia"],["NA","Navarra"],["OR","Ourense"],["P","Palencia"],["PO","Pontevedra"],["SA","Salamanca"],["TF","Santa Cruz de Tenerife"],["SG","Segovia"],["SE","Sevilla"],["SO","Soria"],["T","Tarragona"],["TE","Teruel"],["TO","Toledo"],["V","Valencia"],["VA","Valladolid"],["ZA","Zamora"],["Z","Zaragoza"]];
 PROV.sort(function(a,b){return a[1].localeCompare(b[1],"es")});
@@ -257,6 +262,19 @@ async function descargar(){
   B.textContent="Descargar provincias elegidas";B.disabled=false;
 }
 $("dl").onclick=descargar;
+function salir(){
+  if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}
+  window.removeEventListener("deviceorientationabsolute",onOri,true);
+  window.removeEventListener("deviceorientation",onOri,true);
+  if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}
+  $("cam").srcObject=null;
+  document.body.classList.remove("on");
+  $("go").style.display="";
+  pos=null;sm=null;
+  $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
+  $("msg").textContent="Has salido: cámara, GPS y brújula apagados. Pulsa el botón para volver a empezar.";
+}
+$("salir").onclick=salir;
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
@@ -270,7 +288,7 @@ $("go").onclick=async function(){
     pos=p.coords;$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
     masPueblos();document.body.classList.add("on");camara();
     // Sigue tu posición y recarga los pueblos al alejarte 30 km de la última descarga
-    navigator.geolocation.watchPosition(function(q){
+    watchId=navigator.geolocation.watchPosition(function(q){
       pos=q.coords;
       if(!ultimo||dst(pos.latitude,pos.longitude,ultimo.la,ultimo.lo)>30)masPueblos();
     },function(){},{enableHighAccuracy:true,maximumAge:5000});
