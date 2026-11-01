@@ -48,6 +48,16 @@ body.on main{background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,2
 #mira{border-color:#00f5d4;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 18px #00f5d4}
 #mira::after{background:#ff2d95;box-shadow:0 0 10px #ff2d95}
 #info{font-size:12px;opacity:.85;margin-top:6px}
+#prov{margin-top:10px;background:rgba(255,255,255,.18);border-radius:12px;padding:10px 12px;font-size:15px}
+#prov summary{font-weight:600}
+#plist{max-height:260px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:8px}
+#plist label{display:flex;gap:6px;align-items:center}
+.fila{display:flex;gap:8px;margin-top:8px}
+.fila button{padding:8px;font-size:14px;background:rgba(255,255,255,.25);box-shadow:none}
+body.on #prov{display:none}
+#dl{margin-top:10px;background:rgba(255,255,255,.22);box-shadow:none;font-size:15px;padding:11px}
+#dl:disabled{opacity:.6}
+body.on #dl{display:none}
 </style>
 </head>
 <body>
@@ -57,6 +67,8 @@ body.on main{background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,2
 <h1>🧭 ¿Qué pueblo es?</h1>
 <p>Pulsa el botón, sostén el móvil en vertical y apunta hacia el horizonte.</p>
 <button id="go">Activar GPS y brújula</button>
+<details id="prov"><summary>Elegir provincias para descargar</summary><div id="plist"></div><div class="fila"><button id="todas" type="button">Todas</button><button id="ninguna" type="button">Ninguna</button></div></details>
+<button id="dl">Descargar provincias elegidas</button>
 <div id="rumbo"></div>
 <div id="mejor"></div>
 <div id="lista"></div>
@@ -76,7 +88,7 @@ function esc(s){var d=document.createElement("div");d.textContent=s;return d.inn
 
 var cacheV={},enCurso={},sinRelieve=false,pit=0;
 var SZ={city:40,town:36,village:32,hamlet:28},SZL={city:19,town:17,village:15,hamlet:13};
-function clave(p){return p.n+"|"+pos.latitude.toFixed(2)+","+pos.longitude.toFixed(2)+"|"+Math.round((pos.altitude||0)/300)}
+function clave(p){return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+pos.latitude.toFixed(2)+","+pos.longitude.toFixed(2)+"|"+Math.round((pos.altitude||0)/300)}
 // Comprueba si el pueblo p se ve desde aquí: relieve + curvatura de la Tierra (con refracción)
 async function verificar(p){
   var k=clave(p);
@@ -127,7 +139,7 @@ function pintar(){
 }
 function setH(n){
   if(sm===null)sm=n;
-  var d=((n-sm+540)%360)-180; sm=(sm+0.2*d+360)%360; hd=sm; pintar();
+  var d=((n-sm+540)%360)-180; sm=(sm+0.2*d+360)%360; hd=sm; if(Date.now()-tp>100){tp=Date.now();pintar()}
 }
 function onOri(e){
   if(typeof e.beta==="number")pit=e.beta-90;
@@ -140,6 +152,7 @@ function onOri(e){
 }
 var cargando=false,ultimo=null,intento=0;
 async function masPueblos(){
+  if(BD){if(!BDlisto){P=unir();BDlisto=true}ultimo={la:pos.latitude,lo:pos.longitude};return}
   if(cargando||Date.now()-intento<15000)return;
   cargando=true;intento=Date.now();
   // Prueba varios servidores y radios hasta que uno responda
@@ -168,6 +181,82 @@ async function camara(){
     var v=$("cam");v.srcObject=st;v.play();
   }catch(e){}
 }
+// ---- Base de datos local por provincias (IndexedDB) ----
+var BD=null,BDlisto=false,tp=0,hechas={};
+var PROV=[["C","A Coruña"],["VI","Álava"],["AB","Albacete"],["A","Alicante"],["AL","Almería"],["O","Asturias"],["AV","Ávila"],["BA","Badajoz"],["PM","Baleares"],["B","Barcelona"],["BI","Bizkaia"],["BU","Burgos"],["CC","Cáceres"],["CA","Cádiz"],["S","Cantabria"],["CS","Castellón"],["CR","Ciudad Real"],["CO","Córdoba"],["CU","Cuenca"],["GI","Girona"],["GR","Granada"],["GU","Guadalajara"],["SS","Gipuzkoa"],["H","Huelva"],["HU","Huesca"],["J","Jaén"],["LO","La Rioja"],["GC","Las Palmas"],["LE","León"],["L","Lleida"],["LU","Lugo"],["M","Madrid"],["MA","Málaga"],["MU","Murcia"],["NA","Navarra"],["OR","Ourense"],["P","Palencia"],["PO","Pontevedra"],["SA","Salamanca"],["TF","Santa Cruz de Tenerife"],["SG","Segovia"],["SE","Sevilla"],["SO","Soria"],["T","Tarragona"],["TE","Teruel"],["TO","Toledo"],["V","Valencia"],["VA","Valladolid"],["ZA","Zamora"],["Z","Zaragoza"]];
+PROV.sort(function(a,b){return a[1].localeCompare(b[1],"es")});
+function nombreProv(c){for(var i=0;i<PROV.length;i++)if(PROV[i][0]===c)return PROV[i][1];return c}
+function idb(){return new Promise(function(res,rej){var q=indexedDB.open("pueblos",1);q.onupgradeneeded=function(){q.result.createObjectStore("kv")};q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}})}
+async function bdSet(k,v){var d=await idb();return new Promise(function(res,rej){var t=d.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=function(){res()};t.onerror=function(){rej(t.error)}})}
+async function bdAll(){var d=await idb();return new Promise(function(res,rej){var out={};var c=d.transaction("kv").objectStore("kv").openCursor();c.onsuccess=function(){var cur=c.result;if(cur){out[cur.key]=cur.value;cur.continue()}else res(out)};c.onerror=function(){rej(c.error)}})}
+function parseLineas(txt,all){
+  txt.split("\n").forEach(function(l){
+    var c=l.split("|");
+    if(c.length<4)return;
+    var la=parseFloat(c[0]),lo=parseFloat(c[1]),pl=c[c.length-1].trim(),nom=c.slice(2,-1).join("|").trim();
+    if(isNaN(la)||isNaN(lo)||!nom)return;
+    all[nom+"|"+la+"|"+lo]=[nom,la,lo,pl];
+  });
+}
+function reconstruir(all){
+  var datos=[];hechas={};
+  Object.keys(all).forEach(function(k){if(k.indexOf("prov:")===0&&all[k]&&all[k].datos){hechas[k.slice(5)]=all[k].fecha;datos=datos.concat(all[k].datos)}});
+  return datos;
+}
+// Une la base local con las ciudades de la lista básica (las que no estén ya)
+function unir(){
+  var have={};BD.forEach(function(p){have[p[0]]=1});
+  return BD.concat(P.filter(function(p){return !p[3]&&!have[p[0]]}));
+}
+function aplicarBD(datos){
+  BD=datos.length?datos:null;BDlisto=false;
+  if(BD&&pos){P=unir();BDlisto=true}
+  var n=Object.keys(hechas).length;
+  $("info").textContent=BD?"Base local: "+BD.length+" localidades de "+n+(n===1?" provincia":" provincias"):"";
+  PROV.forEach(function(p){var e=$("ok-"+p[0]);if(e)e.textContent=hechas[p[0]]?" ✓":""});
+}
+function pintarLista(){
+  $("plist").innerHTML=PROV.map(function(p){return '<label><input type="checkbox" value="'+p[0]+'"> '+p[1]+'<span id="ok-'+p[0]+'"></span></label>'}).join("");
+  $("todas").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=true})};
+  $("ninguna").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=false})};
+}
+pintarLista();
+(async function(){
+  try{aplicarBD(reconstruir(await bdAll()))}catch(e){}
+})();
+function espera(ms){return new Promise(function(r){setTimeout(r,ms)})}
+async function descargar(){
+  var sel=[].map.call(document.querySelectorAll("#plist input:checked"),function(i){return i.value});
+  if(!sel.length){$("info").textContent="Marca al menos una provincia.";return}
+  var B=$("dl");B.disabled=true;
+  var servers=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+  var fallos=[];
+  for(var i=0;i<sel.length;i++){
+    var c=sel[i],nom=nombreProv(c);
+    B.textContent="Descargando "+nom+" ("+(i+1)+" de "+sel.length+")…";
+    var q='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet)$"]["name"];out;';
+    var ok=false,all={};
+    for(var s=0;s<4&&!ok;s++){
+      try{
+        var resp=await fetch(servers[s%2],{method:"POST",body:"data="+encodeURIComponent(q)});
+        if(!resp.ok)throw 0;
+        parseLineas(await resp.text(),all);
+        if(Object.keys(all).length<5)throw 0;
+        ok=true;
+      }catch(e){all={};await espera(2000)}
+    }
+    if(ok){
+      var datos=Object.keys(all).map(function(k){return all[k]});
+      try{await bdSet("prov:"+c,{fecha:new Date().toLocaleDateString("es-ES"),datos:datos})}catch(e){fallos.push(nom+" (no se pudo guardar)");continue}
+      $("info").textContent=nom+": "+datos.length+" localidades guardadas";
+    }else fallos.push(nom);
+    await espera(800);
+  }
+  try{aplicarBD(reconstruir(await bdAll()))}catch(e){}
+  if(fallos.length)$("info").textContent+=". Fallaron: "+fallos.join(", ")+". Márcalas y vuelve a pulsar.";
+  B.textContent="Descargar provincias elegidas";B.disabled=false;
+}
+$("dl").onclick=descargar;
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
