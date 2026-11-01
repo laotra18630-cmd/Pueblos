@@ -72,10 +72,10 @@ function esc(s){var d=document.createElement("div");d.textContent=s;return d.inn
 function pintar(){
   if(!pos){return}
   $("rumbo").textContent="Rumbo: "+Math.round(hd)+"°";
-  var r=P.map(function(p){return{n:p[0],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hd),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
+  var r=P.map(function(p){return{t:p[3]||"city",n:p[0],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hd),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
     .filter(function(p){return p.d<=TOL&&p.k>0.5}).sort(function(a,b){return a.d-b.d}).slice(0,3);
-  $("mejor").textContent=r[0]?r[0].n:"—";
-  $("lista").innerHTML=r.map(function(p){return '<div class="it"><span>'+esc(p.n)+'</span><span>'+p.k.toFixed(0)+' km · ±'+p.d.toFixed(1)+'°</span></div>'}).join("");
+  $("mejor").textContent=r[0]?r[0].n:"—";$("mejor").style.fontSize=(r[0]?({city:40,town:36,village:32,hamlet:28}[r[0].t]||32):34)+"px";
+  $("lista").innerHTML=r.map(function(p){return '<div class="it"><span style="font-size:'+({city:19,town:17,village:15,hamlet:13}[p.t]||15)+'px">'+esc(p.n)+'</span><span>'+p.k.toFixed(0)+' km · ±'+p.d.toFixed(1)+'°</span></div>'}).join("");
   if(!r.length)$("msg").textContent="Nada en esa dirección. Prueba a girar un poco.";else $("msg").textContent="";
 }
 function setH(n){
@@ -90,14 +90,18 @@ function onOri(e){
   var rB=-Math.sin(a)*Math.sin(g)+Math.cos(a)*Math.sin(b)*Math.cos(g);
   setH((Math.atan2(rA,rB)/R+360)%360);
 }
+var cargando=false,ultimo=null,intento=0;
 async function masPueblos(){
+  if(cargando||Date.now()-intento<15000)return;
+  cargando=true;intento=Date.now();
   // Intenta ampliar con OpenStreetMap; si la red lo bloquea, se usa la lista incluida.
   try{
-    var q='[out:json][timeout:20];node["place"~"town|village"]["name"](around:40000,'+pos.latitude+','+pos.longitude+');out;';
+    var q='[out:json][timeout:30];node["place"~"city|town|village|hamlet"]["name"](around:80000,'+pos.latitude+','+pos.longitude+');out;';
     var r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:"data="+encodeURIComponent(q)});
     var j=await r.json();
-    j.elements.forEach(function(e){P.push([e.tags.name,e.lat,e.lon])});
+    ultimo={la:pos.latitude,lo:pos.longitude};P=P.filter(function(p){return !p[3]});var have={};P.forEach(function(p){have[p[0]]=1});j.elements.forEach(function(e){if(!have[e.tags.name]){have[e.tags.name]=1;P.push([e.tags.name,e.lat,e.lon,e.tags.place])}});
   }catch(e){}
+  cargando=false;
 }
 async function camara(){
   // Cámara trasera de fondo, para ver hacia dónde apunta la mira. Si se deniega, la mira sigue funcionando.
@@ -118,6 +122,11 @@ $("go").onclick=async function(){
   navigator.geolocation.getCurrentPosition(function(p){
     pos=p.coords;$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
     masPueblos();document.body.classList.add("on");camara();
+    // Sigue tu posición y recarga los pueblos al alejarte 30 km de la última descarga
+    navigator.geolocation.watchPosition(function(q){
+      pos=q.coords;
+      if(!ultimo||dst(pos.latitude,pos.longitude,ultimo.la,ultimo.lo)>30)masPueblos();
+    },function(){},{enableHighAccuracy:true,maximumAge:5000});
     window.addEventListener("deviceorientationabsolute",onOri,true);
     window.addEventListener("deviceorientation",onOri,true);
   },function(e){$("msg").textContent="No pude obtener la ubicación ("+e.message+"). Revisa el permiso de ubicación del navegador."},{enableHighAccuracy:true,timeout:15000});
