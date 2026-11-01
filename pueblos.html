@@ -28,6 +28,22 @@ button{width:100%;padding:14px;font-size:17px;border:0;border-radius:12px;backgr
 .it{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:6px 0;display:flex;justify-content:space-between;gap:8px;font-size:15px}
 .it span:last-child{color:var(--mut);white-space:nowrap}
 #msg{color:var(--mut);font-size:14px;margin-top:10px}
+
+/* Tema colorido */
+html,body{background:linear-gradient(160deg,#6a11cb 0%,#2575fc 50%,#00c9a7 100%) fixed;color:#fff}
+h1{font-size:28px}
+p{color:#eef2ff}
+button{background:linear-gradient(90deg,#ff512f,#f09819);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+#rumbo{display:inline-block;background:rgba(255,255,255,.22);padding:4px 14px;border-radius:999px;font-size:20px;font-weight:700;color:#fff!important}
+#mejor{background:linear-gradient(90deg,#ffe259,#ff9a9e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.it,body.on .it{background:rgba(255,255,255,.2);border:0;border-left:6px solid #ffe259;color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.it:nth-child(2){border-left-color:#ff6ec4}
+.it:nth-child(3){border-left-color:#7ee8fa}
+.it span:last-child,body.on .it span:last-child{color:#fff!important;opacity:.85}
+#msg,body.on #msg{color:#fff;opacity:.9}
+body.on main{background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72))}
+#mira{border-color:#00f5d4;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 18px #00f5d4}
+#mira::after{background:#ff2d95;box-shadow:0 0 10px #ff2d95}
 </style>
 </head>
 <body>
