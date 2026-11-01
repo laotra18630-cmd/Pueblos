@@ -10,7 +10,16 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101215;--fg:#f1f3f5;--mut:#9aa3af;--acc:#4ade80;--card:#1a1d22;--bd:#2c3139;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#101215;--fg:#f1f3f5;--mut:#9aa3af;--acc:#4ade80;--card:#1a1d22;--bd:#2c3139;color-scheme:dark}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:560px;margin:0 auto;padding:20px}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:#000;display:none}
+main{position:relative;z-index:2;max-width:560px;margin:0 auto;padding:16px}
+#mira{display:none;position:fixed;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.6);z-index:1;pointer-events:none}
+#mira::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;background:#ff3b30;border-radius:50%}
+body.on #cam,body.on #mira{display:block}
+body.on h1,body.on p{display:none}
+body.on main{max-width:none;background:rgba(0,0,0,.62);color:#fff;border-radius:0 0 16px 16px;padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
+body.on #rumbo,body.on #msg,body.on .it span:last-child{color:#d6dae0}
+body.on #mejor{font-size:34px;margin:6px 0}
+body.on .it{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff}
 h1{font-size:20px;margin:0 0 4px}
 p{color:var(--mut);margin:4px 0 14px;font-size:15px}
 button{width:100%;padding:14px;font-size:17px;border:0;border-radius:12px;background:var(--acc);color:#fff;font-weight:600}
@@ -22,6 +31,8 @@ button{width:100%;padding:14px;font-size:17px;border:0;border-radius:12px;backgr
 </style>
 </head>
 <body>
+<video id="cam" playsinline muted autoplay></video>
+<div id="mira"></div>
 <main>
 <h1>🧭 ¿Qué pueblo es?</h1>
 <p>Pulsa el botón, sostén el móvil en vertical y apunta hacia el horizonte.</p>
@@ -46,7 +57,7 @@ function pintar(){
   if(!pos){return}
   $("rumbo").textContent="Rumbo: "+Math.round(hd)+"°";
   var r=P.map(function(p){return{n:p[0],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hd),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
-    .filter(function(p){return p.d<=TOL&&p.k>0.5}).sort(function(a,b){return a.d-b.d}).slice(0,8);
+    .filter(function(p){return p.d<=TOL&&p.k>0.5}).sort(function(a,b){return a.d-b.d}).slice(0,3);
   $("mejor").textContent=r[0]?r[0].n:"—";
   $("lista").innerHTML=r.map(function(p){return '<div class="it"><span>'+esc(p.n)+'</span><span>'+p.k.toFixed(0)+' km · ±'+p.d.toFixed(1)+'°</span></div>'}).join("");
   if(!r.length)$("msg").textContent="Nada en esa dirección. Prueba a girar un poco.";else $("msg").textContent="";
@@ -72,6 +83,13 @@ async function masPueblos(){
     j.elements.forEach(function(e){P.push([e.tags.name,e.lat,e.lon])});
   }catch(e){}
 }
+async function camara(){
+  // Cámara trasera de fondo, para ver hacia dónde apunta la mira. Si se deniega, la mira sigue funcionando.
+  try{
+    var st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    var v=$("cam");v.srcObject=st;v.play();
+  }catch(e){}
+}
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
@@ -83,7 +101,7 @@ $("go").onclick=async function(){
   if(!navigator.geolocation){$("msg").textContent="Este navegador no tiene GPS.";return}
   navigator.geolocation.getCurrentPosition(function(p){
     pos=p.coords;$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
-    masPueblos();
+    masPueblos();document.body.classList.add("on");camara();
     window.addEventListener("deviceorientationabsolute",onOri,true);
     window.addEventListener("deviceorientation",onOri,true);
   },function(e){$("msg").textContent="No pude obtener la ubicación ("+e.message+"). Revisa el permiso de ubicación del navegador."},{enableHighAccuracy:true,timeout:15000});
