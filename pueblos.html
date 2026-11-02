@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>¿Qué pueblo es?</title>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
@@ -116,6 +116,11 @@ body.on #zoom{display:flex;flex-direction:column;align-items:center;gap:6px;posi
 #zoom button{width:46px;height:46px;padding:0;border-radius:50%;font-size:24px;line-height:1;background:rgba(0,0,0,.55);box-shadow:0 4px 12px rgba(0,0,0,.4)}
 #zval{font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
 #cam{transform-origin:center center}
+body.on #cal #calocho{margin-top:8px;width:100%;background:linear-gradient(90deg,#7c3aed,#2575fc)}
+#ocho{display:none;text-align:center}
+#ochot{font-size:15px;line-height:1.4;margin:6px 0 10px;color:#ffe259}
+body.on #cal.m8 p,body.on #cal.m8 select,body.on #cal.m8 .chk,body.on #cal.m8 .fila2,body.on #cal.m8 #calocho,body.on #cal.m8 #calst{display:none}
+body.on,body.on *{touch-action:pan-x pan-y}
 </style>
 </head>
 <body>
@@ -152,6 +157,8 @@ body.on #zoom{display:flex;flex-direction:column;align-items:center;gap:6px;posi
 <label class="chk"><input type="checkbox" id="cal2"> Usar dos lugares (más preciso)</label>
 <label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
 <div class="fila2"><button id="calok" type="button">Está en la mira</button><button id="calgps" type="button">🚶 Andando o en coche</button></div>
+<button id="calocho" type="button">∞ Hacer el 8 (calibra la brújula del iPhone)</button>
+<div id="ocho"><svg viewBox="0 0 120 70" width="150" height="88" aria-hidden="true"><path id="p8" d="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="3"/><circle r="6" fill="#ffe259"><animateMotion dur="3s" repeatCount="indefinite" path="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z"/></circle></svg><div id="ochot"></div><button id="ochocerrar" type="button">Listo</button></div>
 <div id="calst"></div>
 <div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div></div>
 <div id="adios"><div style="font-size:54px">👋</div><h2 style="margin:0">Hasta pronto</h2><p style="margin:0 0 10px">Para cerrar del todo, desliza hacia arriba desde el borde inferior del iPhone y quita la app.</p><button id="volver" type="button">Volver</button></div>
@@ -223,6 +230,14 @@ async function verificar(p){
   if(!rel)setTimeout(function(){delete cacheV[k]},30000);
   pintar();
 }
+var ochoActivo=false;
+function actOcho(){
+  var t=$("ochot");
+  if(prec===null){t.textContent="Tu móvil no informa de la precisión. Dibuja el 8 durante unos 10 segundos.";return}
+  if(prec<0){t.textContent="Brújula sin calibrar. Sigue dibujando el 8 en el aire girando la muñeca…";return}
+  t.textContent=(prec<=10?"✓ Brújula calibrada. ":"Sigue dibujando el 8… ")+"Precisión: ±"+Math.round(prec)+"°"+(prec<=10?"":" (objetivo: ±10° o menos)");
+}
+function cerrarOcho(){ochoActivo=false;$("cal").className="";$("ocho").style.display="none"}
 function pintar(){
   if(!pos){return}
   var pe=posEfectiva();
@@ -250,6 +265,7 @@ function pintar(){
   $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
   $("lista").innerHTML=vis?'<div class="it"><span style="font-size:'+(SZL[vis.t]||15)+'px">'+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
   $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve: solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?"Comprobando visibilidad…":(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
+  if(ochoActivo)actOcho();
 }
 function setH(n){
   if(sm===null)sm=n;
@@ -386,7 +402,7 @@ function salir(){
   if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}
   $("cam").srcObject=null;
   document.body.classList.remove("on");
-  $("cal").style.display="none";
+  cerrarOcho();$("cal").style.display="none";
   $("go").style.display="";
   zoom=1;pista=null;capZoom=null;$("cam").style.transform="";$("zval").textContent="×1.0";
   pos=null;sm=null;modoCoche=false;velAlta=0;velBaja=0;rumboGPS=null;pantallaEncendida(false);
@@ -473,7 +489,9 @@ function calAndar(c){
   finCal("✓ Calibrado andando ("+fmtOff(off)+")");
 }
 $("calreset").onclick=function(){off=0;tab={};calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
-$("calcerrar").onclick=function(){calAnd=null;cal2={b:null,o:null};$("calst").textContent="";$("cal").style.display="none"};
+$("calocho").onclick=function(){ochoActivo=true;$("cal").className="m8";$("ocho").style.display="block";actOcho()};
+$("ochocerrar").onclick=cerrarOcho;
+$("calcerrar").onclick=function(){cerrarOcho();calAnd=null;cal2={b:null,o:null};$("calst").textContent="";$("cal").style.display="none"};
 // ---- Modo coche (se activa solo al detectar velocidad) ----
 var hdH=[],gT=0,modoCoche=false,velAlta=0,velBaja=0,posT=0,rumboGPS=null,velGPS=0,autoT=0,wl=null;
 function actualizarMarcha(c){
@@ -533,7 +551,7 @@ function dist2(t){var dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
 document.addEventListener("touchstart",function(e){if(document.body.classList.contains("on")&&e.touches.length===2)pz={d:dist2(e.touches),z:zoom}},{passive:true});
 document.addEventListener("touchmove",function(e){if(pz&&e.touches.length===2){e.preventDefault();aplicarZoom(pz.z*dist2(e.touches)/pz.d)}},{passive:false});
 document.addEventListener("touchend",function(e){if(e.touches.length<2)pz=null});
-document.addEventListener("gesturestart",function(e){if(document.body.classList.contains("on"))e.preventDefault()});
+["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
