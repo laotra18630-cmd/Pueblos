@@ -121,6 +121,7 @@ body.on #cal #calocho{margin-top:8px;width:100%;background:linear-gradient(90deg
 #ochot{font-size:15px;line-height:1.4;margin:6px 0 10px;color:#ffe259}
 body.on #cal.m8 p,body.on #cal.m8 select,body.on #cal.m8 .chk,body.on #cal.m8 .fila2,body.on #cal.m8 #calocho,body.on #cal.m8 #calst{display:none}
 body.on,body.on *{touch-action:pan-x pan-y}
+#probar{margin-top:12px;border-radius:999px;background:transparent;border:2px solid rgba(255,255,255,.35);box-shadow:none;font-size:15px;padding:11px}
 </style>
 </head>
 <body>
@@ -144,6 +145,7 @@ body.on,body.on *{touch-action:pan-x pan-y}
 <details id="prov"><summary>🗺️ Mapa sin conexión · elegir provincias</summary><div id="plist"></div><div class="fila"><button id="todas" type="button">Todas</button><button id="ninguna" type="button">Ninguna</button></div></details>
 <button id="dl">Descargar provincias elegidas</button>
 <div id="barra"><i id="barraI"></i></div>
+<button id="probar" type="button">🔎 Probar datos de relieve</button>
 <button id="cerrar" type="button">Salir</button>
 </section>
 <button id="salir" type="button">✕ Salir</button>
@@ -174,31 +176,68 @@ function dif(a,b){return Math.abs(((a-b+540)%360)-180)}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 
 var cacheV={},enCurso={},sinRelieve=false,pit=0;
+var visCache={},gV=0;
+try{visCache=JSON.parse(localStorage.getItem("vis")||"{}");if(!visCache||typeof visCache!=="object")visCache={}}catch(e){visCache={}}
+Object.keys(visCache).forEach(function(k){cacheV[k]=visCache[k]});
+function guardarVis(fuerza){
+  if(!fuerza&&Date.now()-gV<5000)return;
+  gV=Date.now();
+  var ks=Object.keys(visCache);
+  if(ks.length>2500)ks.slice(0,500).forEach(function(k){delete visCache[k]});
+  try{localStorage.setItem("vis",JSON.stringify(visCache))}catch(e){}
+}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")guardarVis(true)});
 var SZ={city:40,town:36,village:32,hamlet:28,isolated_dwelling:24},SZL={city:19,town:17,village:15,hamlet:13,isolated_dwelling:12};
 function clave(p){var g=modoCoche?0.03:0.01;return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+Math.round(pos.latitude/g)+","+Math.round(pos.longitude/g)+"|"+Math.round((pos.altitude||0)/300)}
-// Altitudes del terreno: Open-Meteo y, si falla, OpenTopoData
+// Altitudes del terreno: Open-Meteo y, si falla, OpenTopoData. Guarda el motivo si no hay datos.
+var errRel="";
+function espera2(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function valida(h,n){return h&&h.length===n&&h.every(function(x){return typeof x==="number"&&isFinite(x)})}
+var bloqRel=0;
 async function altitudes(lats,lons){
-  try{
-    var r=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
-    var j=await r.json();
-    if(j.elevation&&j.elevation.length===lats.length&&j.elevation.every(function(x){return typeof x==="number"&&isFinite(x)}))return{h:j.elevation,f:"Open-Meteo"};
-  }catch(e){}
+  if(Date.now()<bloqRel)return null;
+  var motivos=[];
+  for(var intento=0;intento<2;intento++){
+    try{
+      var r=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
+      var j=await r.json();
+      if(valida(j.elevation,lats.length)){errRel="";return{h:j.elevation,f:"Open-Meteo"}}
+      motivos[0]="Open-Meteo: "+(j.reason||("error "+r.status));
+      if(r.status===429&&intento===0){await espera2(1500);continue}
+    }catch(e){motivos[0]="Open-Meteo: sin conexión o bloqueado"}
+    break;
+  }
   try{
     var loc=lats.map(function(a,i){return a+","+lons[i]}).join("|");
     var r2=await fetch("https://api.opentopodata.org/v1/srtm90m?locations="+loc);
     var j2=await r2.json();
-    if(j2.results&&j2.results.length===lats.length){
-      var h2=j2.results.map(function(x){return x.elevation});
-      if(h2.every(function(x){return typeof x==="number"&&isFinite(x)}))return{h:h2,f:"OpenTopoData"};
-    }
-  }catch(e){}
+    var h2=(j2.results||[]).map(function(x){return x.elevation});
+    if(valida(h2,lats.length)){errRel="";return{h:h2,f:"OpenTopoData"}}
+    motivos[1]="OpenTopoData: "+(j2.error||("error "+r2.status));
+  }catch(e){motivos[1]="OpenTopoData: sin conexión o bloqueado"}
+  errRel=motivos.join("; ");
+  bloqRel=Date.now()+25000;
   return null;
 }
 var fuenteRel="";
 // Comprueba si el pueblo p se ve desde aquí: relieve + curvatura de la Tierra (con refracción)
-async function verificar(p){
+var colaV=[],activosV=0;
+function verificar(p){
   var k=clave(p);
   if(enCurso[k]||cacheV[k]!==undefined)return;
+  enCurso[k]=2;
+  colaV.push({p:p,k:k});
+  while(colaV.length>6){var x=colaV.shift();delete enCurso[x.k]}
+  sigueCola();
+}
+function sigueCola(){
+  while(activosV<3&&colaV.length){
+    var x=colaV.shift();activosV++;
+    verificarReal(x.p,x.k).then(function(){activosV--;sigueCola()},function(){activosV--;sigueCola()});
+  }
+}
+async function verificarReal(p,k){
+  if(!pos){delete enCurso[k];return}
   enCurso[k]=1;
   var la=pos.latitude,lo=pos.longitude,D=p.k*1000;
   var n=Math.max(6,Math.min(60,Math.ceil(p.k/1.5)));
@@ -227,7 +266,8 @@ async function verificar(p){
   if(!rel&&p.k>10)ok=false;
   cacheV[k]=ok;
   delete enCurso[k];
-  if(!rel)setTimeout(function(){delete cacheV[k]},30000);
+  if(rel){visCache[k]=ok;guardarVis()}
+  else setTimeout(function(){delete cacheV[k]},30000);
   pintar();
 }
 var ochoActivo=false;
@@ -254,17 +294,20 @@ function pintar(){
   if(!fuera){
     r=P.map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pe.latitude,pe.longitude,p[1],p[2]),hdc),k:dst(pe.latitude,pe.longitude,p[1],p[2])}})
       .filter(function(p){return p.d<=TOL&&p.k>0.5&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))}).sort(function(a,b){return a.k-b.k}).slice(0,modoCoche?4:8);
-    for(i=0;i<r.length;i++)if(cacheV[clave(r[i])]===undefined)verificar(r[i]);
     for(i=0;i<r.length;i++){
       var v=cacheV[clave(r[i])];
       if(v===true){vis=r[i];break}
-      if(v===undefined){pend=true;break}
+      if(v===undefined){
+        pend=true;verificar(r[i]);
+        if(i+1<r.length&&cacheV[clave(r[i+1])]===undefined)verificar(r[i+1]);
+        break;
+      }
     }
   }
   $("mejor").textContent=vis?vis.n:"—";
   $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
   $("lista").innerHTML=vis?'<div class="it"><span style="font-size:'+(SZL[vis.t]||15)+'px">'+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
-  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve: solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?"Comprobando visibilidad…":(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
+  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?"Comprobando visibilidad…":(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
   if(ochoActivo)actOcho();
 }
 function setH(n){
@@ -351,26 +394,40 @@ function aplicarBD(datos){
   $("info").textContent=BD?"Base local: "+BD.length+" localidades de "+n+(n===1?" provincia":" provincias"):"";
   PROV.forEach(function(p){var e=$("ok-"+p[0]);if(e)e.textContent=hechas[p[0]]?" ✓":""});
 }
+var selGuardada=[];
+try{selGuardada=JSON.parse(localStorage.getItem("provSel")||"[]")}catch(e){}
+function guardarSel(){
+  try{localStorage.setItem("provSel",JSON.stringify([].filter.call(document.querySelectorAll("#plist input"),function(i){return i.checked}).map(function(i){return i.value})))}catch(e){}
+}
 function pintarLista(){
-  $("plist").innerHTML=PROV.map(function(p){return '<label><input type="checkbox" value="'+p[0]+'"> '+p[1]+'<span id="ok-'+p[0]+'"></span></label>'}).join("");
-  $("todas").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=true})};
-  $("ninguna").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=false})};
+  $("plist").innerHTML=PROV.map(function(p){return '<label><input type="checkbox" value="'+p[0]+'"'+(selGuardada.indexOf(p[0])>=0?' checked':'')+'> '+p[1]+'<span id="ok-'+p[0]+'"></span></label>'}).join("");
+  [].forEach.call(document.querySelectorAll("#plist input"),function(i){i.onchange=guardarSel});
+  $("todas").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=true});guardarSel()};
+  $("ninguna").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=false});guardarSel()};
 }
 pintarLista();
 (async function(){
-  try{aplicarBD(reconstruir(await bdAll()))}catch(e){}
+  try{
+    aplicarBD(reconstruir(await bdAll()));
+    // Las provincias ya descargadas aparecen marcadas al abrir la aplicación
+    [].forEach.call(document.querySelectorAll("#plist input"),function(i){if(hechas[i.value])i.checked=true});
+    guardarSel();
+  }catch(e){}
 })();
 function espera(ms){return new Promise(function(r){setTimeout(r,ms)})}
 async function descargar(){
   var sel=[].map.call(document.querySelectorAll("#plist input:checked"),function(i){return i.value});
   if(!sel.length){$("info").textContent="Marca al menos una provincia.";return}
+  var faltan=sel.filter(function(c){return !hechas[c]});
+  var actualizar=faltan.length===0;
+  if(!actualizar)sel=faltan;
   var B=$("dl");B.disabled=true;$("barra").style.display="block";$("barraI").style.width="0%";
   var servers=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
   var fallos=[];
   for(var i=0;i<sel.length;i++){
     var c=sel[i],nom=nombreProv(c);
     $("barraI").style.width=(100*i/sel.length)+"%";
-    B.textContent="Descargando "+nom+" ("+(i+1)+" de "+sel.length+")…";
+    B.textContent=(actualizar?"Actualizando ":"Descargando ")+nom+" ("+(i+1)+" de "+sel.length+")…";
     var q='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet|isolated_dwelling)$"]["name"];out;';
     var ok=false,all={};
     for(var s=0;s<4&&!ok;s++){
@@ -552,6 +609,12 @@ document.addEventListener("touchstart",function(e){if(document.body.classList.co
 document.addEventListener("touchmove",function(e){if(pz&&e.touches.length===2){e.preventDefault();aplicarZoom(pz.z*dist2(e.touches)/pz.d)}},{passive:false});
 document.addEventListener("touchend",function(e){if(e.touches.length<2)pz=null});
 ["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
+$("probar").onclick=async function(){
+  $("info").textContent="Probando los servicios de relieve…";
+  bloqRel=0;
+  var al=await altitudes(["37.13000","37.14000"],["-3.70000","-3.69000"]);
+  $("info").textContent=al?"✓ Relieve disponible ("+al.f+")":"✗ Sin datos de relieve: "+(errRel||"sin respuesta");
+};
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
