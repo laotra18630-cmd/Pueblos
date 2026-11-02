@@ -128,6 +128,25 @@ function esc(s){var d=document.createElement("div");d.textContent=s;return d.inn
 var cacheV={},enCurso={},sinRelieve=false,pit=0;
 var SZ={city:40,town:36,village:32,hamlet:28},SZL={city:19,town:17,village:15,hamlet:13};
 function clave(p){return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+pos.latitude.toFixed(2)+","+pos.longitude.toFixed(2)+"|"+Math.round((pos.altitude||0)/300)}
+// Altitudes del terreno: Open-Meteo y, si falla, OpenTopoData
+async function altitudes(lats,lons){
+  try{
+    var r=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
+    var j=await r.json();
+    if(j.elevation&&j.elevation.length===lats.length&&j.elevation.every(function(x){return typeof x==="number"&&isFinite(x)}))return{h:j.elevation,f:"Open-Meteo"};
+  }catch(e){}
+  try{
+    var loc=lats.map(function(a,i){return a+","+lons[i]}).join("|");
+    var r2=await fetch("https://api.opentopodata.org/v1/srtm90m?locations="+loc);
+    var j2=await r2.json();
+    if(j2.results&&j2.results.length===lats.length){
+      var h2=j2.results.map(function(x){return x.elevation});
+      if(h2.every(function(x){return typeof x==="number"&&isFinite(x)}))return{h:h2,f:"OpenTopoData"};
+    }
+  }catch(e){}
+  return null;
+}
+var fuenteRel="";
 // Comprueba si el pueblo p se ve desde aquí: relieve + curvatura de la Tierra (con refracción)
 async function verificar(p){
   var k=clave(p);
@@ -137,25 +156,30 @@ async function verificar(p){
   var n=Math.max(6,Math.min(60,Math.ceil(p.k/1.5)));
   var lats=[],lons=[],ds=[],i;
   for(i=0;i<=n;i++){var f=i/n;lats.push((la+(p.la-la)*f).toFixed(5));lons.push((lo+(p.lo-lo)*f).toFixed(5));ds.push(D*f)}
-  var h=null;
-  try{
-    var resp=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
-    var j=await resp.json();
-    h=j.elevation;
-    if(!h||h.length!==n+1)h=null;
-  }catch(e){}
-  if(!h){h=[];for(i=0;i<=n;i++)h.push(0);sinRelieve=true}else sinRelieve=false;
+  var al=await altitudes(lats,lons);
   if(!pos){delete enCurso[k];return}
-  var gps=pos.altitude;
-  var H0=(typeof gps==="number"&&gps>h[0]+30)?gps:h[0]+2;
-  var H1=h[n]+10;
+  var rel=!!al,h,H0,H1,gps=pos.altitude;
+  if(rel){
+    h=al.h;fuenteRel=al.f;
+    // Solo uso la altitud del GPS si claramente estoy muy por encima del suelo (avión, cumbre)
+    H0=(typeof gps==="number"&&gps>h[0]+150)?gps:h[0]+2;
+    H1=h[n]+10;
+  }else{
+    // Sin datos de relieve no puedo saber si hay montañas: solo curvatura y solo lo cercano
+    h=[];for(i=0;i<=n;i++)h.push(0);
+    H0=(typeof gps==="number"&&gps>2500)?gps:2;
+    H1=10;
+  }
+  sinRelieve=!rel;
   var RT=7300000,ok=true;
   for(i=1;i<n;i++){
     var d=ds[i],bulto=d*(D-d)/(2*RT);
     if(h[i]+bulto>H0+(H1-H0)*d/D){ok=false;break}
   }
+  if(!rel&&p.k>10)ok=false;
   cacheV[k]=ok;
   delete enCurso[k];
+  if(!rel)setTimeout(function(){delete cacheV[k]},30000);
   pintar();
 }
 function pintar(){
@@ -175,7 +199,7 @@ function pintar(){
   $("mejor").textContent=vis?vis.n:"—";
   $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
   $("lista").innerHTML=vis?'<div class="it"><span style="font-size:'+(SZL[vis.t]||15)+'px">'+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
-  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"Sin datos de relieve: visibilidad aproximada.":""):pend?"Comprobando visibilidad…":"No veo ningún pueblo en esa dirección.";
+  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve: solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?"Comprobando visibilidad…":(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
 }
 function setH(n){
   if(sm===null)sm=n;
