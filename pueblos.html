@@ -94,11 +94,23 @@ body.on #aldeas{right:12px}
 body.on #salir{padding:12px 18px}
 #brj{font-size:13px;color:#ffe259;text-align:center;margin-top:6px}
 #cal{display:none;position:fixed;z-index:15;left:0;right:0;bottom:0;padding:18px 18px calc(env(safe-area-inset-bottom,0px) + 18px);background:rgba(10,12,30,.94);color:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+#cal{max-height:78vh;overflow:auto}
+#cal .chk{display:flex;gap:8px;align-items:center;font-size:14px;margin:2px 0 4px}
+#calst{font-size:14px;line-height:1.4;color:#ffe259;margin:8px 0;min-height:18px}
+#calgps{background:linear-gradient(90deg,#2575fc,#00c9a7)}
 #cal h3{margin:0 0 6px;font-size:18px}
 #cal p{margin:0 0 10px;font-size:14px;line-height:1.4;color:#dfe6ff}
 #cal select{width:100%;padding:12px;font-size:16px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:#1a1d3a;color:#fff;margin-bottom:10px}
 #cal button{margin-top:8px;font-size:16px;padding:12px}
 #cal #calreset,#cal #calcerrar{background:transparent;border:1px solid rgba(255,255,255,.4);box-shadow:none}
+/* Panel de calibración compacto (deja visible la mira) */
+#cal{background:rgba(10,12,30,.98);padding-top:14px;max-height:none;overflow:visible}
+#cal h3{font-size:17px;margin:0 0 4px}
+body.on #cal p{display:block;font-size:13px;line-height:1.35;margin:0 0 8px}
+#cal select{padding:10px;font-size:15px;margin-bottom:6px}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+#cal button{margin-top:0;font-size:14px;padding:11px 6px}
+#calst{min-height:20px;margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -128,7 +140,13 @@ body.on #salir{padding:12px 18px}
 <button id="calbtn" type="button">🎯 Calibrar</button>
 <button id="aldeas" type="button">🏘 Con aldeas</button>
 </main>
-<div id="cal"><h3>Calibrar la brújula</h3><p>1. Elige un lugar que veas con claridad.<br>2. Coloca el punto rosa justo encima.<br>3. Pulsa «Está en la mira».</p><select id="calsel"></select><button id="calok" type="button">Está en la mira</button><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div>
+<div id="cal"><h3>Calibrar la brújula</h3>
+<p>Lugar: pon el punto rosa sobre él y pulsa «Está en la mira». Andando: camina recto unos 30 m con el móvil apuntando hacia delante.</p>
+<select id="calsel"></select>
+<label class="chk"><input type="checkbox" id="cal2"> Usar dos lugares (más preciso)</label>
+<div class="fila2"><button id="calok" type="button">Está en la mira</button><button id="calgps" type="button">🚶 Andando o en coche</button></div>
+<div id="calst"></div>
+<div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div></div>
 <div id="adios"><div style="font-size:54px">👋</div><h2 style="margin:0">Hasta pronto</h2><p style="margin:0 0 10px">Para cerrar del todo, desliza hacia arriba desde el borde inferior del iPhone y quita la app.</p><button id="volver" type="button">Volver</button></div>
 <script>
 // [nombre, lat, lon] — localidades de España (aprox.)
@@ -143,7 +161,7 @@ function esc(s){var d=document.createElement("div");d.textContent=s;return d.inn
 
 var cacheV={},enCurso={},sinRelieve=false,pit=0;
 var SZ={city:40,town:36,village:32,hamlet:28,isolated_dwelling:24},SZL={city:19,town:17,village:15,hamlet:13,isolated_dwelling:12};
-function clave(p){return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+pos.latitude.toFixed(2)+","+pos.longitude.toFixed(2)+"|"+Math.round((pos.altitude||0)/300)}
+function clave(p){var g=modoCoche?0.03:0.01;return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+Math.round(pos.latitude/g)+","+Math.round(pos.longitude/g)+"|"+Math.round((pos.altitude||0)/300)}
 // Altitudes del terreno: Open-Meteo y, si falla, OpenTopoData
 async function altitudes(lats,lons){
   try{
@@ -200,16 +218,18 @@ async function verificar(p){
 }
 function pintar(){
   if(!pos){return}
+  var pe=posEfectiva();
   var hdc=(hd+off+360)%360;
   $("rumbo").textContent="Rumbo: "+Math.round(hdc)+"° · Inclinación: "+Math.round(pit)+"°";
   var av=[];
   if(prec!==null){if(prec<0)av.push("Brújula sin calibrar: dibuja un 8 con el móvil.");else if(prec>20)av.push("Brújula poco precisa (±"+Math.round(prec)+"°): dibuja un 8 con el móvil.")}
   if(off)av.push("Calibrada: "+(off>0?"+":"")+Math.round(off)+"°");
+  if(modoCoche)av.push("🚗 Modo coche: que lo use el acompañante."+(Date.now()-autoT<5000?" Brújula corregida con el GPS ("+fmtOff(off)+").":""));
   $("brj").textContent=av.join(" ");
   var r=[],vis=null,pend=false,i,fuera=(pit<-40||pit>30);
   if(!fuera){
-    r=P.map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hdc),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
-      .filter(function(p){return p.d<=TOL&&p.k>0.5&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))}).sort(function(a,b){return a.k-b.k}).slice(0,8);
+    r=P.map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pe.latitude,pe.longitude,p[1],p[2]),hdc),k:dst(pe.latitude,pe.longitude,p[1],p[2])}})
+      .filter(function(p){return p.d<=TOL&&p.k>0.5&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))}).sort(function(a,b){return a.k-b.k}).slice(0,modoCoche?4:8);
     for(i=0;i<r.length;i++)if(cacheV[clave(r[i])]===undefined)verificar(r[i]);
     for(i=0;i<r.length;i++){
       var v=cacheV[clave(r[i])];
@@ -355,7 +375,7 @@ function salir(){
   document.body.classList.remove("on");
   $("cal").style.display="none";
   $("go").style.display="";
-  pos=null;sm=null;
+  pos=null;sm=null;modoCoche=false;velAlta=0;velBaja=0;rumboGPS=null;pantallaEncendida(false);
   $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
   $("msg").textContent="Has salido: cámara, GPS y brújula apagados. Pulsa el botón para volver a empezar.";
 }
@@ -376,16 +396,89 @@ $("calbtn").onclick=function(){
   if(!pos)return;
   calList=P.filter(function(p){return p[3]!=="hamlet"&&p[3]!=="isolated_dwelling"}).map(function(p){return{n:p[0],la:p[1],lo:p[2],k:dst(pos.latitude,pos.longitude,p[1],p[2])}}).filter(function(p){return p.k>0.5&&p.k<60}).sort(function(a,b){return a.k-b.k}).slice(0,15);
   $("calsel").innerHTML=calList.map(function(p,i){return '<option value="'+i+'">'+esc(p.n)+' · '+p.k.toFixed(0)+' km</option>'}).join("");
+  calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
   $("cal").style.display="block";
 };
+var calAnd=null,cal2={b:null,o:null};
+function envolver(x){return ((x%360)+540)%360-180}
+function fmtOff(o){return (o>0?"+":"")+Math.round(o)+"°"}
+function finCal(txt){guardarOff();$("calst").textContent=txt;pintar()}
 $("calok").onclick=function(){
   var t=calList[+$("calsel").value];if(!t||!pos)return;
-  var b=brg(pos.latitude,pos.longitude,t.la,t.lo);
-  off=((b-hd)%360+540)%360-180;
-  guardarOff();$("cal").style.display="none";pintar();
+  calAnd=null;
+  var b=brg(pos.latitude,pos.longitude,t.la,t.lo),o=envolver(b-hd);
+  if(!$("cal2").checked){off=o;cal2={b:null,o:null};finCal("✓ Calibrado ("+fmtOff(o)+")");return}
+  if(cal2.o===null){
+    cal2={b:b,o:o};
+    $("calst").textContent="Lugar 1 guardado. Elige OTRO lugar en una dirección distinta (al menos 30° de diferencia) y pulsa de nuevo.";
+    return;
+  }
+  if(dif(b,cal2.b)<30){$("calst").textContent="Ese lugar está casi en la misma dirección que el primero. Elige otro más hacia un lado.";return}
+  var d2=envolver(o-cal2.o);
+  off=envolver(cal2.o+d2/2);
+  var txt="✓ Calibrado con dos lugares ("+fmtOff(off)+")";
+  if(Math.abs(d2)>10)txt+=". Aviso: los dos errores difieren "+Math.round(Math.abs(d2))+"°, la brújula no falla igual en todas las direcciones.";
+  cal2={b:null,o:null};
+  finCal(txt);
 };
-$("calreset").onclick=function(){off=0;guardarOff();$("cal").style.display="none";pintar()};
-$("calcerrar").onclick=function(){$("cal").style.display="none"};
+// Método andando o en coche: compara la brújula con la dirección real del recorrido (GPS)
+$("calgps").onclick=function(){
+  if(!pos)return;
+  cal2={b:null,o:null};
+  calAnd={la:pos.latitude,lo:pos.longitude,s:[]};
+  $("calst").textContent="Camina recto con el móvil en vertical apuntando hacia delante…";
+};
+function calAndar(c){
+  if(!calAnd)return;
+  var dm=dst(calAnd.la,calAnd.lo,c.latitude,c.longitude)*1000;
+  calAnd.s.push(hd);
+  var need=Math.max(30,2.5*(c.accuracy||10));
+  if(dm<need||calAnd.s.length<2){$("calst").textContent="Camina recto… "+Math.round(dm)+" de "+Math.round(need)+" m";return}
+  var sx=0,sy=0,mal=0;
+  calAnd.s.forEach(function(a){sx+=Math.sin(a*R);sy+=Math.cos(a*R)});
+  var media=(Math.atan2(sx,sy)/R+360)%360;
+  calAnd.s.forEach(function(a){mal=Math.max(mal,dif(a,media))});
+  var b=brg(calAnd.la,calAnd.lo,c.latitude,c.longitude);
+  calAnd=null;
+  if(mal>25){$("calst").textContent="El móvil se movió demasiado (±"+Math.round(mal)+"°). Inténtalo de nuevo apuntando siempre hacia delante.";return}
+  off=envolver(b-media);
+  finCal("✓ Calibrado andando ("+fmtOff(off)+")");
+}
+$("calreset").onclick=function(){off=0;calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
+$("calcerrar").onclick=function(){calAnd=null;cal2={b:null,o:null};$("calst").textContent="";$("cal").style.display="none"};
+// ---- Modo coche (se activa solo al detectar velocidad) ----
+var modoCoche=false,velAlta=0,velBaja=0,posT=0,rumboGPS=null,velGPS=0,autoT=0,wl=null;
+function actualizarMarcha(c){
+  var v=(typeof c.speed==="number"&&c.speed>=0)?c.speed:0;
+  var rh=(typeof c.heading==="number"&&!isNaN(c.heading))?c.heading:null;
+  velGPS=v;rumboGPS=(v>1&&rh!==null)?rh:null;
+  if(v>=8){velAlta++;velBaja=0}else if(v<2){velBaja++;velAlta=0}
+  if(!modoCoche&&velAlta>=3)modoCoche=true;
+  if(modoCoche&&velBaja>=20)modoCoche=false;
+  // Corrige poco a poco la brújula con el rumbo del GPS, solo si el móvil apunta más o menos hacia delante
+  if(modoCoche&&rumboGPS!==null&&v>=5&&Math.abs(pit)<30){
+    var d=envolver(rumboGPS-(hd+off+360)%360);
+    if(Math.abs(d)<=35){off=envolver(off+0.15*d);autoT=Date.now()}
+  }
+}
+// Entre dos lecturas del GPS, calcula dónde estás según velocidad y rumbo
+function posEfectiva(){
+  if(!pos)return null;
+  var dt=(Date.now()-posT)/1000;
+  if(modoCoche&&rumboGPS!==null&&velGPS>=3&&dt>0&&dt<4){
+    var dm=velGPS*dt;
+    return{latitude:pos.latitude+dm*Math.cos(rumboGPS*R)/111320,longitude:pos.longitude+dm*Math.sin(rumboGPS*R)/(111320*Math.cos(pos.latitude*R)),altitude:pos.altitude,accuracy:pos.accuracy};
+  }
+  return pos;
+}
+// Mantiene la pantalla encendida mientras se usa
+async function pantallaEncendida(on){
+  try{
+    if(on){if(navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",function(){wl=null})}}
+    else if(wl){await wl.release();wl=null}
+  }catch(e){}
+}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on"))pantallaEncendida(true)});
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
@@ -396,11 +489,11 @@ $("go").onclick=async function(){
   }catch(e){$("msg").textContent="Error de brújula: "+(e&&e.message?e.message:e)+". Abre esta página directamente en Safari.";return}
   if(!navigator.geolocation){$("msg").textContent="Este navegador no tiene GPS.";return}
   navigator.geolocation.getCurrentPosition(function(p){
-    pos=p.coords;$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
-    masPueblos();document.body.classList.add("on");camara();
+    pos=p.coords;posT=Date.now();$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
+    masPueblos();document.body.classList.add("on");camara();pantallaEncendida(true);
     // Sigue tu posición y recarga los pueblos al alejarte 30 km de la última descarga
     watchId=navigator.geolocation.watchPosition(function(q){
-      pos=q.coords;
+      pos=q.coords;posT=Date.now();actualizarMarcha(q.coords);calAndar(q.coords);
       if(!ultimo||dst(pos.latitude,pos.longitude,ultimo.la,ultimo.lo)>30)masPueblos();
     },function(){},{enableHighAccuracy:true,maximumAge:5000});
     window.addEventListener("deviceorientationabsolute",onOri,true);
