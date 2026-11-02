@@ -87,6 +87,18 @@ body:not(.on){background:radial-gradient(60% 40% at 12% 0%,rgba(124,58,237,.6),t
 #info{text-align:center}
 body:not(.on) #rumbo,body:not(.on) #mejor,body:not(.on) #lista{display:none}
 body.on #hero,body.on #extras{display:none}
+#calbtn,#aldeas{display:none}
+body.on #calbtn,body.on #aldeas{display:block;position:fixed;z-index:5;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:auto;padding:12px 14px;font-size:15px;background:rgba(0,0,0,.55);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+body.on #calbtn{left:12px}
+body.on #aldeas{right:12px}
+body.on #salir{padding:12px 18px}
+#brj{font-size:13px;color:#ffe259;text-align:center;margin-top:6px}
+#cal{display:none;position:fixed;z-index:15;left:0;right:0;bottom:0;padding:18px 18px calc(env(safe-area-inset-bottom,0px) + 18px);background:rgba(10,12,30,.94);color:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+#cal h3{margin:0 0 6px;font-size:18px}
+#cal p{margin:0 0 10px;font-size:14px;line-height:1.4;color:#dfe6ff}
+#cal select{width:100%;padding:12px;font-size:16px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:#1a1d3a;color:#fff;margin-bottom:10px}
+#cal button{margin-top:8px;font-size:16px;padding:12px}
+#cal #calreset,#cal #calcerrar{background:transparent;border:1px solid rgba(255,255,255,.4);box-shadow:none}
 </style>
 </head>
 <body>
@@ -103,6 +115,7 @@ body.on #hero,body.on #extras{display:none}
 <div id="mejor"></div>
 <div id="lista"></div>
 <div id="msg"></div>
+<div id="brj"></div>
 <div id="info"></div>
 <section id="extras">
 <div class="pasos"><div><b>1</b>Activa GPS y brújula</div><div><b>2</b>Apunta al horizonte</div><div><b>3</b>Lee el nombre del pueblo</div></div>
@@ -112,7 +125,10 @@ body.on #hero,body.on #extras{display:none}
 <button id="cerrar" type="button">Salir</button>
 </section>
 <button id="salir" type="button">✕ Salir</button>
+<button id="calbtn" type="button">🎯 Calibrar</button>
+<button id="aldeas" type="button">🏘 Con aldeas</button>
 </main>
+<div id="cal"><h3>Calibrar la brújula</h3><p>1. Elige un lugar que veas con claridad.<br>2. Coloca el punto rosa justo encima.<br>3. Pulsa «Está en la mira».</p><select id="calsel"></select><button id="calok" type="button">Está en la mira</button><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div>
 <div id="adios"><div style="font-size:54px">👋</div><h2 style="margin:0">Hasta pronto</h2><p style="margin:0 0 10px">Para cerrar del todo, desliza hacia arriba desde el borde inferior del iPhone y quita la app.</p><button id="volver" type="button">Volver</button></div>
 <script>
 // [nombre, lat, lon] — localidades de España (aprox.)
@@ -126,7 +142,7 @@ function dif(a,b){return Math.abs(((a-b+540)%360)-180)}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 
 var cacheV={},enCurso={},sinRelieve=false,pit=0;
-var SZ={city:40,town:36,village:32,hamlet:28},SZL={city:19,town:17,village:15,hamlet:13};
+var SZ={city:40,town:36,village:32,hamlet:28,isolated_dwelling:24},SZL={city:19,town:17,village:15,hamlet:13,isolated_dwelling:12};
 function clave(p){return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+pos.latitude.toFixed(2)+","+pos.longitude.toFixed(2)+"|"+Math.round((pos.altitude||0)/300)}
 // Altitudes del terreno: Open-Meteo y, si falla, OpenTopoData
 async function altitudes(lats,lons){
@@ -184,11 +200,16 @@ async function verificar(p){
 }
 function pintar(){
   if(!pos){return}
-  $("rumbo").textContent="Rumbo: "+Math.round(hd)+"° · Inclinación: "+Math.round(pit)+"°";
+  var hdc=(hd+off+360)%360;
+  $("rumbo").textContent="Rumbo: "+Math.round(hdc)+"° · Inclinación: "+Math.round(pit)+"°";
+  var av=[];
+  if(prec!==null){if(prec<0)av.push("Brújula sin calibrar: dibuja un 8 con el móvil.");else if(prec>20)av.push("Brújula poco precisa (±"+Math.round(prec)+"°): dibuja un 8 con el móvil.")}
+  if(off)av.push("Calibrada: "+(off>0?"+":"")+Math.round(off)+"°");
+  $("brj").textContent=av.join(" ");
   var r=[],vis=null,pend=false,i,fuera=(pit<-40||pit>30);
   if(!fuera){
-    r=P.map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hd),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
-      .filter(function(p){return p.d<=TOL&&p.k>0.5}).sort(function(a,b){return a.k-b.k}).slice(0,8);
+    r=P.map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pos.latitude,pos.longitude,p[1],p[2]),hdc),k:dst(pos.latitude,pos.longitude,p[1],p[2])}})
+      .filter(function(p){return p.d<=TOL&&p.k>0.5&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))}).sort(function(a,b){return a.k-b.k}).slice(0,8);
     for(i=0;i<r.length;i++)if(cacheV[clave(r[i])]===undefined)verificar(r[i]);
     for(i=0;i<r.length;i++){
       var v=cacheV[clave(r[i])];
@@ -207,6 +228,7 @@ function setH(n){
 }
 function onOri(e){
   if(typeof e.beta==="number")pit=e.beta-90;
+  if(typeof e.webkitCompassAccuracy==="number")prec=e.webkitCompassAccuracy;
   if(typeof e.webkitCompassHeading==="number"){setH(e.webkitCompassHeading);return}
   if(e.alpha===null||e.beta===null||e.gamma===null)return;
   var a=e.alpha*R,b=e.beta*R,g=e.gamma*R;
@@ -224,7 +246,7 @@ async function masPueblos(){
   var ok=false;
   for(var t=0;t<intentos.length&&!ok;t++){
     try{
-      var q='[out:json][timeout:30];node["place"~"'+intentos[t][2]+'"]["name"](around:'+intentos[t][1]+','+pos.latitude+','+pos.longitude+');out;';
+      var q='[out:json][timeout:30];(node["place"~"'+intentos[t][2]+'"]["name"](around:'+intentos[t][1]+','+pos.latitude+','+pos.longitude+');'+(t<2?'node["place"="isolated_dwelling"]["name"](around:20000,'+pos.latitude+','+pos.longitude+');':'')+');out;';
       var resp=await fetch(intentos[t][0],{method:"POST",body:"data="+encodeURIComponent(q)});
       var j=await resp.json();
       if(!j.elements)throw 0;
@@ -300,7 +322,7 @@ async function descargar(){
     var c=sel[i],nom=nombreProv(c);
     $("barraI").style.width=(100*i/sel.length)+"%";
     B.textContent="Descargando "+nom+" ("+(i+1)+" de "+sel.length+")…";
-    var q='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet)$"]["name"];out;';
+    var q='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet|isolated_dwelling)$"]["name"];out;';
     var ok=false,all={};
     for(var s=0;s<4&&!ok;s++){
       try{
@@ -331,6 +353,7 @@ function salir(){
   if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}
   $("cam").srcObject=null;
   document.body.classList.remove("on");
+  $("cal").style.display="none";
   $("go").style.display="";
   pos=null;sm=null;
   $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
@@ -344,6 +367,25 @@ function cerrar(){
 }
 $("cerrar").onclick=cerrar;
 $("volver").onclick=function(){$("adios").style.display="none"};
+// ---- Calibración de la brújula y filtro de aldeas ----
+var off=0,verAldeas=true,prec=null,calList=[];
+try{var so=parseFloat(localStorage.getItem("off"));if(!isNaN(so))off=so}catch(e){}
+function guardarOff(){try{localStorage.setItem("off",String(off))}catch(e){}}
+$("aldeas").onclick=function(){verAldeas=!verAldeas;$("aldeas").textContent=verAldeas?"🏘 Con aldeas":"🏘 Sin aldeas";pintar()};
+$("calbtn").onclick=function(){
+  if(!pos)return;
+  calList=P.filter(function(p){return p[3]!=="hamlet"&&p[3]!=="isolated_dwelling"}).map(function(p){return{n:p[0],la:p[1],lo:p[2],k:dst(pos.latitude,pos.longitude,p[1],p[2])}}).filter(function(p){return p.k>0.5&&p.k<60}).sort(function(a,b){return a.k-b.k}).slice(0,15);
+  $("calsel").innerHTML=calList.map(function(p,i){return '<option value="'+i+'">'+esc(p.n)+' · '+p.k.toFixed(0)+' km</option>'}).join("");
+  $("cal").style.display="block";
+};
+$("calok").onclick=function(){
+  var t=calList[+$("calsel").value];if(!t||!pos)return;
+  var b=brg(pos.latitude,pos.longitude,t.la,t.lo);
+  off=((b-hd)%360+540)%360-180;
+  guardarOff();$("cal").style.display="none";pintar();
+};
+$("calreset").onclick=function(){off=0;guardarOff();$("cal").style.display="none";pintar()};
+$("calcerrar").onclick=function(){$("cal").style.display="none"};
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
