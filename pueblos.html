@@ -111,6 +111,11 @@ body.on #cal p{display:block;font-size:13px;line-height:1.35;margin:0 0 8px}
 .fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 #cal button{margin-top:0;font-size:14px;padding:11px 6px}
 #calst{min-height:20px;margin:8px 0 0}
+#zoom{display:none}
+body.on #zoom{display:flex;flex-direction:column;align-items:center;gap:6px;position:fixed;z-index:5;right:10px;top:50%;transform:translateY(-50%)}
+#zoom button{width:46px;height:46px;padding:0;border-radius:50%;font-size:24px;line-height:1;background:rgba(0,0,0,.55);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+#zval{font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
+#cam{transform-origin:center center}
 </style>
 </head>
 <body>
@@ -139,11 +144,13 @@ body.on #cal p{display:block;font-size:13px;line-height:1.35;margin:0 0 8px}
 <button id="salir" type="button">✕ Salir</button>
 <button id="calbtn" type="button">🎯 Calibrar</button>
 <button id="aldeas" type="button">🏘 Con aldeas</button>
+<div id="zoom"><button id="zmas" type="button">＋</button><span id="zval">×1.0</span><button id="zmenos" type="button">−</button></div>
 </main>
 <div id="cal"><h3>Calibrar la brújula</h3>
 <p>Lugar: pon el punto rosa sobre él y pulsa «Está en la mira». Andando: camina recto unos 30 m con el móvil apuntando hacia delante.</p>
 <select id="calsel"></select>
 <label class="chk"><input type="checkbox" id="cal2"> Usar dos lugares (más preciso)</label>
+<label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
 <div class="fila2"><button id="calok" type="button">Está en la mira</button><button id="calgps" type="button">🚶 Andando o en coche</button></div>
 <div id="calst"></div>
 <div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div></div>
@@ -219,12 +226,14 @@ async function verificar(p){
 function pintar(){
   if(!pos){return}
   var pe=posEfectiva();
-  var hdc=(hd+off+360)%360;
+  var hdc=(hd+offPara(hd)+360)%360;
   $("rumbo").textContent="Rumbo: "+Math.round(hdc)+"° · Inclinación: "+Math.round(pit)+"°";
   var av=[];
   if(prec!==null){if(prec<0)av.push("Brújula sin calibrar: dibuja un 8 con el móvil.");else if(prec>20)av.push("Brújula poco precisa (±"+Math.round(prec)+"°): dibuja un 8 con el móvil.")}
-  if(off)av.push("Calibrada: "+(off>0?"+":"")+Math.round(off)+"°");
-  if(modoCoche)av.push("🚗 Modo coche: que lo use el acompañante."+(Date.now()-autoT<5000?" Brújula corregida con el GPS ("+fmtOff(off)+").":""));
+  var nT=Object.keys(tab).length;
+  if(off||nT)av.push("Calibrada: "+fmtOff(offPara(hd))+(nT?" ("+nT+" de 8 direcciones)":""));
+  if(!modoCoche&&Date.now()-autoT<5000)av.push("Brújula afinada con el GPS ("+fmtOff(offPara(hd))+").");
+  if(modoCoche)av.push("🚗 Modo coche: que lo use el acompañante."+(Date.now()-autoT<5000?" Brújula corregida con el GPS ("+fmtOff(offPara(hd))+").":""));
   $("brj").textContent=av.join(" ");
   var r=[],vis=null,pend=false,i,fuera=(pit<-40||pit>30);
   if(!fuera){
@@ -285,6 +294,10 @@ async function camara(){
   try{
     var st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
     stream=st;var v=$("cam");v.srcObject=st;v.play();
+    pista=st.getVideoTracks()[0];
+    try{var cp=pista.getCapabilities?pista.getCapabilities():{};capZoom=cp.zoom||null}catch(e){capZoom=null}
+    zMax=capZoom?capZoom.max:6;
+    aplicarZoom(1);
   }catch(e){}
 }
 // ---- Base de datos local por provincias (IndexedDB) ----
@@ -375,6 +388,7 @@ function salir(){
   document.body.classList.remove("on");
   $("cal").style.display="none";
   $("go").style.display="";
+  zoom=1;pista=null;capZoom=null;$("cam").style.transform="";$("zval").textContent="×1.0";
   pos=null;sm=null;modoCoche=false;velAlta=0;velBaja=0;rumboGPS=null;pantallaEncendida(false);
   $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
   $("msg").textContent="Has salido: cámara, GPS y brújula apagados. Pulsa el botón para volver a empezar.";
@@ -390,7 +404,20 @@ $("volver").onclick=function(){$("adios").style.display="none"};
 // ---- Calibración de la brújula y filtro de aldeas ----
 var off=0,verAldeas=true,prec=null,calList=[];
 try{var so=parseFloat(localStorage.getItem("off"));if(!isNaN(so))off=so}catch(e){}
-function guardarOff(){try{localStorage.setItem("off",String(off))}catch(e){}}
+var tab={};
+try{var st0=JSON.parse(localStorage.getItem("tab")||"{}");if(st0&&typeof st0==="object")tab=st0}catch(e){}
+function guardarOff(){try{localStorage.setItem("off",String(off));localStorage.setItem("tab",JSON.stringify(tab))}catch(e){}}
+function ponerTab(h,o){tab[Math.round(((h%360)+360)%360/45)%8]={o:o,n:1}}
+// Corrección de brújula para el rumbo h: mezcla lo aprendido en cada dirección (0°, 45°, 90°…); lejos de lo aprendido vale el ajuste global
+function offPara(h){
+  var ks=Object.keys(tab);
+  if(!ks.length)return off;
+  var sw=0,so=0,w;
+  ks.forEach(function(k){w=1/Math.pow(dif(h,k*45)+10,2);sw+=w;so+=w*tab[k].o});
+  w=1/Math.pow(100,2);sw+=w;so+=w*off;
+  return so/sw;
+}
+function maxDif(a){var m=0;for(var i=1;i<a.length;i++)m=Math.max(m,dif(a[i],a[0]));return m}
 $("aldeas").onclick=function(){verAldeas=!verAldeas;$("aldeas").textContent=verAldeas?"🏘 Con aldeas":"🏘 Sin aldeas";pintar()};
 $("calbtn").onclick=function(){
   if(!pos)return;
@@ -407,14 +434,15 @@ $("calok").onclick=function(){
   var t=calList[+$("calsel").value];if(!t||!pos)return;
   calAnd=null;
   var b=brg(pos.latitude,pos.longitude,t.la,t.lo),o=envolver(b-hd);
-  if(!$("cal2").checked){off=o;cal2={b:null,o:null};finCal("✓ Calibrado ("+fmtOff(o)+")");return}
+  if(!$("cal2").checked){off=o;ponerTab(hd,o);cal2={b:null,o:null};finCal("✓ Calibrado ("+fmtOff(o)+")");return}
   if(cal2.o===null){
-    cal2={b:b,o:o};
+    cal2={b:b,o:o,h:hd};
     $("calst").textContent="Lugar 1 guardado. Elige OTRO lugar en una dirección distinta (al menos 30° de diferencia) y pulsa de nuevo.";
     return;
   }
   if(dif(b,cal2.b)<30){$("calst").textContent="Ese lugar está casi en la misma dirección que el primero. Elige otro más hacia un lado.";return}
   var d2=envolver(o-cal2.o);
+  ponerTab(cal2.h,cal2.o);ponerTab(hd,o);
   off=envolver(cal2.o+d2/2);
   var txt="✓ Calibrado con dos lugares ("+fmtOff(off)+")";
   if(Math.abs(d2)>10)txt+=". Aviso: los dos errores difieren "+Math.round(Math.abs(d2))+"°, la brújula no falla igual en todas las direcciones.";
@@ -441,13 +469,13 @@ function calAndar(c){
   var b=brg(calAnd.la,calAnd.lo,c.latitude,c.longitude);
   calAnd=null;
   if(mal>25){$("calst").textContent="El móvil se movió demasiado (±"+Math.round(mal)+"°). Inténtalo de nuevo apuntando siempre hacia delante.";return}
-  off=envolver(b-media);
+  off=envolver(b-media);ponerTab(media,off);
   finCal("✓ Calibrado andando ("+fmtOff(off)+")");
 }
-$("calreset").onclick=function(){off=0;calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
+$("calreset").onclick=function(){off=0;tab={};calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
 $("calcerrar").onclick=function(){calAnd=null;cal2={b:null,o:null};$("calst").textContent="";$("cal").style.display="none"};
 // ---- Modo coche (se activa solo al detectar velocidad) ----
-var modoCoche=false,velAlta=0,velBaja=0,posT=0,rumboGPS=null,velGPS=0,autoT=0,wl=null;
+var hdH=[],gT=0,modoCoche=false,velAlta=0,velBaja=0,posT=0,rumboGPS=null,velGPS=0,autoT=0,wl=null;
 function actualizarMarcha(c){
   var v=(typeof c.speed==="number"&&c.speed>=0)?c.speed:0;
   var rh=(typeof c.heading==="number"&&!isNaN(c.heading))?c.heading:null;
@@ -455,10 +483,18 @@ function actualizarMarcha(c){
   if(v>=8){velAlta++;velBaja=0}else if(v<2){velBaja++;velAlta=0}
   if(!modoCoche&&velAlta>=3)modoCoche=true;
   if(modoCoche&&velBaja>=20)modoCoche=false;
-  // Corrige poco a poco la brújula con el rumbo del GPS, solo si el móvil apunta más o menos hacia delante
-  if(modoCoche&&rumboGPS!==null&&v>=5&&Math.abs(pit)<30){
-    var d=envolver(rumboGPS-(hd+off+360)%360);
-    if(Math.abs(d)<=35){off=envolver(off+0.15*d);autoT=Date.now()}
+  // Autocalibración: una vez calibrada, afina la corrección de cada dirección con el rumbo real del GPS.
+  // Solo si vas a más de 18 km/h, el móvil está quieto y apunta casi hacia delante (menos de 20° de diferencia).
+  hdH.push(hd);if(hdH.length>3)hdH.shift();
+  var calibrada=off!==0||Object.keys(tab).length>0;
+  if($("auto").checked!==false&&calibrada&&rumboGPS!==null&&v>=5&&Math.abs(pit)<30&&hdH.length===3&&maxDif(hdH)<=8){
+    var base=offPara(hd),d=envolver(rumboGPS-(hd+base+360)%360);
+    if(Math.abs(d)<=20){
+      var k=Math.round(hd/45)%8;
+      tab[k]={o:envolver(base+0.15*d),n:(tab[k]?tab[k].n:0)+1};
+      off=envolver(off+0.05*d);autoT=Date.now();
+      if(Date.now()-gT>10000){gT=Date.now();guardarOff()}
+    }
   }
 }
 // Entre dos lecturas del GPS, calcula dónde estás según velocidad y rumbo
@@ -479,6 +515,25 @@ async function pantallaEncendida(on){
   }catch(e){}
 }
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on"))pantallaEncendida(true)});
+// ---- Zoom de la cámara (con dos dedos o con los botones) ----
+var zoom=1,zMax=6,pista=null,capZoom=null,pz=null;
+function aplicarZoom(z){
+  zoom=Math.max(1,Math.min(zMax,z));
+  if(capZoom&&pista){
+    $("cam").style.transform="";
+    try{pista.applyConstraints({advanced:[{zoom:zoom}]}).catch(function(){capZoom=null;aplicarZoom(zoom)})}catch(e){capZoom=null;aplicarZoom(zoom)}
+  }else{
+    $("cam").style.transform="scale("+zoom+")";
+  }
+  $("zval").textContent="×"+zoom.toFixed(1);
+}
+$("zmas").onclick=function(){aplicarZoom(zoom*1.25)};
+$("zmenos").onclick=function(){aplicarZoom(zoom/1.25)};
+function dist2(t){var dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return Math.sqrt(dx*dx+dy*dy)}
+document.addEventListener("touchstart",function(e){if(document.body.classList.contains("on")&&e.touches.length===2)pz={d:dist2(e.touches),z:zoom}},{passive:true});
+document.addEventListener("touchmove",function(e){if(pz&&e.touches.length===2){e.preventDefault();aplicarZoom(pz.z*dist2(e.touches)/pz.d)}},{passive:false});
+document.addEventListener("touchend",function(e){if(e.touches.length<2)pz=null});
+document.addEventListener("gesturestart",function(e){if(document.body.classList.contains("on"))e.preventDefault()});
 $("go").onclick=async function(){
   $("msg").textContent="Pidiendo permisos…";
   try{
