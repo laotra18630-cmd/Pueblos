@@ -201,30 +201,38 @@ var errRel="";
 function espera2(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function valida(h,n){return h&&h.length===n&&h.every(function(x){return typeof x==="number"&&isFinite(x)})}
 var bloqRel=0;
+var omUso=[],otUlt=0;
+// Open-Meteo cuenta cada coordenada como una llamada (máx. 600 por minuto): llevo la cuenta y me quedo por debajo
+function omCupo(n){var t=Date.now();omUso=omUso.filter(function(e){return t-e[0]<60000});return omUso.reduce(function(s,e){return s+e[1]},0)+n<=450}
+async function viaOM(lats,lons){
+  var r=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
+  var j=await r.json();
+  if(valida(j.elevation,lats.length))return{h:j.elevation,f:"Open-Meteo"};
+  throw new Error(j.reason||("error "+r.status));
+}
+// OpenTopoData admite 1 petición por segundo y 100 puntos cada vez
+async function viaOT(lats,lons){
+  var w=otUlt+1200-Date.now();if(w>0)await espera2(w);otUlt=Date.now();
+  var loc=lats.map(function(a,i){return a+","+lons[i]}).join("|");
+  var r=await fetch("https://api.opentopodata.org/v1/srtm90m?locations="+encodeURIComponent(loc));
+  var j=await r.json();
+  var h=(j.results||[]).map(function(x){return x.elevation});
+  if(valida(h,lats.length))return{h:h,f:"OpenTopoData"};
+  throw new Error(j.error||("error "+r.status));
+}
+// Pedidos grandes (panorama): primero OpenTopoData. Pedidos pequeños: primero Open-Meteo.
 async function altitudes(lats,lons){
   if(Date.now()<bloqRel)return null;
-  var motivos=[];
-  for(var intento=0;intento<2;intento++){
+  var n=lats.length,orden=n>40?["OpenTopoData","Open-Meteo"]:["Open-Meteo","OpenTopoData"],motivos=[];
+  for(var o=0;o<2;o++){
+    var f=orden[o];
     try{
-      var r=await fetch("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
-      var j=await r.json();
-      if(valida(j.elevation,lats.length)){errRel="";return{h:j.elevation,f:"Open-Meteo"}}
-      motivos[0]="Open-Meteo: "+(j.reason||("error "+r.status));
-      if(r.status===429&&intento===0){await espera2(1500);continue}
-    }catch(e){motivos[0]="Open-Meteo: sin conexión o bloqueado"}
-    break;
+      if(f==="Open-Meteo"){if(!omCupo(n))throw new Error("cupo por minuto agotado");omUso.push([Date.now(),n])}
+      var a=f==="Open-Meteo"?await viaOM(lats,lons):await viaOT(lats,lons);
+      errRel="";return a;
+    }catch(e){motivos.push(f+": "+((e&&e.message&&e.message!=="Load failed")?e.message:"sin conexión o bloqueado"))}
   }
-  try{
-    var loc=lats.map(function(a,i){return a+","+lons[i]}).join("|");
-    var r2=await fetch("https://api.opentopodata.org/v1/srtm90m?locations="+loc);
-    var j2=await r2.json();
-    var h2=(j2.results||[]).map(function(x){return x.elevation});
-    if(valida(h2,lats.length)){errRel="";return{h:h2,f:"OpenTopoData"}}
-    motivos[1]="OpenTopoData: "+(j2.error||("error "+r2.status));
-  }catch(e){motivos[1]="OpenTopoData: sin conexión o bloqueado"}
-  errRel=motivos.join("; ");
-  bloqRel=Date.now()+25000;
-  return null;
+  errRel=motivos.join("; ");bloqRel=Date.now()+25000;return null;
 }
 var fuenteRel="";
 // Comprueba si el pueblo p se ve desde aquí: relieve + curvatura de la Tierra (con refracción)
@@ -315,7 +323,7 @@ function pintar(){
   $("mejor").textContent=vis?vis.n:"—";
   $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
   $("lista").innerHTML=vis?'<div class="it"><span style="font-size:'+(SZL[vis.t]||15)+'px">'+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
-  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?"Comprobando visibilidad…":(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
+  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?(panEnCurso?"Descargando el relieve de la zona… "+panProg:"Comprobando visibilidad…"):(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
   if(document.body.classList.contains("on")&&!fuera)etiquetas(pe,hdc);else $("etq").innerHTML="";
   if(ochoActivo)actOcho();
 }
@@ -625,26 +633,45 @@ var DS=[0.3,0.6,1,1.5,2,2.5,3,4,5,6,7,8,9,10,12,14,16,18,20,23,26,29,32,35,38,41
 function ek(p){return p.la.toFixed(4)+","+p.lo.toFixed(4)}
 function panIdx(az){return (envolver(az-pan.c)+45)/2.5}
 function Smod(az){var f=panIdx(az);if(f<0||f>pan.az.length-1)return null;var i=Math.floor(f),j=Math.min(i+1,pan.az.length-1),t=f-i;return pan.S[i]*(1-t)+pan.S[j]*t}
+// El relieve se guarda en el móvil por celdas de ~500 m y rayos fijos cada 2,5°: al repetir un sitio no se pide nada
+var demC={},panProg="";
+function demGet(c){if(!demC[c]){try{demC[c]=JSON.parse(localStorage.getItem("dem:"+c)||"{}")}catch(e){demC[c]={}}}return demC[c]}
+function demGuardar(c){
+  try{localStorage.setItem("dem:"+c,JSON.stringify(demC[c]))}
+  catch(e){
+    Object.keys(localStorage).filter(function(k){return k.indexOf("dem:")===0&&k!=="dem:"+c}).forEach(function(k){localStorage.removeItem(k)});
+    try{localStorage.setItem("dem:"+c,JSON.stringify(demC[c]))}catch(e2){}
+  }
+}
 async function construirPano(){
   if(panEnCurso||Date.now()<panBloq||!pos)return;
-  panEnCurso=true;
-  var la=pos.latitude,lo=pos.longitude,c=(hd+offPara(hd)+360)%360,azs=[],lats=[la.toFixed(5)],lons=[lo.toFixed(5)],a,j,i;
-  for(a=-45;a<=45;a+=2.5){
-    var az=(c+a+360)%360;azs.push(az);
-    for(j=0;j<DS.length;j++){lats.push((la+DS[j]*Math.cos(az*R)/111.32).toFixed(5));lons.push((lo+DS[j]*Math.sin(az*R)/(111.32*Math.cos(la*R))).toFixed(5))}
+  panEnCurso=true;panProg="0%";
+  var q=0.005,la=Math.round(pos.latitude/q)*q,lo=Math.round(pos.longitude/q)*q,cel=Math.round(pos.latitude/q)+","+Math.round(pos.longitude/q);
+  var k0=Math.round(((hd+offPara(hd)+360)%360)/2.5)-18,ks=[],dem=demGet(cel),falta=[],i,j;
+  for(i=0;i<37;i++)ks.push(((k0+i)%144+144)%144);
+  function pt(id){var s=id.split("|"),az=s[0]*2.5,d=DS[+s[1]];return[la+d*Math.cos(az*R)/111.32,lo+d*Math.sin(az*R)/(111.32*Math.cos(la*R))]}
+  if(dem.o===undefined)falta.push("o");
+  ks.forEach(function(k){for(j=0;j<DS.length;j++)if(dem[k+"|"+j]===undefined)falta.push(k+"|"+j)});
+  var total=falta.length,hecho=0,ok=true,fuente="";
+  while(falta.length&&ok&&pos){
+    var lote=falta.splice(0,100),lats=[],lons=[];
+    lote.forEach(function(id){var p=id==="o"?[la,lo]:pt(id);lats.push(p[0].toFixed(5));lons.push(p[1].toFixed(5))});
+    var al=await altitudes(lats,lons);
+    if(!al){ok=false;break}
+    fuente=al.f;lote.forEach(function(id,n){dem[id]=al.h[n]});
+    hecho+=lote.length;panProg=Math.round(100*hecho/total)+"%";demGuardar(cel);
+    pintar();
   }
-  var h=[],ok=true,fuente="";
-  for(i=0;i<lats.length&&ok;i+=100){var al=await altitudes(lats.slice(i,i+100),lons.slice(i,i+100));if(al){h=h.concat(al.h);fuente=al.f}else ok=false}
   panEnCurso=false;
   if(!ok||!pos){panBloq=Date.now()+30000;return}
-  var gps=pos.altitude,H0=(typeof gps==="number"&&gps>h[0]+150)?gps:h[0]+2,M=[],S=[];
-  for(i=0;i<azs.length;i++){
-    var m=-9,fila=[];
-    for(j=0;j<DS.length;j++){var dm=DS[j]*1000,ang=Math.atan2(h[1+i*DS.length+j]-H0-dm*dm/14.6e6,dm);if(ang>m)m=ang;fila.push(m)}
+  var gps=pos.altitude,H0=(typeof gps==="number"&&gps>dem.o+150)?gps:dem.o+2,azs=[],M=[],S=[];
+  ks.forEach(function(k){
+    azs.push(k*2.5);var m=-9,fila=[];
+    for(j=0;j<DS.length;j++){var dm=DS[j]*1000,ang=Math.atan2(dem[k+"|"+j]-H0-dm*dm/14.6e6,dm);if(ang>m)m=ang;fila.push(m)}
     M.push(fila);S.push(m);
-  }
-  pan={la:la,lo:lo,c:c,az:azs,M:M,S:S,H0:H0};
-  fuenteRel=fuente+", panorama";sinRelieve=false;errRel="";
+  });
+  pan={la:la,lo:lo,c:azs[18],az:azs,M:M,S:S,H0:H0,cel:cel};
+  fuenteRel=(fuente||"memoria del móvil")+", panorama";sinRelieve=false;errRel="";
   pintar();
 }
 // true/false si el pueblo se ve; undefined si falta algún dato; null si hay que usar el método anterior
