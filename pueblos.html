@@ -179,7 +179,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <button id="salir" type="button">✕ Salir</button>
 <button id="calbtn" type="button">🎯 Calibrar</button>
 <button id="aldeas" type="button">🏘 Con aldeas</button>
-<div id="zoom" role="group" aria-label="Zoom de la cámara"><button id="zmas" type="button" aria-label="Acercar">＋</button><span id="zval" aria-label="Nivel de zoom">×1.0</span><button id="zmenos" type="button" aria-label="Alejar">−</button><button id="enf" type="button" aria-label="Enfocar">◎</button><button id="picosb" type="button" aria-label="Mostrar nombres de picos de montañas" aria-pressed="false">⛰</button></div>
+<div id="zoom" role="group" aria-label="Zoom de la cámara"><button id="zmas" type="button" aria-label="Acercar">＋</button><span id="zval" aria-label="Nivel de zoom">×1.0</span><button id="zmenos" type="button" aria-label="Alejar">−</button><button id="enf" type="button" aria-label="Enfocar">◎</button><button id="lejosb" type="button" aria-label="Ampliar el alcance a 80 km" aria-pressed="false">🔭</button><button id="picosb" type="button" aria-label="Mostrar nombres de picos de montañas" aria-pressed="false">⛰</button></div>
 <div id="fdw"><span>Foco</span><input type="range" id="fdist" min="0" max="1" step="0.01" value="1" aria-label="Distancia de enfoque (cerca a lejos)"><button id="fauto" type="button">Auto</button></div>
 </main>
 <div id="cal" role="dialog" aria-labelledby="calT"><h3 id="calT">Calibrar la brújula</h3>
@@ -339,7 +339,7 @@ function pintar(){
   if(!pos){return}
   var pe=posEfectiva();
   var hdc=rumboC();
-  if(!panEnCurso&&Date.now()>=panBloq&&(!pan||Math.abs(envolver(hdc-pan.c))>25||dst(pan.la,pan.lo,pos.latitude,pos.longitude)>1.5))construirPano();
+  if(!panEnCurso&&Date.now()>=panBloq&&(!pan||pan.alc!==alcance||Math.abs(envolver(hdc-pan.c))>25||dst(pan.la,pan.lo,pos.latitude,pos.longitude)>1.5))construirPano();
   $("rumbo").textContent="Rumbo: "+Math.round(hdc)+"° · Inclinación: "+Math.round(pit)+"°";
   var av=[];
   if(prec!==null){if(prec<0)av.push("Brújula sin calibrar: dibuja un 8 con el móvil.");else if(prec>20)av.push("Brújula poco precisa (±"+Math.round(prec)+"°): dibuja un 8 con el móvil.")}
@@ -357,7 +357,7 @@ function pintar(){
     // Prefiltro rápido por recuadro (la base local puede tener decenas de miles de localidades y esto corre 10 veces/s)
     var dmax=Math.max(150,4.2*Math.sqrt(Math.max(0,pe.altitude||0))+100),dLa=dmax/111,dLo=dmax/(111*Math.max(0.2,Math.cos(pe.latitude*R)));
     r=P.filter(function(p){return Math.abs(p[1]-pe.latitude)<dLa&&Math.abs(p[2]-pe.longitude)<dLo}).map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pe.latitude,pe.longitude,p[1],p[2]),hdc),k:dst(pe.latitude,pe.longitude,p[1],p[2])}})
-      .filter(function(p){return p.d<=TOL&&p.k>0.5&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))}).sort(function(a,b){return a.k-b.k}).slice(0,modoCoche?4:8);
+      .filter(function(p){return p.d<=TOL&&p.k>0.5&&p.k<=alcance&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))}).sort(function(a,b){return a.k-b.k}).slice(0,modoCoche?4:8);
     for(i=0;i<r.length;i++){
       var v=estadoVis(r[i]);
       if(v===true){vis=r[i];break}
@@ -758,7 +758,10 @@ $("enf").onclick=function(){enfocar(innerWidth/2,innerHeight/2)};
 // ---- Panorama del terreno: relieve en abanico de ±45° y hasta 80 km ----
 var pan=null,panEnCurso=false,panBloq=0,elevC={},colaE={},pidiendoE=false,FOVL=69.4;
 var selVis=null;
-var DS=[0.3,0.6,1,1.5,2,2.5,3,4,5,6,7,8,9,10,12,14,16,18,20,23,26,29,32,35,38,41,44,48,52,56,60,65,70,75,80];
+var DS=[0.3,0.6,1,1.5,2,2.5,3,4,5,6,7,8,9,10,12,14,16,18,20,23,26,29,32,35,40,48,56,64,72,80];
+// Alcance normal 40 km; el interruptor 🔭 lo amplía a 80 km (pide solo los puntos lejanos que falten)
+var alcance=40;
+function nJ(a){var n=0;while(n<DS.length&&DS[n]<=a+0.001)n++;return n}
 function ek(p){return p.la.toFixed(4)+","+p.lo.toFixed(4)}
 function panIdx(az){return (envolver(az-pan.c)+45)/2.5}
 function Smod(az){var f=panIdx(az);if(f<0||f>pan.az.length-1)return null;var i=Math.floor(f),j=Math.min(i+1,pan.az.length-1),t=f-i;return pan.S[i]*(1-t)+pan.S[j]*t}
@@ -767,15 +770,11 @@ var demC={},panProg="";
 // Relieve guardado en IndexedDB (mucho más espacio que localStorage). Cada celda lleva la fecha de último uso
 // y, al pasar de DEM_MAX celdas, se borran solo las más antiguas en vez de todo.
 var DEM_MAX=1500,demIdx=null;
-async function cargarDemIdx(){if(!demIdx){try{demIdx=(await bdGet("demIdx"))||{}}catch(e){demIdx={}}}return demIdx}
+async function cargarDemIdx(){if(!demIdx){try{demIdx=(await bdGet("demIdx3"))||{}}catch(e){demIdx={}}}return demIdx}
 async function demGet(c){
   if(demC[c])return demC[c];
   var d=null;
-  try{var v=await bdGet("dem:"+c);if(v&&v.d)d=v.d}catch(e){}
-  if(!d){
-    // Datos antiguos guardados en localStorage por versiones anteriores
-    try{var ls=localStorage.getItem("dem:"+c);if(ls){d=JSON.parse(ls);localStorage.removeItem("dem:"+c)}}catch(e){}
-  }
+  try{var v=await bdGet("dem3:"+c);if(v&&v.d)d=v.d}catch(e){}
   var ks=Object.keys(demC);if(ks.length>40)ks.forEach(function(k){delete demC[k]});
   demC[c]=d||{};
   return demC[c];
@@ -783,26 +782,28 @@ async function demGet(c){
 async function demGuardar(c,obj){
   try{
     var idx=await cargarDemIdx(),t=Date.now();
-    await bdSet("dem:"+c,{t:t,d:obj});
+    await bdSet("dem3:"+c,{t:t,d:obj});
     idx[c]=t;
     var ks=Object.keys(idx);
     if(ks.length>DEM_MAX){
       var viejas=ks.sort(function(a,b){return idx[a]-idx[b]}).slice(0,ks.length-DEM_MAX+100);
       viejas.forEach(function(k){delete idx[k];delete demC[k]});
-      await bdDel(viejas.map(function(k){return "dem:"+k}));
+      await bdDel(viejas.map(function(k){return "dem3:"+k}));
     }
-    await bdSet("demIdx",idx);
+    await bdSet("demIdx3",idx);
   }catch(e){}
 }
 // Pasa a IndexedDB el relieve que versiones anteriores dejaron en localStorage (y libera ese espacio)
-(async function migrarDem(){
+// Limpia el relieve de versiones anteriores: usaba otra lista de distancias y ya no sirve
+(async function limpiarDemAntiguo(){
+  try{Object.keys(localStorage).filter(function(k){return k.indexOf("dem:")===0}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}
   try{
-    var ks=Object.keys(localStorage).filter(function(k){return k.indexOf("dem:")===0});
-    for(var i=0;i<ks.length;i++){
-      var c=ks[i].slice(4),d=JSON.parse(localStorage.getItem(ks[i])||"{}");
-      await demGuardar(c,d);
-      localStorage.removeItem(ks[i]);
-    }
+    var d=await idb();
+    await new Promise(function(res){
+      var t=d.transaction("kv","readwrite"),st=t.objectStore("kv"),c=st.openKeyCursor(IDBKeyRange.bound("dem","dem:\uffff"));
+      c.onsuccess=function(){var cur=c.result,k=cur&&String(cur.key);if(cur){if(/^dem:|^dem2:|^demIdx2?$/.test(k))st.delete(cur.key);cur.continue()}};
+      t.oncomplete=res;t.onerror=res;t.onabort=res;
+    });
   }catch(e){}
 })();
 async function construirPano(){
@@ -813,8 +814,8 @@ async function construirPano(){
   for(i=0;i<37;i++)ks.push(((k0+i)%144+144)%144);
   function pt(id){var s=id.split("|"),az=s[0]*2.5,d=DS[+s[1]];return[la+d*Math.cos(az*R)/111.32,lo+d*Math.sin(az*R)/(111.32*Math.cos(la*R))]}
   if(dem.o===undefined)falta.push("o");
-  ks.forEach(function(k){for(j=0;j<DS.length;j++)if(dem[k+"|"+j]===undefined)falta.push(k+"|"+j)});
-  var total=falta.length,hecho=0,ok=true,fuente="";
+  ks.forEach(function(k){for(j=0;j<nJ(alcance);j++)if(dem[k+"|"+j]===undefined)falta.push(k+"|"+j)});
+  var total=falta.length,hecho=0,ok=true,fuente="",alcA=alcance,nj=nJ(alcA);
   while(falta.length&&ok&&pos){
     var lote=falta.splice(0,100),lats=[],lons=[];
     lote.forEach(function(id){var p=id==="o"?[la,lo]:pt(id);lats.push(p[0].toFixed(5));lons.push(p[1].toFixed(5))});
@@ -829,10 +830,10 @@ async function construirPano(){
   var gps=pos.altitude,H0=(typeof gps==="number"&&gps>dem.o+150)?gps:dem.o+2,azs=[],M=[],S=[];
   ks.forEach(function(k){
     azs.push(k*2.5);var m=-9,fila=[];
-    for(j=0;j<DS.length;j++){var dm=DS[j]*1000,ang=Math.atan2(dem[k+"|"+j]-H0-dm*dm/14.6e6,dm);if(ang>m)m=ang;fila.push(m)}
+    for(j=0;j<nj;j++){var dm=DS[j]*1000,ang=Math.atan2(dem[k+"|"+j]-H0-dm*dm/14.6e6,dm);if(ang>m)m=ang;fila.push(m)}
     M.push(fila);S.push(m);
   });
-  pan={la:la,lo:lo,c:azs[18],az:azs,M:M,S:S,H0:H0,cel:cel};
+  pan={la:la,lo:lo,c:azs[18],az:azs,M:M,S:S,H0:H0,cel:cel,alc:alcA};
   fuenteRel=(fuente||"memoria del móvil")+", panorama";sinRelieve=false;errRel="";
   pintar();
 }
@@ -841,7 +842,7 @@ function panVis(p){
   if(Date.now()<panBloq)return null;
   if(!pan)return undefined;
   var az=brg(pan.la,pan.lo,p.la,p.lo),dk=dst(pan.la,pan.lo,p.la,p.lo),f=panIdx(az);
-  if(dk>80||dk<0.4||f<0||f>pan.az.length-1)return null;
+  if(dk>pan.alc||dk<0.4||f<0||f>pan.az.length-1)return null;
   var e=elevC[ek(p)];
   if(e===undefined){pedirElev(p);return undefined}
   if(e===null)return null;
@@ -920,6 +921,13 @@ async function cargarPicos(){
   }
   pkCargando=false;
 }
+$("lejosb").onclick=function(){
+  alcance=alcance===40?80:40;
+  this.classList.toggle("act",alcance===80);this.setAttribute("aria-pressed",alcance===80?"true":"false");
+  this.setAttribute("aria-label",alcance===80?"Volver al alcance normal de 40 km":"Ampliar el alcance a 80 km");
+  panBloq=0;$("info").textContent="🔭 Alcance: "+alcance+" km"+(alcance===80?" (descargando relieve lejano)":"");
+  pintar();
+};
 $("picosb").onclick=function(){
   verPicos=!verPicos;
   this.classList.toggle("act",verPicos);this.setAttribute("aria-pressed",verPicos?"true":"false");
@@ -936,7 +944,7 @@ function etiquetas(pe,hdc){
     var d=envolver(brg(pe.latitude,pe.longitude,p[1],p[2])-hdc);
     if(Math.abs(d)>med)continue;
     var dk=dst(pe.latitude,pe.longitude,p[1],p[2]);
-    if(dk<0.4||dk>80||(corto&&dk>12))continue;
+    if(dk<0.4||dk>alcance||(corto&&dk>12))continue;
     c.push({n:p[0],la:p[1],lo:p[2],t:t,dk:dk,d:d,sel:!!(selVis&&selVis.n===p[0]&&Math.abs(selVis.la-p[1])<1e-6&&Math.abs(selVis.lo-p[2])<1e-6)});
   }
   // El pueblo señalado por la mira va primero y siempre se dibuja
@@ -974,7 +982,7 @@ function etiquetas(pe,hdc){
       var dd=envolver(brg(pe.latitude,pe.longitude,k.la,k.lo)-hdc);
       if(Math.abs(dd)>med)continue;
       var dkk=dst(pe.latitude,pe.longitude,k.la,k.lo);
-      if(dkk<0.5||dkk>80)continue;
+      if(dkk<0.5||dkk>alcance)continue;
       cp.push({n:k.n,la:k.la,lo:k.lo,e:k.e,dk:dkk,d:dd});
     }
     cp.sort(function(a,b){return b.e-a.e});
