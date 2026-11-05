@@ -351,6 +351,7 @@ function pintar(){
   // Sin referencia al norte (Android sin brújula absoluta) o sin datos de orientación: el rumbo no es fiable
   if(oriN>20&&!oriNorte)av.unshift("⚠ Este navegador no da el rumbo respecto al norte: los resultados pueden no ser fiables. Prueba con Chrome o Safari actualizados.");
   else if(oriN===0&&oriT0&&Date.now()-oriT0>4000)av.unshift("⚠ No llegan datos de la brújula. Comprueba que el móvil tiene brújula y que el navegador tiene permiso.");
+  if(camErr)av.unshift("📷 "+camErr);
   $("brj").textContent=av.join(" ");
   var r=[],vis=null,pend=false,i,fuera=(pit<-40||pit>30);
   if(!fuera){
@@ -422,9 +423,20 @@ async function masPueblos(){
   $("info").textContent=ok?"Datos: "+P.length+" localidades cargadas (OpenStreetMap)":"Datos: solo "+P.length+" localidades de la lista básica (no se pudo usar OpenStreetMap)";
   cargando=false;
 }
+var camBusy=false,camErr="";
+function mensajeCamara(e){
+  var n=e&&e.name?e.name:"";
+  if(n==="NotAllowedError"||n==="SecurityError")return "Cámara sin permiso. Actívala en Ajustes > Apps > ¿Qué pueblo es? > Permisos > Cámara y vuelve a la app.";
+  if(n==="NotFoundError"||n==="OverconstrainedError")return "No se encuentra ninguna cámara en este dispositivo.";
+  if(n==="NotReadableError"||n==="AbortError")return "La cámara la está usando otra aplicación. Ciérrala e inténtalo de nuevo.";
+  if(n==="NoApi")return "Este navegador no permite usar la cámara.";
+  return "No se pudo abrir la cámara"+(n?" ("+n+")":"")+".";
+}
 async function camara(keep){
+  if(camBusy)return;camBusy=true;
   // Cámara trasera de fondo, para ver hacia dónde apunta la mira. Si se deniega, la mira sigue funcionando.
   try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw {name:"NoApi"};
     var st;
     // Pide más resolución (por defecto algunos móviles dan 640x480 y al hacer zoom se ve borroso)
     try{st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false})}
@@ -436,9 +448,13 @@ async function camara(keep){
     modosFoco=cp.focusMode||[];capDist=cp.focusDistance||null;
     zMax=capZoom?capZoom.max:6;
     aplicarZoom(keep?zoom:1);
-    iniciarFoco();
-  }catch(e){}
+    iniciarFoco();camErr="";camBusy=false;
+  }catch(e){
+    camBusy=false;camErr=mensajeCamara(e);
+    try{pintar()}catch(e2){}
+  }
 }
+
 // ---- Base de datos local por provincias (IndexedDB) ----
 var watchId=null,stream=null;
 var BD=null,BDlisto=false,tp=0,hechas={};
@@ -540,7 +556,7 @@ async function descargar(){
   B.textContent="Descargar provincias elegidas";B.disabled=false;
 }
 $("dl").onclick=descargar;
-function salir(){
+function salir(){camErr="";camBusy=false;
   if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}
   window.removeEventListener("deviceorientationabsolute",onOri,true);
   window.removeEventListener("deviceorientation",onOri,true);
@@ -691,7 +707,7 @@ async function pantallaEncendida(on){
     else if(wl){await wl.release();wl=null}
   }catch(e){}
 }
-document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on"))pantallaEncendida(true)});
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on")){pantallaEncendida(true);if(camErr&&!stream)camara(true)}});
 // ---- Zoom de la cámara (con dos dedos o con los botones) ----
 var zoom=1,zMax=6,pista=null,capZoom=null,pz=null,pzFin=0,modosFoco=[],capDist=null,tFoco=null,tZ=null,ultRef=0;
 function aplicarZoom(z){
