@@ -583,8 +583,18 @@ function onOri(e){
   setH((Math.atan2(rA,rB)/R+360)%360);
 }
 var cargando=false,ultimo=null,intento=0;
+// ¿Hay pueblos descargados alrededor? (al menos 3 a menos de 20 km)
+function cercaBD(la,lo){
+  var n=0,dLa=20/111,dLo=20/(111*Math.max(0.2,Math.cos(la*R)));
+  for(var i=0;i<BD.length;i++){var p=BD[i];if(Math.abs(p[1]-la)<dLa&&Math.abs(p[2]-lo)<dLo&&dst(la,lo,p[1],p[2])<=20&&++n>=3)return true}
+  return false;
+}
 async function masPueblos(){
-  if(BD){if(!BDlisto){P=unir();BDlisto=true}ultimo={la:pos.latitude,lo:pos.longitude};return}
+  if(BD){
+    if(!BDlisto){P=unir();BDlisto=true}
+    // Dentro de las provincias descargadas (o sin conexión) basta la base local; fuera de ellas, pido a OpenStreetMap
+    if(cercaBD(pos.latitude,pos.longitude)||navigator.onLine===false){ultimo={la:pos.latitude,lo:pos.longitude};return}
+  }
   if(cargando||Date.now()-intento<15000)return;
   cargando=true;intento=Date.now();
   // Prueba varios servidores y radios hasta que uno responda
@@ -597,14 +607,14 @@ async function masPueblos(){
       var j=await resp.json();
       if(!j.elements)throw 0;
       ultimo={la:pos.latitude,lo:pos.longitude};
-      P=fusionar(j.elements.filter(function(e){return e.tags&&e.tags.name}).map(function(e){return[e.tags.name,e.lat,e.lon,e.tags.place]}),BASE);
+      P=fusionar(j.elements.filter(function(e){return e.tags&&e.tags.name}).map(function(e){return[e.tags.name,e.lat,e.lon,e.tags.place]}),BD?unir():BASE);
       ok=true;
     }catch(e){}
   }
-  $("info").textContent=ok?"Datos: "+P.length+" localidades cargadas (OpenStreetMap)":"Datos: solo "+P.length+" localidades de la lista básica (no se pudo usar OpenStreetMap)";
+  $("info").textContent=ok?"Datos: "+P.length+" localidades cargadas (OpenStreetMap"+(BD?" + base local":"")+")":BD?"Fuera de las provincias descargadas y sin respuesta de OpenStreetMap: descarga también esta provincia.":"Datos: solo "+P.length+" localidades de la lista básica (no se pudo usar OpenStreetMap)";
   cargando=false;
 }
-var camBusy=false,camErr="";
+var camBusy=false,camErr="",camSes=0;
 function mensajeCamara(e){
   var n=e&&e.name?e.name:"";
   if(n==="NotAllowedError"||n==="SecurityError")return "Cámara sin permiso. Actívala en Ajustes > Apps > ¿Qué pueblo es? > Permisos > Cámara y vuelve a la app.";
@@ -614,7 +624,7 @@ function mensajeCamara(e){
   return "No se pudo abrir la cámara"+(n?" ("+n+")":"")+".";
 }
 async function camara(keep){
-  if(camBusy)return;camBusy=true;
+  if(camBusy)return;camBusy=true;var ses=camSes;
   // Cámara trasera de fondo, para ver hacia dónde apunta la mira. Si se deniega, la mira sigue funcionando.
   try{
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw {name:"NoApi"};
@@ -622,6 +632,8 @@ async function camara(keep){
     // Pide más resolución (por defecto algunos móviles dan 640x480 y al hacer zoom se ve borroso)
     try{st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false})}
     catch(e1){st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false})}
+    // Si se pulsó «Terminar» mientras se abría la cámara, la apago en vez de dejarla encendida
+    if(ses!==camSes||!document.body.classList.contains("on")){st.getTracks().forEach(function(t){t.stop()});if(ses===camSes)camBusy=false;return}
     stream=st;var v=$("cam");v.srcObject=st;v.play();
     pista=st.getVideoTracks()[0];
     var cp={};
@@ -631,6 +643,7 @@ async function camara(keep){
     aplicarZoom(keep?zoom:1);
     iniciarFoco();camErr="";camBusy=false;
   }catch(e){
+    if(ses!==camSes)return;
     camBusy=false;camErr=mensajeCamara(e);
     try{pintar()}catch(e2){}
   }
@@ -757,7 +770,7 @@ async function descargar(){
   else dlMsg("✓ "+buenas.join(", ")+" guardada"+(buenas.length>1?"s":"")+". Ya puedes usar la app sin cobertura.");
 }
 $("dl").onclick=descargar;
-function salir(){camErr="";camBusy=false;
+function salir(){camErr="";camBusy=false;camSes++;iniciando=false;$("go").disabled=false;
   if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}
   window.removeEventListener("deviceorientationabsolute",onOri,true);
   window.removeEventListener("deviceorientation",onOri,true);
@@ -932,7 +945,9 @@ async function pantallaEncendida(on){
     else if(wl){await wl.release();wl=null}
   }catch(e){}
 }
-document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on")){pantallaEncendida(true);if(camErr&&!stream)camara(true)}});
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on")){pantallaEncendida(true);var tr=stream&&stream.getVideoTracks()[0];
+  if(tr&&tr.readyState==="ended"){stream=null;pista=null}
+  if(!stream)camara(true)}});
 // ---- Zoom de la cámara (con dos dedos o con los botones) ----
 var zoom=1,zMax=6,pista=null,capZoom=null,pz=null,pzFin=0,modosFoco=[],capDist=null,tFoco=null,tZ=null,ultRef=0;
 function fmtZoom(z){return "Zoom ×"+String(parseFloat(z.toFixed(1))).replace(".",",")}
@@ -1412,7 +1427,13 @@ $("probar").onclick=async function(){
   }catch(e){R.textContent="Error en la prueba: "+motivoErr(e)}
   B.disabled=false;
 };
+var iniciando=false;
 async function iniciar(){
+  if(iniciando||watchId!==null)return;
+  iniciando=true;$("go").disabled=true;
+  try{await iniciar2()}finally{if(watchId===null){iniciando=false;$("go").disabled=false}}
+}
+async function iniciar2(){
   $("msg").textContent="Pidiendo permisos…";
   try{
     if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
@@ -1421,7 +1442,17 @@ async function iniciar(){
     }
   }catch(e){$("msg").textContent="Error de brújula: "+(e&&e.message?e.message:e)+". Abre esta página directamente en Safari.";return}
   if(!navigator.geolocation){$("msg").textContent="Este navegador no tiene GPS.";return}
-  navigator.geolocation.getCurrentPosition(function(p){
+  var p0=await new Promise(function(res){
+    var err1=null;
+    navigator.geolocation.getCurrentPosition(res,function(e){
+      err1=e;
+      // Sin permiso no tiene sentido reintentar; si fue tiempo agotado o sin señal, pruebo con baja precisión
+      if(e.code===1){res({error:e});return}
+      navigator.geolocation.getCurrentPosition(res,function(e2){res({error:e2||err1})},{enableHighAccuracy:false,timeout:20000,maximumAge:120000});
+    },{enableHighAccuracy:true,timeout:15000});
+  });
+  if(p0.error){var e=p0.error;$("msg").textContent=e.code===1?"Sin permiso de ubicación. Actívalo en los ajustes del navegador o de la app y vuelve a intentarlo.":"No pude obtener la ubicación ("+(e.message||"sin señal")+"). Sal al exterior o activa el GPS y vuelve a intentarlo.";return}
+  (function(p){
     pos=p.coords;posT=Date.now();$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
     masPueblos();document.body.classList.add("on");camara();pantallaEncendida(true);consejosPrimeraVez();
     // Sigue tu posición y recarga los pueblos al alejarte 30 km de la última descarga
@@ -1429,12 +1460,17 @@ async function iniciar(){
       pos=q.coords;posT=Date.now();actualizarMarcha(q.coords);calAndar(q.coords);
       if(!ultimo||dst(pos.latitude,pos.longitude,ultimo.la,ultimo.lo)>30)masPueblos();
       if(verPicos)cargarPicos();
-    },function(){},{enableHighAccuracy:true,maximumAge:5000});
+    },function(e){
+      // Antes se ignoraba: ahora se avisa (como mucho cada 20 s) para que no se use una posición vieja sin saberlo
+      if(Date.now()-gpsAvT<20000)return;gpsAvT=Date.now();
+      avisar(e.code===1?"📍 Se ha retirado el permiso de ubicación: los resultados no se actualizarán.":"📍 Señal GPS perdida: uso la última posición conocida.",6000);
+    },{enableHighAccuracy:true,maximumAge:5000});
     oriT0=Date.now();setTimeout(pintar,4500);
     window.addEventListener("deviceorientationabsolute",onOri,true);
     window.addEventListener("deviceorientation",onOri,true);
-  },function(e){$("msg").textContent="No pude obtener la ubicación ("+e.message+"). Revisa el permiso de ubicación del navegador."},{enableHighAccuracy:true,timeout:15000});
-};
+  })(p0);
+}
+var gpsAvT=0;
 // Antes de pedir permisos, la primera vez se explica para qué sirve cada uno
 $("go").onclick=function(){
   var visto=false;try{visto=localStorage.getItem("permisosVistos")==="1"}catch(e){}
