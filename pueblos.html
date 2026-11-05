@@ -196,11 +196,22 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 .fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .calok2{grid-template-columns:2fr 1fr}
 #calst{font-size:14px;line-height:1.4;color:#ffe259;margin:8px 0 0;min-height:20px}
-#ocho{display:none;text-align:center}
+#ocho{text-align:center}
 #ochot{font-size:15px;line-height:1.4;margin:6px 0 10px;color:#ffe259}
-#cal.m8 #calpasos,#cal.m8 #calmas{display:none}
-#calmas{margin-top:8px}
-#calmas summary{font-size:16px;font-weight:600;cursor:pointer;min-height:48px;display:flex;align-items:center}
+#cal.menu{max-height:74vh}
+#cal .cv{display:none}
+#cal .cm{display:flex;gap:12px;align-items:center;justify-content:flex-start;text-align:left;width:100%;margin-top:8px;min-height:64px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);box-shadow:none;font-size:16px;font-weight:700;line-height:1.25}
+#cal .cm small{display:block;font-weight:400;font-size:13px;opacity:.92}
+#cal .cm .ic{font-size:26px;line-height:1;flex:none}
+#cal .cback{background:transparent;border:2px solid rgba(255,255,255,.6);box-shadow:none;margin-bottom:8px;min-height:44px;padding:8px 14px;width:auto}
+#cal .nota{font-size:13px;line-height:1.4;color:#dfe6ff;margin:8px 0 0}
+#guia{display:none;position:fixed;inset:0;z-index:32;flex-direction:column;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(env(safe-area-inset-bottom,0px) + 18px);color:#fff;background:rgba(5,7,20,.97);overflow:auto;-webkit-overflow-scrolling:touch}
+#guia h2{margin:0;font-size:24px;text-align:center}
+#guia h3{margin:8px 0 0;font-size:17px;color:#ffe259;width:100%;max-width:38ch}
+#guia ul{list-style:none;margin:0;padding:0;max-width:38ch;width:100%;display:grid;gap:8px}
+#guia li{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.35;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:10px 12px}
+#guia .pi{font-size:24px;line-height:1;flex:none;width:30px;text-align:center}
+#guia button{max-width:300px;min-height:56px;font-size:18px;font-weight:700;margin-top:6px;flex:none;background:linear-gradient(90deg,#15803d,#0f766e)}
 </style>
 </head>
 <body>
@@ -255,31 +266,64 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="fdw"><span>Foco</span><input type="range" id="fdist" min="0" max="1" step="0.01" value="1" aria-label="Distancia de enfoque (cerca a lejos)"><button id="fauto" type="button">Auto</button></div>
 </main>
-<div id="cal" role="dialog" aria-labelledby="calT"><h3 id="calT">Calibrar la brújula</h3>
-<div id="calpasos">
+<div id="cal" role="dialog" aria-labelledby="calT" class="menu">
+<div id="calmenu"><h3 id="calT">Calibrar la brújula</h3>
+<p>Elige cómo quieres calibrar. Al pulsar una opción te explico los pasos.</p>
+<button class="cm" id="cm1" type="button"><span class="ic" aria-hidden="true">📍</span><span>Con un lugar que veo<small>Recomendado: pones la mira sobre un pueblo conocido.</small></span></button>
+<button class="cm" id="cm2" type="button"><span class="ic" aria-hidden="true">🚶</span><span>Andando o en coche<small>Se calibra sola al avanzar en línea recta.</small></span></button>
+<button class="cm" id="cm3" type="button"><span class="ic" aria-hidden="true">∞</span><span>Hacer el 8 en el aire<small>Ajusta el sensor de la brújula del móvil.</small></span></button>
+<button class="cm" id="cm4" type="button"><span class="ic" aria-hidden="true">🏔</span><span>Con el horizonte<small>Compara las montañas de la cámara con el relieve.</small></span></button>
+<button class="cm" id="cm5" type="button"><span class="ic" aria-hidden="true">⚙️</span><span>Ajustes automáticos<small>Afinar sola al moverme, horizonte y silueta.</small></span></button>
+<div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div>
+</div>
+<div class="cv" id="calv1"><button class="cback" type="button">← Otras opciones</button>
+<h3>📍 Con un lugar que veo</h3>
 <div class="cs"><b>1</b>Elige un lugar que veas</div>
 <select id="calsel" aria-label="Lugar de referencia"></select>
 <div class="cs"><b>2</b><span>Pon la mira encima (el punto <span style="color:#ff2d95">●</span> rosa)</span></div>
 <div class="cs"><b>3</b>Pulsa «Está en la mira»</div>
-<div class="fila2 calok2"><button id="calok" type="button">✓ Está en la mira</button><button id="calcerrar" type="button">Cerrar</button></div>
-<div id="calst" role="status" aria-live="polite"></div>
-</div>
-<details id="calmas"><summary>Opciones avanzadas</summary>
 <label class="chk"><input type="checkbox" id="cal2"> Usar dos lugares (más preciso)</label>
+<button id="calok" type="button">✓ Está en la mira</button>
+</div>
+<div class="cv" id="calv2"><button class="cback" type="button">← Otras opciones</button>
+<h3>🚶 Andando o en coche</h3>
+<div class="cs"><b>1</b>Pulsa «Empezar»</div>
+<div class="cs"><b>2</b>Avanza en línea recta unos 30 m con el móvil en vertical apuntando hacia delante (en coche, que lo haga el acompañante)</div>
+<div class="cs"><b>3</b>Al terminar se calibra sola</div>
+<button id="calgps" type="button">▶ Empezar</button>
+</div>
+<div class="cv" id="calv3"><button class="cback" type="button">← Otras opciones</button>
+<h3>∞ Hacer el 8 en el aire</h3>
+<div class="cs"><b>1</b>Dibuja un 8 en el aire girando la muñeca, unos 10 segundos</div>
+<div class="cs"><b>2</b>Sigue el punto amarillo de la figura</div>
+<div class="cs"><b>3</b>Cuando diga «✓ Brújula calibrada», pulsa «Listo»</div>
+<div id="ocho"><svg viewBox="0 0 120 70" width="150" height="88" aria-hidden="true"><path id="p8" d="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="3"/><circle r="6" fill="#ffe259"><animateMotion dur="3s" repeatCount="indefinite" path="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z"/></circle></svg><div id="ochot"></div><button id="ochocerrar" type="button">Listo</button></div>
+</div>
+<div class="cv" id="calv4"><button class="cback" type="button">← Otras opciones</button>
+<h3>🏔 Con el horizonte</h3>
+<div class="cs"><b>1</b>Apunta a un horizonte despejado con montañas, con el zoom en ×1 y el móvil recto</div>
+<div class="cs"><b>2</b>Pulsa «Alinear ahora»</div>
+<button id="calhor" type="button">🏔 Alinear ahora</button>
+</div>
+<div class="cv" id="calv5"><button class="cback" type="button">← Otras opciones</button>
+<h3>⚙️ Ajustes automáticos</h3>
 <label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
 <label class="chk"><input type="checkbox" id="hzauto" checked> 📷 Corregir el rumbo con el horizonte de la cámara</label>
 <label class="chk"><input type="checkbox" id="hzsil"> Dibujar la silueta del relieve sobre la cámara</label>
-<button id="calgps" type="button">🚶 Calibrar andando o en coche</button>
-<button id="calocho" type="button">∞ Hacer el 8 (calibra la brújula del iPhone)</button>
-<button id="calhor" type="button">🏔 Guardar la alineación con el horizonte</button>
-<button id="calreset" type="button">Quitar calibración</button>
-</details>
-<div id="ocho"><svg viewBox="0 0 120 70" width="150" height="88" aria-hidden="true"><path id="p8" d="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="3"/><circle r="6" fill="#ffe259"><animateMotion dur="3s" repeatCount="indefinite" path="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z"/></circle></svg><div id="ochot"></div><button id="ochocerrar" type="button">Listo</button></div>
+</div>
+<div id="calst" role="status" aria-live="polite"></div>
 </div>
 <div id="conf" role="alertdialog" aria-modal="true" aria-labelledby="confT"><div class="emoji" aria-hidden="true">⏹</div><h2 id="confT">¿Terminar la identificación?</h2><p>Se apagarán la cámara, el GPS y la brújula.</p><button id="confno" type="button">Seguir mirando</button><button id="confsi" type="button">Sí, terminar</button></div>
 <div id="permisos" role="dialog" aria-modal="true" aria-labelledby="permT"><h2 id="permT">Antes de empezar</h2><p>Tu móvil te pedirá tres permisos. Pulsa «Permitir» en cada uno:</p>
 <ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b><br>Para saber hacia dónde apuntas.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b><br>Para saber dónde estás y buscar los pueblos y el relieve a tu alrededor.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b><br>Para ver lo que apuntas. La imagen no sale de tu móvil.</span></li></ul>
 <button id="permok" type="button">Entendido, continuar</button><button id="permno" type="button">Ahora no</button></div>
+<div id="guia" role="dialog" aria-modal="true" aria-labelledby="guiaT"><h2 id="guiaT">Cómo se usa</h2>
+<div id="guiaPerm" style="display:none;width:100%;max-width:38ch"><h3>Permisos que te pedirá el móvil</h3><ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b>: para saber hacia dónde apuntas.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b>: para saber dónde estás y buscar los pueblos y el relieve.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b>: para ver lo que apuntas. La imagen no sale de tu móvil.</span></li></ul></div>
+<h3>Consejos</h3>
+<ul><li><span class="pi" aria-hidden="true">👆</span><span>Apunta al horizonte con el móvil en vertical. El nombre grande es el pueblo que está bajo el punto rosa de la mira.</span></li><li><span class="pi" aria-hidden="true">🎯</span><span>Si el nombre no coincide con lo que ves, calibra la brújula.</span></li><li><span class="pi" aria-hidden="true">👀</span><span>La franja de arriba dice cuándo fiarte: <b>GPS</b>, <b>Brújula</b> (con su margen de error) y si está <b>Calibrada</b>.</span></li><li><span class="pi" aria-hidden="true">👉</span><span>Toca la pantalla para enfocar; pellizca para hacer zoom.</span></li></ul>
+<h3>Botones de la cámara</h3>
+<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Sí/No): muestra u oculta las aldeas pequeñas.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
+<button id="guiaok" type="button">Entendido</button></div>
 <div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>Para cerrar del todo, desliza hacia arriba desde el borde inferior del iPhone y quita la app.</p><button id="volver" type="button">Volver</button></div>
 <script>
 (function(){
@@ -301,7 +345,7 @@ function dst(a,b,c,d){var p=(c-a)*R,q=(d-b)*R,h=Math.sin(p/2)*Math.sin(p/2)+Math
 function dif(a,b){return Math.abs(((a-b+540)%360)-180)}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 
-var cacheV={},enCurso={},sinRelieve=false,pit=0;
+var cacheV={},enCurso={},sinRelieve=false,pit=0,ocho8=false;
 var visCache={},gV=0;
 try{visCache=JSON.parse(localStorage.getItem("vis")||"{}");if(!visCache||typeof visCache!=="object")visCache={}}catch(e){visCache={}}
 Object.keys(visCache).forEach(function(k){cacheV[k]=visCache[k]});
@@ -413,11 +457,12 @@ async function verificarReal(p,k){
 var ochoActivo=false;
 function actOcho(){
   var t=$("ochot");
-  if(prec===null){t.textContent="Tu móvil no informa de la precisión. Dibuja el 8 durante unos 10 segundos.";return}
+  if(prec===null){t.textContent="Tu móvil no informa de la precisión, así que no puedo comprobar si el 8 ha funcionado. Dibújalo unos 10 segundos; para estar seguro, calibra también con un lugar que veas.";return}
   if(prec<0){t.textContent="Brújula sin calibrar. Sigue dibujando el 8 en el aire girando la muñeca…";return}
-  t.textContent=(prec<=10?"✓ Brújula calibrada. ":"Sigue dibujando el 8… ")+"Precisión: ±"+Math.round(prec)+"°"+(prec<=10?"":" (objetivo: ±10° o menos)");
+  if(prec<=10)ocho8=true;
+  t.textContent=(prec<=10?"✓ Brújula calibrada. Ya puedes pulsar «Listo». ":"Sigue dibujando el 8… ")+"Precisión: ±"+Math.round(prec)+"°"+(prec<=10?"":" (objetivo: ±10° o menos)");
 }
-function cerrarOcho(){ochoActivo=false;$("cal").className="";$("ocho").style.display="none"}
+function cerrarOcho(){ochoActivo=false}
 // Cuenta localidades a menos de km (en cualquier dirección o solo en la que apunta el móvil)
 function contarPueblos(pe,hdc,km,soloDir){
   var dLa=km/111,dLo=km/(111*Math.max(0.2,Math.cos(pe.latitude*R))),n=0,i,p,k;
@@ -460,7 +505,8 @@ function actualizarEstado(){
   else if(prec!==null&&prec<0)b=["mal","Brújula ✕ haz el 8"];
   else if(prec!==null&&prec>20)b=["av","Brújula ⚠ ±"+Math.round(prec)+"°"];
   else b=["ok","Brújula ✓"+(prec!==null?" ±"+Math.round(prec)+"°":"")];
-  c=(off||Object.keys(tab).length)?["ok","Calibrada ✓"]:["av","Sin calibrar"];
+  if(prec!==null&&(prec<0||prec>20))ocho8=false;
+  c=(off||Object.keys(tab).length||ocho8)?["ok","Calibrada ✓"]:["av","Sin calibrar"];
   var k=g.join()+b.join()+c.join();
   if(k===estC)return;
   estC=k;
@@ -716,7 +762,7 @@ function pedirTerminar(){$("conf").style.display="flex";$("confno").focus()}
 $("salir").onclick=pedirTerminar;
 $("confno").onclick=function(){$("conf").style.display="none"};
 $("confsi").onclick=function(){$("conf").style.display="none";salir()};
-document.addEventListener("keydown",function(e){if(e.key==="Escape"){$("conf").style.display="none";$("permisos").style.display="none"}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){$("conf").style.display="none";$("permisos").style.display="none";$("guia").style.display="none"}});
 function abrirMapa(){
   document.body.classList.add("mapa");window.scrollTo(0,0);
   try{history.pushState({mapa:1},"")}catch(e){}
@@ -767,10 +813,21 @@ $("calbtn").onclick=function(){
   calList=P.filter(function(p){return p[3]!=="hamlet"&&p[3]!=="isolated_dwelling"}).map(function(p){return{n:p[0],la:p[1],lo:p[2],k:dst(pos.latitude,pos.longitude,p[1],p[2])}}).filter(function(p){return p.k>0.5&&p.k<60}).sort(function(a,b){return a.k-b.k}).slice(0,15);
   $("calsel").innerHTML=calList.map(function(p,i){return '<option value="'+i+'">'+esc(p.n)+' · '+p.k.toFixed(0)+' km</option>'}).join("");
   calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
-  $("calmas").open=false;
+  calVista(0);
   $("cal").style.display="block";
 };
+// Menú de métodos: cada opción abre su propia vista con los pasos
+function calVista(v){
+  ["calmenu","calv1","calv2","calv3","calv4","calv5"].forEach(function(id,i){$(id).style.display=(i===v)?"block":"none"});
+  $("cal").className=v===0?"menu":"";
+  ochoActivo=(v===3);
+  calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
+  if(v===3)actOcho();
+}
+[1,2,3,4,5].forEach(function(n){$("cm"+n).onclick=function(){calVista(n)}});
+[].forEach.call(document.querySelectorAll("#cal .cback"),function(b){b.onclick=function(){calVista(0)}});
 var calAnd=null,cal2={b:null,o:null};
+calVista(0);
 function envolver(x){return ((x%360)+540)%360-180}
 function fmtOff(o){return (o>0?"+":"")+Math.round(o)+"°"}
 function finCal(txt){hzOff=0;hzPrev=null;guardarOff();$("calst").textContent=txt;pintar()}
@@ -798,7 +855,7 @@ $("calgps").onclick=function(){
   if(!pos)return;
   cal2={b:null,o:null};
   calAnd={la:pos.latitude,lo:pos.longitude,s:[]};
-  $("calst").textContent="Camina recto con el móvil en vertical apuntando hacia delante…";
+  $("calst").textContent="Avanza en línea recta con el móvil en vertical apuntando hacia delante…";
 };
 function calAndar(c){
   if(!calAnd)return;
@@ -816,9 +873,8 @@ function calAndar(c){
   off=envolver(b-media);ponerTab(media,off);
   finCal("✓ Calibrado andando ("+fmtOff(off)+")");
 }
-$("calreset").onclick=function(){off=0;tab={};calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
-$("calocho").onclick=function(){ochoActivo=true;$("cal").className="m8";$("ocho").style.display="block";actOcho()};
-$("ochocerrar").onclick=cerrarOcho;
+$("calreset").onclick=function(){off=0;tab={};ocho8=false;calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
+$("ochocerrar").onclick=function(){calVista(0)};
 $("calcerrar").onclick=function(){cerrarOcho();calAnd=null;cal2={b:null,o:null};$("calst").textContent="";$("cal").style.display="none"};
 // ---- Modo coche (se activa solo al detectar velocidad) ----
 var hdH=[],gT=0,modoCoche=false,velAlta=0,velBaja=0,posT=0,rumboGPS=null,velGPS=0,autoT=0,wl=null;
@@ -928,23 +984,25 @@ var tToast=null,tCons=null;
 function avisar(txt,ms){var t=$("toast");t.textContent=txt;t.className="";void t.offsetWidth;t.className="v";clearTimeout(tToast);tToast=setTimeout(function(){t.className=""},ms||6200)}
 // Consejos de primera vez: cada uno sale una sola vez y no vuelve (se recuerdan en localStorage)
 var CONSEJOS=[["consejoApuntar","👆 Apunta a un pueblo lejano",""],["consejoCalibrar","🎯 Si el nombre no coincide, calibra","calbtn"],["consejoEnfoque","Toca la pantalla para enfocar",""]];
+function mostrarGuia(conPermisos){
+  $("guiaPerm").style.display=conPermisos?"block":"none";
+  $("guia").style.display="flex";$("guia").scrollTop=0;$("guiaok").focus();
+}
+$("guiaok").onclick=function(){$("guia").style.display="none"};
 function consejosPrimeraVez(){
-  var pend=CONSEJOS.filter(function(c){try{return localStorage.getItem(c[0])!=="1"}catch(e){return false}});
+  var visto=true;try{visto=localStorage.getItem("guiaVista")==="1"}catch(e){}
+  if(visto)return;
   clearTimeout(tCons);
-  function sig(){
-    if(!pend.length||!document.body.classList.contains("on"))return;
-    var c=pend.shift();
-    try{localStorage.setItem(c[0],"1")}catch(e){}
-    avisar(c[1]);
-    var bt=c[2]?$(c[2]):null;
-    if(bt){bt.classList.add("pista");setTimeout(function(){bt.classList.remove("pista")},6200)}
-    tCons=setTimeout(sig,6900);
-  }
-  tCons=setTimeout(sig,2500);
+  tCons=setTimeout(function(){
+    if(!document.body.classList.contains("on"))return;
+    try{localStorage.setItem("guiaVista","1")}catch(e){}
+    mostrarGuia(false);
+  },1500);
 }
 $("vconsejos").onclick=function(){
-  try{CONSEJOS.forEach(function(c){localStorage.removeItem(c[0])});localStorage.removeItem("permisosVistos")}catch(e){}
-  $("probres").textContent="Listo: los consejos y la explicación de permisos volverán a salir la próxima vez que inicies la identificación."
+  try{CONSEJOS.forEach(function(c){localStorage.removeItem(c[0])});localStorage.removeItem("permisosVistos");localStorage.removeItem("guiaVista")}catch(e){}
+  $("probres").textContent="Los consejos y la explicación de permisos también volverán a salir la próxima vez que inicies la identificación.";
+  mostrarGuia(true);
 };
 ["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){if(document.body.classList.contains("on"))e.preventDefault()},{passive:false})});
 // ---- Panorama del terreno: relieve en abanico de ±45° y hasta 80 km ----
