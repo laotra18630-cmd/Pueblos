@@ -22,7 +22,7 @@ body{margin:0;background:linear-gradient(160deg,#6a11cb 0%,#2575fc 50%,#00c9a7 1
 body:not(.on){background:radial-gradient(60% 40% at 12% 0%,rgba(124,58,237,.6),transparent 70%),radial-gradient(50% 40% at 100% 18%,rgba(0,201,167,.45),transparent 70%),radial-gradient(70% 50% at 50% 100%,rgba(37,117,252,.55),transparent 70%),#0b1026;background-attachment:fixed;min-height:100vh}
 main{position:relative;z-index:2;max-width:560px;margin:0 auto;padding:16px}
 p{color:#eef2ff;margin:4px 0 14px;font-size:15px}
-button{width:100%;padding:14px;font-size:17px;font-family:inherit;border:0;border-radius:12px;background:linear-gradient(90deg,#ff512f,#f09819);box-shadow:0 8px 20px rgba(0,0,0,.3);color:#fff;font-weight:600}
+button{width:100%;min-height:48px;padding:14px;font-size:17px;font-family:inherit;border:0;border-radius:12px;background:linear-gradient(90deg,#d63a12,#b8420a);box-shadow:0 8px 20px rgba(0,0,0,.3);color:#fff;font-weight:600}
 button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffe259;outline-offset:2px}
 
 /* ---- Portada ---- */
@@ -30,9 +30,10 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 .logo{width:104px;height:104px;display:block;margin:0 auto 14px;filter:drop-shadow(0 14px 24px rgba(0,0,0,.5))}
 #hero h1{font-size:36px;line-height:1.1;margin:0 0 8px;letter-spacing:-.5px;background:linear-gradient(90deg,#ffe259,#ff9a9e 55%,#7ee8fa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 #hero p{font-size:16px;line-height:1.4;margin:0 auto 22px;max-width:30ch;color:#dfe6ff}
-#go{font-size:19px;padding:17px;border-radius:999px;background:linear-gradient(90deg,#ff512f,#dd2476);animation:pulso 2.4s infinite}
+#go{font-size:19px;padding:17px;border-radius:999px;background:linear-gradient(90deg,#e03a1b,#c01b64);animation:pulso 2.4s infinite}
 @keyframes pulso{0%,100%{box-shadow:0 8px 22px rgba(221,36,118,.45),0 0 0 0 rgba(255,81,47,.45)}50%{box-shadow:0 8px 22px rgba(221,36,118,.45),0 0 0 14px rgba(255,81,47,0)}}
 @media (prefers-reduced-motion:reduce){#go{animation:none}}
+#avisoCob{display:none;width:100%;margin:0 auto 16px;max-width:34ch;min-height:0;padding:10px 14px;font-size:15px;font-weight:600;line-height:1.35;border-radius:14px;background:rgba(255,226,89,.16);border:1px solid rgba(255,226,89,.6);box-shadow:none;color:#fff}
 #go .go1{display:block;font-size:21px;font-weight:800;line-height:1.2}
 #go .go2{display:block;font-size:13px;font-weight:500;line-height:1.3;margin-top:4px;opacity:.95}
 .pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 14px}
@@ -41,16 +42,22 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 #prov{padding:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:16px;font-size:15px}
 #prov summary{font-weight:600;font-size:16px;cursor:pointer}
 #plist{max-height:260px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:8px}
-#plist label{display:flex;gap:6px;align-items:center}
-#plist input{accent-color:#ffe259}
+#plist label{display:flex;gap:10px;align-items:center;min-height:44px;font-size:16px}
+#plist input{accent-color:#ffe259;width:22px;height:22px;flex:none}
 .fila{display:flex;gap:8px;margin-top:8px}
-.fila button{padding:8px;font-size:14px;background:rgba(255,255,255,.25);box-shadow:none}
-#dl{margin-top:12px;border-radius:999px;background:linear-gradient(90deg,#2575fc,#00c9a7);box-shadow:none;font-size:16px;padding:14px}
+.fila button{min-height:48px;padding:12px;font-size:16px;background:rgba(255,255,255,.3);box-shadow:none}
+#dl{margin-top:12px;border-radius:999px;background:linear-gradient(90deg,#1d4ed8,#0f766e);box-shadow:none;font-size:17px;font-weight:700;min-height:52px;padding:14px}
 #dl:disabled{opacity:.6}
 #barra{display:none;height:8px;border-radius:99px;background:rgba(255,255,255,.2);margin-top:10px;overflow:hidden}
 #barraI{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe259,#ff9a9e);transition:width .3s}
-#probar,#cerrar,#volverMapa{border-radius:999px;background:transparent;box-shadow:none}
-#abrirmapa{padding:14px;font-size:16px;text-align:left;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:16px;box-shadow:none;margin-bottom:12px}
+#probar,#cerrar,#volverMapa,#vconsejos{border-radius:999px;background:transparent;box-shadow:none}
+#masop{margin-top:6px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);padding:0 14px}
+#masop summary{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:600;cursor:pointer;list-style:none}
+#masop summary::-webkit-details-marker{display:none}
+#masop summary::after{content:"▾";transition:transform .2s}
+#masop[open] summary::after{transform:rotate(180deg)}
+#masop[open]{padding-bottom:14px}
+#abrirmapa{min-height:52px;padding:14px;font-size:16px;font-weight:700;text-align:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:16px;box-shadow:none;margin-bottom:12px}
 #mapaPant{display:none}
 body.mapa #mapaPant{display:block}
 body.mapa #hero,body.mapa #extras{display:none}
@@ -59,9 +66,32 @@ body.mapa #hero,body.mapa #extras{display:none}
 #mapaPant #plist{max-height:50vh}
 #volverMapa{margin-top:18px;border:2px solid rgba(255,255,255,.45);font-size:16px;padding:12px}
 #probres{font-size:14px;line-height:1.5;margin-top:8px;text-align:center;color:#ffe259}
-#probar{margin-top:12px;border:2px solid rgba(255,255,255,.35);font-size:15px;padding:11px}
-#cerrar{margin-top:18px;border:2px solid rgba(255,255,255,.45);font-size:16px;padding:12px}
+#probar{margin-top:4px;border:2px solid rgba(255,255,255,.35);font-size:16px;min-height:48px;padding:11px}
+#vconsejos{margin-top:12px;border:2px solid rgba(255,255,255,.35);font-size:16px;min-height:48px;padding:12px}
+#cerrar{margin-top:12px;border:2px solid rgba(255,255,255,.45);font-size:16px;min-height:48px;padding:12px}
 #adios{display:none;position:fixed;inset:0;z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:30px;color:#fff;background:radial-gradient(60% 40% at 12% 0%,rgba(124,58,237,.7),transparent 70%),radial-gradient(70% 50% at 50% 100%,rgba(37,117,252,.6),transparent 70%),#0b1026}
+#conf{display:none;position:fixed;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px;color:#fff;background:rgba(5,7,20,.94)}
+#conf h2{margin:0;font-size:24px}
+#conf p{max-width:30ch;color:#dfe6ff;margin:0 0 6px;font-size:17px}
+#conf button{max-width:300px;min-height:56px;font-size:18px;font-weight:700}
+#confno{background:linear-gradient(90deg,#15803d,#0f766e)}
+#confsi{background:#b91c1c;border:2px solid #fecaca;box-shadow:none}
+#estado{display:none}
+body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 4px}
+.ch{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.2;color:#fff;border:2px solid transparent}
+.ch.ok{background:#15803d;border-color:#86efac}
+.ch.av{background:#b45309;border-color:#fcd34d}
+.ch.mal{background:#b91c1c;border-color:#fecaca}
+.ch.n{background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.55)}
+#permisos{display:none;position:fixed;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;color:#fff;background:rgba(5,7,20,.96);overflow:auto}
+#permisos h2{margin:0;font-size:24px;text-align:center}
+#permisos p{max-width:34ch;margin:0;text-align:center;color:#dfe6ff;font-size:15px}
+#permisos ul{list-style:none;margin:0;padding:0;max-width:34ch;display:grid;gap:10px}
+#permisos li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.35;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:12px}
+#permisos .pi{font-size:28px;line-height:1}
+#permisos button{max-width:300px;min-height:56px;font-size:18px;font-weight:700}
+#permok{background:linear-gradient(90deg,#15803d,#0f766e)}
+#permno{background:transparent;border:2px solid rgba(255,255,255,.6);box-shadow:none}
 #adios h2{margin:0}
 #adios p{max-width:28ch;color:#dfe6ff;margin:0 0 10px}
 #adios button{max-width:240px}
@@ -75,6 +105,7 @@ body.mapa #hero,body.mapa #extras{display:none}
 .it:nth-child(3){border-left-color:#7ee8fa}
 .it span:last-child{color:#fff;opacity:.85;white-space:nowrap}
 #msg{color:#fff;opacity:.9;font-size:14px;margin-top:12px;text-align:center}
+#msg.aviso{opacity:1;font-size:16px;font-weight:600;line-height:1.4;padding:10px 12px;border-radius:12px;background:rgba(255,226,89,.18);border:1px solid rgba(255,226,89,.6)}
 #brj{font-size:13px;color:#ffe259;text-align:center;margin-top:6px}
 #info{font-size:12px;opacity:.85;margin-top:6px;text-align:center}
 
@@ -84,8 +115,8 @@ body.mapa #hero,body.mapa #extras{display:none}
 #mira::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;background:#ff2d95;border-radius:50%;box-shadow:0 0 10px #ff2d95}
 #sil{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:none}
 #etq{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
-.et{position:absolute;transform:translate(-50%,-100%);padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:13px;font-weight:700;white-space:nowrap}
-.et small{font-weight:400;opacity:.85}
+.et{position:absolute;transform:translate(-50%,-100%);padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.82);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:15px;font-weight:700;white-space:nowrap}
+.et small{font-weight:500;opacity:.95}
 body.on #cam,body.on #mira{display:block}
 .pt{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.7),0 0 6px rgba(0,0,0,.8)}
 .pt.sel{width:22px;height:22px;margin:-11px 0 0 -11px;border-width:3px;animation:lat 1.2s infinite}
@@ -94,54 +125,82 @@ body.on #cam,body.on #mira{display:block}
 .ln{position:absolute;width:2px;margin-left:-1px;opacity:.85}
 .pk{position:absolute;width:0;height:0;margin-left:-8px;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:15px solid #80ed99;filter:drop-shadow(0 0 2px #000)}
 .et{border-width:2px}
-.et.sel{font-size:16px;color:#111}
+.et.sel{font-size:18px;color:#111}
 .et.sel small{opacity:.9}
 #leyenda{display:none}
-body.on #leyenda{display:block;position:fixed;z-index:1;left:8px;top:50%;transform:translateY(-50%);padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.45);font-size:11px;line-height:1.6;pointer-events:none}
+body.on #leyenda{display:block;position:fixed;z-index:1;left:8px;top:50%;transform:translateY(-50%);padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.75);font-size:14px;font-weight:600;line-height:1.6;pointer-events:none}
 #leyenda i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid #fff}
 #leyenda .lpk{display:none}
 body.picos #leyenda .lpk{display:block}
-#zoom button.act{background:#ffe259;color:#222}
 body.on main{max-width:none;background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72));border-radius:0 0 16px 16px;padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
 body:not(.on) #rumbo,body:not(.on) #mejor,body:not(.on) #lista{display:none}
 body.on #hero,body.on #extras{display:none}
 /* Solo con la cámara activa se bloquea el zoom del navegador (el pellizco controla el zoom de la cámara) */
 body.on,body.on *{touch-action:pan-x pan-y}
-#salir,#calbtn,#aldeas,#zoom{display:none}
-body.on #salir,body.on #calbtn,body.on #aldeas{display:block;position:fixed;z-index:5;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:auto;padding:12px 14px;font-size:15px;background:rgba(0,0,0,.55);box-shadow:0 4px 14px rgba(0,0,0,.4)}
-body.on #salir{left:50%;transform:translateX(-50%);padding:12px 18px;font-size:17px}
-body.on #calbtn{left:12px}
-body.on #aldeas{right:12px}
-body.on #zoom{display:flex;flex-direction:column;align-items:center;gap:6px;position:fixed;z-index:5;right:10px;top:50%;transform:translateY(-50%)}
-#zoom button{width:46px;height:46px;padding:0;border-radius:50%;font-size:24px;line-height:1;background:rgba(0,0,0,.55);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+#bar,#zoom{display:none}
+/* Barra inferior: icono + texto bajo cada botón */
+body.on #bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;z-index:5;left:0;right:0;bottom:0;padding:8px 8px calc(env(safe-area-inset-bottom,0px) + 8px);background:rgba(8,10,28,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.2)}
+#bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:0;min-height:68px;padding:6px 2px;border:2px solid rgba(255,255,255,.55);border-radius:14px;background:rgba(255,255,255,.14);box-shadow:none;font-size:14px;font-weight:700;line-height:1.15;text-align:center}
+#bar .ic{font-size:24px;line-height:1}
+#bar #calbtn{background:#1d4ed8;border-color:#bfdbfe}
+#calbtn.pista{animation:pista 1s ease-in-out 6}
+@keyframes pista{0%,100%{box-shadow:0 0 0 0 rgba(255,226,89,.9)}50%{box-shadow:0 0 0 8px rgba(255,226,89,0)}}
+@media (prefers-reduced-motion:reduce){#calbtn.pista{animation:none;outline:3px solid #ffe259}}
+/* Terminar: arriba a la derecha, lejos de la barra, y siempre con confirmación */
+#salir{display:none}
+body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;position:absolute;z-index:3;top:8px;right:12px;width:auto;min-width:48px;min-height:48px;padding:8px 16px;border:2px solid #fecaca;border-radius:999px;background:#b91c1c;box-shadow:none;font-size:15px;font-weight:700}
+/* Interruptores: color + «Sí/No» siempre visibles */
+#bar .tg[aria-pressed="true"]{background:#15803d;border-color:#86efac}
+#bar .tg[aria-pressed="false"]{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.55)}
+.est{display:inline-block;min-width:40px;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:800;line-height:1.3}
+.tg[aria-pressed="true"] .est{background:#fff;color:#14532d}
+.tg[aria-pressed="false"] .est{background:rgba(255,255,255,.22);color:#fff}
+.tg[aria-pressed="true"] .est::after{content:"Sí"}
+.tg[aria-pressed="false"] .est::after{content:"No"}
+/* Más lejos: muestra el alcance real en km en vez de Sí/No */
+#lejosb[aria-pressed="false"] .est::after{content:"40 km"}
+#lejosb[aria-pressed="true"] .est::after{content:"80 km"}
+/* Zoom con nivel visible + botón de enfoque con texto */
+body.on #zoom{display:flex;flex-direction:column;align-items:center;gap:6px;position:fixed;z-index:5;right:8px;top:50%;transform:translateY(-50%);padding:8px 6px;border-radius:18px;background:rgba(0,0,0,.55)}
+#zoom button{display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;height:52px;padding:0;border:2px solid rgba(255,255,255,.6);border-radius:14px;font-size:26px;line-height:1;background:rgba(255,255,255,.2);box-shadow:none}
+#zoom #enf{height:58px;font-size:12px;font-weight:700;gap:2px;margin-top:4px}
+#zoom #enf .ic{font-size:22px;line-height:1}
+#toast{display:none;position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 176px);transform:translateX(-50%);width:max-content;max-width:86vw;padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.6);font-size:16px;font-weight:600;text-align:center;pointer-events:none}
+#toast.v{display:block;animation:tst 6s ease forwards}
+@keyframes tst{0%{opacity:0}8%{opacity:1}85%{opacity:1}100%{opacity:0}}
 #foco{position:fixed;width:74px;height:74px;margin:-37px 0 0 -37px;border:2px solid #ffe259;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.5);z-index:1;pointer-events:none;display:none}
 #foco.v{display:block;animation:foc 1.2s ease-out forwards}
 @keyframes foc{0%{transform:scale(1.6);opacity:.2}25%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
 #fdw{display:none}
-body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5;left:12%;right:12%;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.55);font-size:13px;font-weight:600}
-#fdw input{flex:1;width:auto;min-width:0}
-#fdw button{width:auto;padding:6px 12px;font-size:13px;box-shadow:none;background:rgba(255,255,255,.25)}
-#zval{font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
+body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5;left:12%;right:12%;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.7);font-size:15px;font-weight:600}
+#fdw input{flex:1;width:auto;min-width:0;height:32px}
+#fdw button{width:auto;min-height:48px;padding:8px 16px;font-size:15px;box-shadow:none;background:rgba(255,255,255,.3)}
+#zval{font-size:13px;font-weight:800;color:#fff;text-shadow:0 1px 3px #000;white-space:nowrap;padding:2px 0}
 
 /* ---- Panel de calibración (compacto, deja visible la mira) ---- */
-#cal{display:none;position:fixed;z-index:15;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 14px);background:rgba(10,12,30,.98);color:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+#cal{display:none;position:fixed;z-index:15;left:0;right:0;bottom:0;max-height:46vh;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 14px);background:rgba(10,12,30,.98);color:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5)}
 #cal h3{margin:0 0 4px;font-size:17px}
 #cal p{font-size:13px;line-height:1.35;margin:0 0 8px;color:#dfe6ff}
-#cal select{width:100%;padding:10px;font-size:15px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:#1a1d3a;color:#fff;margin-bottom:6px}
-#cal .chk{display:flex;gap:8px;align-items:center;font-size:14px;margin:2px 0 4px}
-#cal button{margin-top:0;font-size:14px;padding:11px 6px}
-#cal #calreset,#cal #calcerrar{background:transparent;border:1px solid rgba(255,255,255,.4);box-shadow:none}
-#cal #calocho,#cal #calhor{margin-top:8px;width:100%}
-#calgps{background:linear-gradient(90deg,#2575fc,#00c9a7)}
-#calocho{background:linear-gradient(90deg,#7c3aed,#2575fc)}
-#calhor{background:linear-gradient(90deg,#0f9b8e,#2575fc)}
+#cal select{width:100%;min-height:48px;padding:10px;font-size:16px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:#1a1d3a;color:#fff;margin-bottom:6px}
+#cal .chk{display:flex;gap:10px;align-items:center;font-size:15px;min-height:44px;margin:0}
+#cal .chk input{width:22px;height:22px;flex:none}
+.cs{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:15px;line-height:1.3;font-weight:600}
+.cs b{display:inline-flex;flex:none;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;font-size:14px;color:#1b1040;background:#ffe259}
+#cal button{margin-top:0;min-height:48px;font-size:16px;padding:12px 8px}
+#cal #calreset,#cal #calcerrar{background:transparent;border:2px solid rgba(255,255,255,.6);box-shadow:none}
+#cal #calocho,#cal #calhor,#cal #calgps,#cal #calreset{margin-top:8px;width:100%}
+#calok{background:linear-gradient(90deg,#15803d,#0f766e);font-weight:800;font-size:17px}
+#calgps{background:linear-gradient(90deg,#1d4ed8,#0f766e)}
+#calocho{background:linear-gradient(90deg,#6d28d9,#1d4ed8)}
+#calhor{background:linear-gradient(90deg,#0f766e,#1d4ed8)}
 .fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.calok2{grid-template-columns:2fr 1fr}
 #calst{font-size:14px;line-height:1.4;color:#ffe259;margin:8px 0 0;min-height:20px}
 #ocho{display:none;text-align:center}
 #ochot{font-size:15px;line-height:1.4;margin:6px 0 10px;color:#ffe259}
-#cal.m8 p,#cal.m8 select,#cal.m8 .chk,#cal.m8 .fila2,#cal.m8 #calocho,#cal.m8 #calhor,#cal.m8 #calst,#cal.m8 #calmas{display:none}
+#cal.m8 #calpasos,#cal.m8 #calmas{display:none}
 #calmas{margin-top:8px}
-#calmas summary{font-size:14px;font-weight:600;cursor:pointer;padding:6px 0}
+#calmas summary{font-size:16px;font-weight:600;cursor:pointer;min-height:48px;display:flex;align-items:center}
 </style>
 </head>
 <body>
@@ -150,15 +209,18 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="etq"></div>
 <div id="mira"></div>
 <div id="foco" aria-hidden="true"></div>
-<div id="leyenda" aria-hidden="true"><div><span style="color:#ff3b6b">●</span><span style="color:#ffd60a">●</span><span style="color:#00e5ff">●</span> Pueblos</div><div class="lpk"><span style="color:#80ed99">▲</span> Pico</div></div>
+<div id="leyenda" aria-hidden="true"><div><span style="color:#ff4d6d">●</span> ciudad</div><div><span style="color:#ffd60a">●</span> pueblo</div><div><span style="color:#00e5ff">●</span> aldea</div><div class="lpk"><span style="color:#80ed99">▲</span> Pico</div></div>
 <main>
+<button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button>
 <section id="hero">
 <svg class="logo" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a11cb"/><stop offset=".5" stop-color="#2575fc"/><stop offset="1" stop-color="#00c9a7"/></linearGradient><clipPath id="lc"><rect width="96" height="96" rx="22"/></clipPath></defs><rect width="96" height="96" rx="22" fill="url(#lg)"/><g clip-path="url(#lc)"><path d="M0 96V66l22-20 20 24 18-16 36 28v14z" fill="#28105a" opacity=".6"/><path d="M0 96V78l26-14 22 14 20-10 28 14v14z" fill="#140a3c" opacity=".75"/></g><circle cx="48" cy="38" r="20" fill="none" stroke="#fff" stroke-width="4"/><path d="M48 10v10M48 56v10M20 38h10M66 38h10" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="48" cy="38" r="6" fill="#ff2d95"/></svg>
 <h1>¿Qué pueblo es?</h1>
 <p>Apunta con el móvil al horizonte y descubre qué pueblo tienes delante.</p>
+<button id="avisoCob" type="button">⚠️ Sin cobertura no podré identificar pueblos: descarga tu provincia</button>
 <button id="go" type="button"><span class="go1">Iniciar identificación</span><span class="go2">Activar GPS y brújula mientras se usa</span></button>
 </section>
 <div id="rumbo"></div>
+<div id="estado" aria-label="Estado de GPS, brújula y calibración"><span id="eGps" class="ch n">GPS …</span><span id="eBrj" class="ch n">Brújula …</span><span id="eCal" class="ch n">Sin calibrar</span></div>
 <div id="mejor" aria-live="polite" aria-atomic="true"></div>
 <div id="lista"></div>
 <div id="msg" role="status"></div>
@@ -166,41 +228,58 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="info"></div>
 <section id="extras">
 <div class="pasos"><div><b aria-hidden="true">1</b>Activa GPS y brújula</div><div><b aria-hidden="true">2</b>Apunta al horizonte</div><div><b aria-hidden="true">3</b>Lee el nombre del pueblo</div></div>
-<button id="abrirmapa" type="button">🗺️ Mapa sin conexión · elegir provincias</button>
-<button id="probar" type="button">🔎 Probar datos de relieve</button>
+<button id="abrirmapa" type="button">🗺️ Descargar pueblos (para usar sin cobertura)</button>
+<details id="masop"><summary>Más opciones</summary>
+<button id="probar" type="button">🔎 Probar relieve</button>
 <div id="probres" role="status" aria-live="polite"></div>
-<button id="cerrar" type="button">Salir</button>
+<button id="vconsejos" type="button">💡 Volver a ver consejos y avisos</button>
+<button id="cerrar" type="button">Salir de la app</button>
+</details>
 </section>
 <section id="mapaPant">
-<h2>🗺️ Mapa sin conexión</h2>
+<h2>🗺️ Descargar pueblos</h2>
 <p>Elige las provincias y descárgalas para usar la app sin cobertura.</p>
-<p id="mapaAviso">👋 <b>¡Bienvenido!</b> Para empezar, marca tu provincia (o las que vayas a visitar) y pulsa «Descargar provincias elegidas». Así los pueblos se identifican también sin cobertura. Si prefieres hacerlo más tarde, pulsa «Volver»: lo encontrarás en «Mapa sin conexión».</p>
+<p id="mapaAviso">👋 <b>¡Bienvenido!</b> Para empezar, marca tu provincia (o las que vayas a visitar) y pulsa «Descargar provincias elegidas». Así los pueblos se identifican también sin cobertura. Si prefieres hacerlo más tarde, pulsa «Volver»: lo encontrarás en «Descargar pueblos».</p>
 <div id="prov"><div id="plist"></div><div class="fila"><button id="todas" type="button">Todas</button><button id="ninguna" type="button">Ninguna</button></div></div>
 <button id="dl" type="button">Descargar provincias elegidas</button>
 <div id="barra" role="progressbar" aria-label="Progreso de la descarga" aria-valuemin="0" aria-valuemax="100"><i id="barraI"></i></div>
 <button id="volverMapa" type="button">← Volver</button>
 </section>
-<button id="salir" type="button">✕ Salir</button>
-<button id="calbtn" type="button">🎯 Calibrar</button>
-<button id="aldeas" type="button">🏘 Con aldeas</button>
-<div id="zoom" role="group" aria-label="Zoom de la cámara"><button id="zmas" type="button" aria-label="Acercar">＋</button><span id="zval" aria-label="Nivel de zoom">×1.0</span><button id="zmenos" type="button" aria-label="Alejar">−</button><button id="enf" type="button" aria-label="Enfocar">◎</button><button id="lejosb" type="button" aria-label="Ampliar el alcance a 80 km" aria-pressed="false">🔭</button><button id="picosb" type="button" aria-label="Mostrar nombres de picos de montañas" aria-pressed="false">⛰</button></div>
+<div id="zoom" role="group" aria-label="Zoom y enfoque de la cámara"><button id="zmas" type="button" aria-label="Acercar (más zoom)">＋</button><span id="zval">Zoom ×1</span><button id="zmenos" type="button" aria-label="Alejar (menos zoom)">−</button><button id="enf" type="button"><span class="ic" aria-hidden="true">◎</span><span>Enfocar</span></button></div>
+<nav id="bar" aria-label="Controles de la cámara">
+<button id="calbtn" type="button" title="Ajusta la brújula con un lugar que veas"><span class="ic" aria-hidden="true">🎯</span><span>Calibrar</span></button>
+<button id="aldeas" class="tg" type="button" aria-pressed="true" title="Mostrar u ocultar aldeas pequeñas"><span class="ic" aria-hidden="true">🏘</span><span>Aldeas</span><span class="est" aria-hidden="true"></span></button>
+<button id="picosb" class="tg" type="button" aria-pressed="false" title="Mostrar u ocultar nombres de picos"><span class="ic" aria-hidden="true">⛰</span><span>Picos</span><span class="est" aria-hidden="true"></span></button>
+<button id="lejosb" class="tg" type="button" aria-pressed="false" aria-label="Más lejos: alcance 40 km" title="Alcance 40 km. Pulsa para ampliar a 80 km"><span class="ic" aria-hidden="true">🔭</span><span>Más lejos</span><span class="est" aria-hidden="true"></span></button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
 <div id="fdw"><span>Foco</span><input type="range" id="fdist" min="0" max="1" step="0.01" value="1" aria-label="Distancia de enfoque (cerca a lejos)"><button id="fauto" type="button">Auto</button></div>
 </main>
 <div id="cal" role="dialog" aria-labelledby="calT"><h3 id="calT">Calibrar la brújula</h3>
-<p>Lugar: pon el punto rosa de la mira sobre él y pulsa «Está en la mira». Andando: camina recto unos 30 m con el móvil apuntando hacia delante.</p>
+<div id="calpasos">
+<div class="cs"><b>1</b>Elige un lugar que veas</div>
 <select id="calsel" aria-label="Lugar de referencia"></select>
-<div class="fila2"><button id="calok" type="button">Está en la mira</button><button id="calgps" type="button">🚶 Andando o en coche</button></div>
-<div id="calst"></div>
-<details id="calmas"><summary>Más opciones</summary>
+<div class="cs"><b>2</b><span>Pon la mira encima (el punto <span style="color:#ff2d95">●</span> rosa)</span></div>
+<div class="cs"><b>3</b>Pulsa «Está en la mira»</div>
+<div class="fila2 calok2"><button id="calok" type="button">✓ Está en la mira</button><button id="calcerrar" type="button">Cerrar</button></div>
+<div id="calst" role="status" aria-live="polite"></div>
+</div>
+<details id="calmas"><summary>Opciones avanzadas</summary>
 <label class="chk"><input type="checkbox" id="cal2"> Usar dos lugares (más preciso)</label>
 <label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
 <label class="chk"><input type="checkbox" id="hzauto" checked> 📷 Corregir el rumbo con el horizonte de la cámara</label>
 <label class="chk"><input type="checkbox" id="hzsil"> Dibujar la silueta del relieve sobre la cámara</label>
+<button id="calgps" type="button">🚶 Calibrar andando o en coche</button>
 <button id="calocho" type="button">∞ Hacer el 8 (calibra la brújula del iPhone)</button>
 <button id="calhor" type="button">🏔 Guardar la alineación con el horizonte</button>
+<button id="calreset" type="button">Quitar calibración</button>
 </details>
 <div id="ocho"><svg viewBox="0 0 120 70" width="150" height="88" aria-hidden="true"><path id="p8" d="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="3"/><circle r="6" fill="#ffe259"><animateMotion dur="3s" repeatCount="indefinite" path="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z"/></circle></svg><div id="ochot"></div><button id="ochocerrar" type="button">Listo</button></div>
-<div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div></div>
+</div>
+<div id="conf" role="alertdialog" aria-modal="true" aria-labelledby="confT"><div class="emoji" aria-hidden="true">⏹</div><h2 id="confT">¿Terminar la identificación?</h2><p>Se apagarán la cámara, el GPS y la brújula.</p><button id="confno" type="button">Seguir mirando</button><button id="confsi" type="button">Sí, terminar</button></div>
+<div id="permisos" role="dialog" aria-modal="true" aria-labelledby="permT"><h2 id="permT">Antes de empezar</h2><p>Tu móvil te pedirá tres permisos. Pulsa «Permitir» en cada uno:</p>
+<ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b><br>Para saber hacia dónde apuntas.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b><br>Para saber dónde estás y buscar los pueblos y el relieve a tu alrededor.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b><br>Para ver lo que apuntas. La imagen no sale de tu móvil.</span></li></ul>
+<button id="permok" type="button">Entendido, continuar</button><button id="permno" type="button">Ahora no</button></div>
 <div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>Para cerrar del todo, desliza hacia arriba desde el borde inferior del iPhone y quita la app.</p><button id="volver" type="button">Volver</button></div>
 <script>
 (function(){
@@ -339,12 +418,61 @@ function actOcho(){
   t.textContent=(prec<=10?"✓ Brújula calibrada. ":"Sigue dibujando el 8… ")+"Precisión: ±"+Math.round(prec)+"°"+(prec<=10?"":" (objetivo: ±10° o menos)");
 }
 function cerrarOcho(){ochoActivo=false;$("cal").className="";$("ocho").style.display="none"}
+// Cuenta localidades a menos de km (en cualquier dirección o solo en la que apunta el móvil)
+function contarPueblos(pe,hdc,km,soloDir){
+  var dLa=km/111,dLo=km/(111*Math.max(0.2,Math.cos(pe.latitude*R))),n=0,i,p,k;
+  for(i=0;i<P.length;i++){
+    p=P[i];
+    if(Math.abs(p[1]-pe.latitude)>=dLa||Math.abs(p[2]-pe.longitude)>=dLo)continue;
+    k=dst(pe.latitude,pe.longitude,p[1],p[2]);
+    if(k<=0.5||k>km)continue;
+    if(soloDir&&dif(brg(pe.latitude,pe.longitude,p[1],p[2]),hdc)>TOL)continue;
+    n++;
+  }
+  return n;
+}
+// Explica por qué no sale ningún pueblo y qué probar (se calcula solo si cambia la situación)
+var spC={k:"",t:""};
+function sinPueblos(pe,hdc,r){
+  if(r.length)return "Hay pueblos en esa dirección, pero el relieve (las montañas) los tapa desde aquí. Prueba a apuntar un poco hacia un lado.";
+  var k=[pe.latitude.toFixed(2),pe.longitude.toFixed(2),Math.round(hdc/3),alcance,verAldeas?1:0,P.length].join("|");
+  if(spC.k===k)return spC.t;
+  var t;
+  if(!BD&&P.length<=BASE.length){
+    t="No tengo los pueblos de esta zona: sin cobertura y sin provincia descargada solo conozco las ciudades grandes. Descarga tu provincia en «Descargar pueblos».";
+  }else if(!contarPueblos(pe,hdc,alcance,false)){
+    t="No tengo pueblos a menos de "+alcance+" km de aquí.";
+    if(alcance<80&&contarPueblos(pe,hdc,80,false)>0)t+=" Prueba con «Más lejos» (80 km).";
+    else if(!BD)t+=" Si estás sin cobertura, descarga antes tu provincia en «Descargar pueblos».";
+  }else if(!contarPueblos(pe,hdc,alcance,true)){
+    t="No hay pueblos en esa dirección a menos de "+alcance+" km."+((alcance<80&&contarPueblos(pe,hdc,80,true)>0)?" Prueba con «Más lejos» (80 km) o gira hacia otro lado.":" Gira hacia otro lado.");
+  }else t=verAldeas?"No veo ningún pueblo en esa dirección.":"Solo hay aldeas en esa dirección: activa «Aldeas» para verlas.";
+  spC={k:k,t:t};return t;
+}
+// Indicadores de estado siempre visibles: GPS, brújula y calibración
+var estC="";
+function actualizarEstado(){
+  var g,b,c,a;
+  if(pos&&typeof pos.accuracy==="number"){a=pos.accuracy;g=a<=30?["ok","GPS ✓"]:a<=100?["av","GPS ⚠ ±"+Math.round(a)+" m"]:["mal","GPS ✕ ±"+Math.round(a)+" m"]}
+  else g=["n","GPS …"];
+  if(oriN>20&&!oriNorte)b=["mal","Brújula ✕ no fiable"];
+  else if(oriN===0)b=(oriT0&&Date.now()-oriT0>4000)?["mal","Brújula ✕ sin datos"]:["n","Brújula …"];
+  else if(prec!==null&&prec<0)b=["mal","Brújula ✕ haz el 8"];
+  else if(prec!==null&&prec>20)b=["av","Brújula ⚠ ±"+Math.round(prec)+"°"];
+  else b=["ok","Brújula ✓"+(prec!==null?" ±"+Math.round(prec)+"°":"")];
+  c=(off||Object.keys(tab).length)?["ok","Calibrada ✓"]:["av","Sin calibrar"];
+  var k=g.join()+b.join()+c.join();
+  if(k===estC)return;
+  estC=k;
+  [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);e.className="ch "+x[1][0];e.textContent=x[1][1]});
+}
 function pintar(){
   if(!pos){return}
   var pe=posEfectiva();
   var hdc=rumboC();
   if(!panEnCurso&&Date.now()>=panBloq&&(!pan||pan.alc!==alcance||Math.abs(envolver(hdc-pan.c))>25||dst(pan.la,pan.lo,pos.latitude,pos.longitude)>1.5))construirPano();
   $("rumbo").textContent="Rumbo: "+Math.round(hdc)+"° · Inclinación: "+Math.round(pit)+"°";
+  actualizarEstado();
   var av=[];
   if(prec!==null){if(prec<0)av.push("Brújula sin calibrar: dibuja un 8 con el móvil.");else if(prec>20)av.push("Brújula poco precisa (±"+Math.round(prec)+"°): dibuja un 8 con el móvil.")}
   var nT=Object.keys(tab).length;
@@ -377,7 +505,8 @@ function pintar(){
   $("mejor").textContent=vis?vis.n:"—";
   $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
   $("lista").innerHTML=vis?'<div class="it" style="border-left-color:'+colorDe(vis)+'"><span style="font-size:'+(SZL[vis.t]||15)+'px"><b style="color:'+colorDe(vis)+'">●</b> '+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
-  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?(panEnCurso?"Descargando el relieve de la zona… "+panProg:"Comprobando visibilidad…"):(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":"No veo ningún pueblo en esa dirección.");
+  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRelieve?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?(panEnCurso?"Descargando el relieve de la zona… "+panProg:"Comprobando visibilidad…"):(sinRelieve?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":sinPueblos(pe,hdc,r));
+  $("msg").className=(!fuera&&!vis&&!pend&&!sinRelieve)?"aviso":"";
   if(document.body.classList.contains("on")&&!fuera)etiquetas(pe,hdc);else $("etq").innerHTML="";
   dibujarSilueta(hdc);
   if(ochoActivo)actOcho();
@@ -497,6 +626,7 @@ function reconstruir(all){
 function unir(){return fusionar(BD,BASE)}
 function aplicarBD(datos){
   BD=datos.length?datos:null;BDlisto=false;
+  $("avisoCob").style.display=BD?"none":"block";
   if(BD&&pos){P=unir();BDlisto=true}
   var n=Object.keys(hechas).length;
   $("info").textContent=BD?"Base local: "+BD.length+" localidades de "+n+(n===1?" provincia":" provincias"):"";
@@ -576,18 +706,24 @@ function salir(){camErr="";camBusy=false;
   $("go").style.display="";
   $("etq").innerHTML="";pan=null;hzOff=0;hzPrev=null;hzDet=null;dibujarSilueta(0);
   verPicos=false;document.body.classList.remove("picos");$("picosb").classList.remove("act");$("picosb").setAttribute("aria-pressed","false");
-  zoom=1;pista=null;capZoom=null;modosFoco=[];capDist=null;clearTimeout(tFoco);$("fdw").className="";$("cam").style.transform="";$("zval").textContent="×1.0";
+  zoom=1;pista=null;capZoom=null;modosFoco=[];capDist=null;clearTimeout(tFoco);$("fdw").className="";$("cam").style.transform="";$("zval").textContent=fmtZoom(1);clearTimeout(tToast);clearTimeout(tCons);$("toast").className="";$("calbtn").classList.remove("pista");$("conf").style.display="none";
   pos=null;sm=null;oriN=0;oriNorte=false;oriAbs=false;oriT0=0;modoCoche=false;velAlta=0;velBaja=0;rumboGPS=null;pantallaEncendida(false);
   $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
-  $("msg").textContent="Has salido: cámara, GPS y brújula apagados. Pulsa el botón para volver a empezar.";
+  $("msg").textContent="Has terminado: cámara, GPS y brújula apagados. Pulsa «Iniciar identificación» para empezar de nuevo.";
 }
-$("salir").onclick=salir;
+// Terminar siempre pide confirmación para que un toque accidental no apague todo
+function pedirTerminar(){$("conf").style.display="flex";$("confno").focus()}
+$("salir").onclick=pedirTerminar;
+$("confno").onclick=function(){$("conf").style.display="none"};
+$("confsi").onclick=function(){$("conf").style.display="none";salir()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){$("conf").style.display="none";$("permisos").style.display="none"}});
 function abrirMapa(){
   document.body.classList.add("mapa");window.scrollTo(0,0);
   try{history.pushState({mapa:1},"")}catch(e){}
 }
 function cerrarMapa(){document.body.classList.remove("mapa");window.scrollTo(0,0)}
 $("abrirmapa").onclick=abrirMapa;
+$("avisoCob").onclick=abrirMapa;
 $("volverMapa").onclick=function(){
   if(history.state&&history.state.mapa){try{history.back();return}catch(e){}}
   cerrarMapa();
@@ -604,6 +740,9 @@ function cerrar(){
   $("adios").style.display="flex";
 }
 $("cerrar").onclick=cerrar;
+// En iPhone y navegadores una web no puede cerrarse sola: el botón solo aparece en la app Android
+function botonSalir(){$("cerrar").style.display=(window.AndroidApp&&AndroidApp.cerrar)?"":"none"}
+botonSalir();window.addEventListener("load",botonSalir);
 $("volver").onclick=function(){$("adios").style.display="none"};
 // ---- Calibración de la brújula y filtro de aldeas ----
 var off=0,verAldeas=true,prec=null,calList=[];
@@ -622,12 +761,13 @@ function offPara(h){
   return so/sw;
 }
 function maxDif(a){var m=0;for(var i=1;i<a.length;i++)m=Math.max(m,dif(a[i],a[0]));return m}
-$("aldeas").onclick=function(){verAldeas=!verAldeas;$("aldeas").textContent=verAldeas?"🏘 Con aldeas":"🏘 Sin aldeas";pintar()};
+$("aldeas").onclick=function(){verAldeas=!verAldeas;this.setAttribute("aria-pressed",verAldeas?"true":"false");pintar()};
 $("calbtn").onclick=function(){
   if(!pos)return;
   calList=P.filter(function(p){return p[3]!=="hamlet"&&p[3]!=="isolated_dwelling"}).map(function(p){return{n:p[0],la:p[1],lo:p[2],k:dst(pos.latitude,pos.longitude,p[1],p[2])}}).filter(function(p){return p.k>0.5&&p.k<60}).sort(function(a,b){return a.k-b.k}).slice(0,15);
   $("calsel").innerHTML=calList.map(function(p,i){return '<option value="'+i+'">'+esc(p.n)+' · '+p.k.toFixed(0)+' km</option>'}).join("");
   calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
+  $("calmas").open=false;
   $("cal").style.display="block";
 };
 var calAnd=null,cal2={b:null,o:null};
@@ -723,6 +863,7 @@ async function pantallaEncendida(on){
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on")){pantallaEncendida(true);if(camErr&&!stream)camara(true)}});
 // ---- Zoom de la cámara (con dos dedos o con los botones) ----
 var zoom=1,zMax=6,pista=null,capZoom=null,pz=null,pzFin=0,modosFoco=[],capDist=null,tFoco=null,tZ=null,ultRef=0;
+function fmtZoom(z){return "Zoom ×"+String(parseFloat(z.toFixed(1))).replace(".",",")}
 function aplicarZoom(z){
   zoom=Math.max(1,Math.min(zMax,z));
   if(capZoom&&pista){
@@ -731,7 +872,7 @@ function aplicarZoom(z){
   }else{
     $("cam").style.transform="scale("+zoom+")";
   }
-  $("zval").textContent="×"+zoom.toFixed(1);
+  $("zval").textContent=fmtZoom(zoom);
   // Tras cambiar el zoom, vuelve a enfocar (si la cámara lo permite)
   clearTimeout(tZ);tZ=setTimeout(function(){if(pista&&modosFoco.length)enfocar()},600);
 }
@@ -783,6 +924,28 @@ function enfocar(x,y){
 }
 $("cam").addEventListener("click",function(e){if(Date.now()-pzFin<500)return;enfocar(e.clientX,e.clientY)});
 $("enf").onclick=function(){enfocar(innerWidth/2,innerHeight/2)};
+var tToast=null,tCons=null;
+function avisar(txt,ms){var t=$("toast");t.textContent=txt;t.className="";void t.offsetWidth;t.className="v";clearTimeout(tToast);tToast=setTimeout(function(){t.className=""},ms||6200)}
+// Consejos de primera vez: cada uno sale una sola vez y no vuelve (se recuerdan en localStorage)
+var CONSEJOS=[["consejoApuntar","👆 Apunta a un pueblo lejano",""],["consejoCalibrar","🎯 Si el nombre no coincide, calibra","calbtn"],["consejoEnfoque","Toca la pantalla para enfocar",""]];
+function consejosPrimeraVez(){
+  var pend=CONSEJOS.filter(function(c){try{return localStorage.getItem(c[0])!=="1"}catch(e){return false}});
+  clearTimeout(tCons);
+  function sig(){
+    if(!pend.length||!document.body.classList.contains("on"))return;
+    var c=pend.shift();
+    try{localStorage.setItem(c[0],"1")}catch(e){}
+    avisar(c[1]);
+    var bt=c[2]?$(c[2]):null;
+    if(bt){bt.classList.add("pista");setTimeout(function(){bt.classList.remove("pista")},6200)}
+    tCons=setTimeout(sig,6900);
+  }
+  tCons=setTimeout(sig,2500);
+}
+$("vconsejos").onclick=function(){
+  try{CONSEJOS.forEach(function(c){localStorage.removeItem(c[0])});localStorage.removeItem("permisosVistos")}catch(e){}
+  $("probres").textContent="Listo: los consejos y la explicación de permisos volverán a salir la próxima vez que inicies la identificación."
+};
 ["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){if(document.body.classList.contains("on"))e.preventDefault()},{passive:false})});
 // ---- Panorama del terreno: relieve en abanico de ±45° y hasta 80 km ----
 var pan=null,panEnCurso=false,panBloq=0,elevC={},colaE={},pidiendoE=false,FOVL=69.4;
@@ -901,10 +1064,9 @@ function fEff(){
   var s=vw?Math.max(W/vw,H/vh):1,fv=vw?s*Math.max(vw,vh)/2/Math.tan(FOVL/2*R):H/2/Math.tan(FOVL/2*R);
   return fv*zoom;
 }
-var COL={city:"#ff4d6d",town:"#ff9f1c",village:"#ffe66d",hamlet:"#4cc9f0",isolated_dwelling:"#4cc9f0"},COLPK="#80ed99";
-// Cada pueblo recibe su propio color (paleta sin verde, reservado a los picos). Se asigna al verlo por primera vez y se mantiene.
-var PAL=["#ff3b6b","#ff9500","#ffd60a","#00e5ff","#5b8cff","#b266ff","#ff5ce1","#f4f4f4"],colMap={},colN=0;
-function colorDe(q){var k=q.n+"|"+q.la.toFixed(3)+"|"+q.lo.toFixed(3);if(!colMap[k]){colMap[k]=PAL[colN%PAL.length];colN++}return colMap[k]}
+var COL={city:"#ff4d6d",town:"#ffd60a",village:"#ffd60a",hamlet:"#00e5ff",isolated_dwelling:"#00e5ff"},COLPK="#80ed99";
+// El color indica el tamaño de la localidad (ciudad / pueblo / aldea); el verde queda para los picos
+function colorDe(q){return COL[q.t]||COL.city}
 // ---- Picos de montaña (OpenStreetMap, natural=peak) ----
 var PK=[],verPicos=false,pkCentro=null,pkCargando=false;
 function usarPicos(c,aviso){
@@ -952,9 +1114,12 @@ async function cargarPicos(){
 }
 $("lejosb").onclick=function(){
   alcance=alcance===40?80:40;
-  this.classList.toggle("act",alcance===80);this.setAttribute("aria-pressed",alcance===80?"true":"false");
-  this.setAttribute("aria-label",alcance===80?"Volver al alcance normal de 40 km":"Ampliar el alcance a 80 km");
-  panBloq=0;$("info").textContent="🔭 Alcance: "+alcance+" km"+(alcance===80?" (descargando relieve lejano)":"");
+  var l=alcance===80;
+  this.classList.toggle("act",l);this.setAttribute("aria-pressed",l?"true":"false");
+  this.setAttribute("aria-label","Más lejos: alcance "+alcance+" km");
+  this.title=l?"Alcance 80 km. Pulsa para volver a 40 km":"Alcance 40 km. Pulsa para ampliar a 80 km";
+  avisar(l?"🔭 Ahora ves hasta 80 km. Puede tardar unos segundos en descargar el relieve.":"🔭 Ahora ves hasta 40 km.",4500);
+  panBloq=0;$("info").textContent="🔭 Alcance: "+alcance+" km"+(l?" (descargando relieve lejano)":"");
   pintar();
 };
 $("picosb").onclick=function(){
@@ -981,7 +1146,7 @@ function etiquetas(pe,hdc){
   var out=[],used=[];
   function hueco(x,w,yb){
     for(var L=0;L<6;L++){
-      var y2=yb-L*28,r={a:x-w/2-3,b:x+w/2+3,c:y2-26,d:y2};
+      var y2=yb-L*34,r={a:x-w/2-3,b:x+w/2+3,c:y2-31,d:y2};
       if(!used.some(function(o){return r.a<o.b&&r.b>o.a&&r.c<o.d&&r.d>o.c})){used.push(r);return L}
     }
     return -1;
@@ -992,12 +1157,12 @@ function etiquetas(pe,hdc){
     var q=c[i],v=q.sel?true:panVis(q);
     if(v===null)v=q.dk<=10;
     if(v!==true)continue;
-    var x=W/2+f*Math.tan(q.d*R),w=7*q.n.length+16;
+    var x=W/2+f*Math.tan(q.d*R),w=8.5*q.n.length+60;
     var e=elevC[ek(q)],el=(pan&&typeof e==="number")?Math.atan2(e+10-pan.H0-Math.pow(q.dk*1000,2)/14.6e6,q.dk*1000):0;
     var y=H/2-f*Math.tan(el-pit*R),col=colorDe(q);
     var L=hueco(x,w,y-8);
     if(L<0){if(!q.sel)continue;L=0}
-    var ty=y-8-L*28;n++;
+    var ty=y-8-L*34;n++;
     out.push('<i class="ln" style="left:'+Math.round(x)+'px;top:'+Math.round(ty)+'px;height:'+Math.max(0,Math.round(y-ty))+'px;background:'+col+'"></i>');
     out.push('<i class="pt'+(q.sel?' sel':'')+'" style="left:'+Math.round(x)+'px;top:'+Math.round(y)+'px;background:'+col+'"></i>');
     out.push('<div class="et'+(q.sel?' sel':'')+'" style="left:'+Math.round(x)+'px;top:'+Math.round(ty)+'px;border-color:'+col+(q.sel?';background:'+col:'')+'">'+esc(q.n)+'<small> '+(q.dk<10?q.dk.toFixed(1):Math.round(q.dk))+' km</small></div>');
@@ -1022,10 +1187,10 @@ function etiquetas(pe,hdc){
       if(vv!==true)continue;
       var px=W/2+f*Math.tan(m.d*R),py=H/2-f*Math.tan(elev(m,m.e,m.dk)-pit*R);
       if(py<90||py>H-100)continue;
-      var txt='▲ '+m.n,sub=' '+Math.round(m.e).toLocaleString("es-ES")+' m · '+(m.dk<10?m.dk.toFixed(1):Math.round(m.dk))+' km',pw=7*(txt.length+sub.length)*0.9+16;
+      var txt='▲ '+m.n,sub=' '+Math.round(m.e).toLocaleString("es-ES")+' m · '+(m.dk<10?m.dk.toFixed(1):Math.round(m.dk))+' km',pw=8*(txt.length+sub.length)*0.95+24;
       var PL=hueco(px,pw,py-10);
       if(PL<0)continue;
-      var pty=py-10-PL*28;np++;
+      var pty=py-10-PL*34;np++;
       out.push('<i class="ln" style="left:'+Math.round(px)+'px;top:'+Math.round(pty)+'px;height:'+Math.max(0,Math.round(py-pty))+'px;background:'+COLPK+'"></i>');
       out.push('<i class="pk" style="left:'+Math.round(px)+'px;top:'+Math.round(py)+'px"></i>');
       out.push('<div class="et" style="left:'+Math.round(px)+'px;top:'+Math.round(pty)+'px;border-color:'+COLPK+'">'+esc(txt)+'<small>'+esc(sub)+'</small></div>');
@@ -1175,7 +1340,7 @@ $("probar").onclick=async function(){
   }catch(e){R.textContent="Error en la prueba: "+motivoErr(e)}
   B.disabled=false;
 };
-$("go").onclick=async function(){
+async function iniciar(){
   $("msg").textContent="Pidiendo permisos…";
   try{
     if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
@@ -1186,7 +1351,7 @@ $("go").onclick=async function(){
   if(!navigator.geolocation){$("msg").textContent="Este navegador no tiene GPS.";return}
   navigator.geolocation.getCurrentPosition(function(p){
     pos=p.coords;posT=Date.now();$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
-    masPueblos();document.body.classList.add("on");camara();pantallaEncendida(true);
+    masPueblos();document.body.classList.add("on");camara();pantallaEncendida(true);consejosPrimeraVez();
     // Sigue tu posición y recarga los pueblos al alejarte 30 km de la última descarga
     watchId=navigator.geolocation.watchPosition(function(q){
       pos=q.coords;posT=Date.now();actualizarMarcha(q.coords);calAndar(q.coords);
@@ -1198,6 +1363,18 @@ $("go").onclick=async function(){
     window.addEventListener("deviceorientation",onOri,true);
   },function(e){$("msg").textContent="No pude obtener la ubicación ("+e.message+"). Revisa el permiso de ubicación del navegador."},{enableHighAccuracy:true,timeout:15000});
 };
+// Antes de pedir permisos, la primera vez se explica para qué sirve cada uno
+$("go").onclick=function(){
+  var visto=false;try{visto=localStorage.getItem("permisosVistos")==="1"}catch(e){}
+  if(visto){iniciar();return}
+  $("permisos").style.display="flex";$("permok").focus();
+};
+$("permok").onclick=function(){
+  $("permisos").style.display="none";
+  try{localStorage.setItem("permisosVistos","1")}catch(e){}
+  iniciar();
+};
+$("permno").onclick=function(){$("permisos").style.display="none"};
 // ---- App instalable: guarda la página para abrirla sin conexión ----
 if("serviceWorker" in navigator&&location.protocol!=="file:"&&!window.AndroidApp)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
 })();
