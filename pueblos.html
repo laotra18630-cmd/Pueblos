@@ -48,6 +48,9 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 .fila button{min-height:48px;padding:12px;font-size:16px;background:rgba(255,255,255,.3);box-shadow:none}
 #dl{margin-top:12px;border-radius:999px;background:linear-gradient(90deg,#1d4ed8,#0f766e);box-shadow:none;font-size:17px;font-weight:700;min-height:52px;padding:14px}
 #dl:disabled{opacity:.6}
+#dlst{font-size:15px;line-height:1.4;margin-top:10px;text-align:center}
+#dlst:empty{display:none}
+#dlst.mal{background:rgba(185,28,28,.4);border:1px solid #fecaca;border-radius:12px;padding:10px 12px}
 #barra{display:none;height:8px;border-radius:99px;background:rgba(255,255,255,.2);margin-top:10px;overflow:hidden}
 #barraI{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe259,#ff9a9e);transition:width .3s}
 #probar,#cerrar,#volverMapa,#vconsejos{border-radius:999px;background:transparent;box-shadow:none}
@@ -240,12 +243,10 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <section id="extras">
 <div class="pasos"><div><b aria-hidden="true">1</b>Activa GPS y brújula</div><div><b aria-hidden="true">2</b>Apunta al horizonte</div><div><b aria-hidden="true">3</b>Lee el nombre del pueblo</div></div>
 <button id="abrirmapa" type="button">🗺️ Descargar pueblos (para usar sin cobertura)</button>
-<details id="masop"><summary>Más opciones</summary>
 <button id="probar" type="button">🔎 Probar relieve</button>
 <div id="probres" role="status" aria-live="polite"></div>
-<button id="vconsejos" type="button">💡 Volver a ver consejos y avisos</button>
+<button id="vconsejos" type="button">💡 Consejos y avisos</button>
 <button id="cerrar" type="button">Salir de la app</button>
-</details>
 </section>
 <section id="mapaPant">
 <h2>🗺️ Descargar pueblos</h2>
@@ -254,6 +255,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="prov"><div id="plist"></div><div class="fila"><button id="todas" type="button">Todas</button><button id="ninguna" type="button">Ninguna</button></div></div>
 <button id="dl" type="button">Descargar provincias elegidas</button>
 <div id="barra" role="progressbar" aria-label="Progreso de la descarga" aria-valuemin="0" aria-valuemax="100"><i id="barraI"></i></div>
+<div id="dlst" role="status" aria-live="polite"></div>
 <button id="volverMapa" type="button">← Volver</button>
 </section>
 <div id="zoom" role="group" aria-label="Zoom y enfoque de la cámara"><button id="zmas" type="button" aria-label="Acercar (más zoom)">＋</button><span id="zval">Zoom ×1</span><button id="zmenos" type="button" aria-label="Alejar (menos zoom)">−</button><button id="enf" type="button"><span class="ic" aria-hidden="true">◎</span><span>Enfocar</span></button></div>
@@ -676,11 +678,17 @@ function aplicarBD(datos){
   if(BD&&pos){P=unir();BDlisto=true}
   var n=Object.keys(hechas).length;
   $("info").textContent=BD?"Base local: "+BD.length+" localidades de "+n+(n===1?" provincia":" provincias"):"";
-  PROV.forEach(function(p){var e=$("ok-"+p[0]);if(e)e.textContent=hechas[p[0]]?" ✓":""});
+  PROV.forEach(function(p){var e=$("ok-"+p[0]);if(e)e.textContent=hechas[p[0]]?" ✓ descargada":""});
+  etqDl();
 }
 var selGuardada=[];
 try{selGuardada=JSON.parse(localStorage.getItem("provSel")||"[]")}catch(e){}
-function guardarSel(){
+function etqDl(){
+  var B=$("dl");if(B.disabled)return;
+  var sel=[].map.call(document.querySelectorAll("#plist input:checked"),function(i){return i.value});
+  B.textContent=(sel.length&&sel.every(function(c){return hechas[c]}))?"Actualizar provincias elegidas":"Descargar provincias elegidas";
+}
+function guardarSel(){etqDl();
   try{localStorage.setItem("provSel",JSON.stringify([].filter.call(document.querySelectorAll("#plist input"),function(i){return i.checked}).map(function(i){return i.value})))}catch(e){}
 }
 function pintarLista(){
@@ -704,41 +712,49 @@ pintarLista();
   }catch(e){}
 })();
 function espera(ms){return new Promise(function(r){setTimeout(r,ms)})}
+var SERV=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+function dlMsg(t,mal){var e=$("dlst");e.textContent=t;e.className=mal?"mal":""}
 async function descargar(){
   var sel=[].map.call(document.querySelectorAll("#plist input:checked"),function(i){return i.value});
-  if(!sel.length){$("info").textContent="Marca al menos una provincia.";return}
+  if(!sel.length){dlMsg("Marca al menos una provincia.",true);return}
+  if(navigator.onLine===false){dlMsg("Sin conexión a internet: conéctate a datos o wifi para descargar.",true);return}
   var faltan=sel.filter(function(c){return !hechas[c]});
   var actualizar=faltan.length===0;
   if(!actualizar)sel=faltan;
   var B=$("dl");B.disabled=true;$("barra").style.display="block";$("barraI").style.width="0%";
-  var servers=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
-  var fallos=[];
+  var fallos=[],buenas=[];
   for(var i=0;i<sel.length;i++){
     var c=sel[i],nom=nombreProv(c);
     $("barraI").style.width=(100*i/sel.length)+"%";$("barra").setAttribute("aria-valuenow",Math.round(100*i/sel.length));
     B.textContent=(actualizar?"Actualizando ":"Descargando ")+nom+" ("+(i+1)+" de "+sel.length+")…";
     var q='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet|isolated_dwelling)$"]["name"];out;';
-    var ok=false,all={};
-    for(var s=0;s<4&&!ok;s++){
+    var ok=false,all={},motivos=[];
+    for(var s=0;s<SERV.length+2&&!ok;s++){
+      var sv=SERV[s%SERV.length],resp=null;
+      dlMsg((actualizar?"Actualizando ":"Descargando ")+nom+"… puede tardar un minuto (servidor "+(s%SERV.length+1)+" de "+SERV.length+")");
       try{
-        var resp=await fetchT(servers[s%2],{method:"POST",body:"data="+encodeURIComponent(q)},150000);
-        if(!resp.ok)throw 0;
+        resp=await fetchT(sv,{method:"POST",body:"data="+encodeURIComponent(q)},100000);
+        if(!resp.ok)throw new Error("error "+resp.status);
         parseLineas(await resp.text(),all);
-        if(Object.keys(all).length<5)throw 0;
+        if(Object.keys(all).length<5)throw new Error("respuesta vacía o incompleta");
         ok=true;
-      }catch(e){all={};await espera(2000)}
+      }catch(e){
+        all={};motivos.push(sv.split("/")[2]+": "+motivoErr(e));
+        await espera(resp&&(resp.status===429||resp.status===504)?6000:1500);
+      }
     }
     if(ok){
       var datos=Object.keys(all).map(function(k){return all[k]});
-      try{await bdSet("prov:"+c,{fecha:new Date().toLocaleDateString("es-ES"),datos:datos})}catch(e){fallos.push(nom+" (no se pudo guardar)");continue}
-      $("info").textContent=nom+": "+datos.length+" localidades guardadas";
-    }else fallos.push(nom);
-    await espera(800);
+      try{await bdSet("prov:"+c,{fecha:new Date().toLocaleDateString("es-ES"),datos:datos});buenas.push(nom+" ("+datos.length+" localidades)")}
+      catch(e){fallos.push(nom+": no se pudo guardar en el móvil ("+motivoErr(e)+")");continue}
+    }else fallos.push(nom+": "+motivos.slice(-3).join("; "));
+    await espera(500);
   }
   try{aplicarBD(reconstruir(await bdAll("prov:")))}catch(e){}
-  if(fallos.length)$("info").textContent+=". Fallaron: "+fallos.join(", ")+". Márcalas y vuelve a pulsar.";
   $("barraI").style.width="100%";$("barra").setAttribute("aria-valuenow",100);
-  B.textContent="Descargar provincias elegidas";B.disabled=false;
+  B.disabled=false;etqDl();
+  if(fallos.length)dlMsg((buenas.length?"✓ Guardado: "+buenas.join(", ")+". ":"")+"No se pudo descargar → "+fallos.join(" | ")+". Comprueba la conexión y vuelve a pulsar.",true);
+  else dlMsg("✓ "+buenas.join(", ")+" guardada"+(buenas.length>1?"s":"")+". Ya puedes usar la app sin cobertura.");
 }
 $("dl").onclick=descargar;
 function salir(){camErr="";camBusy=false;
@@ -1000,8 +1016,6 @@ function consejosPrimeraVez(){
   },1500);
 }
 $("vconsejos").onclick=function(){
-  try{CONSEJOS.forEach(function(c){localStorage.removeItem(c[0])});localStorage.removeItem("permisosVistos");localStorage.removeItem("guiaVista")}catch(e){}
-  $("probres").textContent="Los consejos y la explicación de permisos también volverán a salir la próxima vez que inicies la identificación.";
   mostrarGuia(true);
 };
 ["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){if(document.body.classList.contains("on"))e.preventDefault()},{passive:false})});
