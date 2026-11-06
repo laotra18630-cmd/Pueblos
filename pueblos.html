@@ -43,6 +43,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 #prov summary{font-weight:600;font-size:16px;cursor:pointer}
 #plist{max-height:260px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:8px}
 #plist label{display:flex;gap:10px;align-items:center;min-height:44px;font-size:16px}
+#plist label.hecha{color:#86efac;font-weight:700}
 #plist input{accent-color:#ffe259;width:22px;height:22px;flex:none}
 .fila{display:flex;gap:8px;margin-top:8px}
 .fila button{min-height:48px;padding:12px;font-size:16px;background:rgba(255,255,255,.3);box-shadow:none}
@@ -80,7 +81,7 @@ body.mapa #hero,body.mapa #extras{display:none}
 #confno{background:linear-gradient(90deg,#15803d,#0f766e)}
 #confsi{background:#b91c1c;border:2px solid #fecaca;box-shadow:none}
 #estado{display:none}
-body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 4px}
+body.on #estado{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:8px 0 4px}
 .ch{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.2;color:#fff;border:2px solid transparent}
 .ch.ok{background:#15803d;border-color:#86efac}
 .ch.av{background:#b45309;border-color:#fcd34d}
@@ -134,8 +135,9 @@ body.on #cam,body.on #mira{display:block}
 #leyenda{display:none}
 body.on #leyenda{display:block;position:fixed;z-index:1;left:8px;top:50%;transform:translateY(-50%);padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.75);font-size:14px;font-weight:600;line-height:1.6;pointer-events:none}
 #leyenda i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid #fff}
-#leyenda .lpk{display:none}
-body.picos #leyenda .lpk{display:block}
+#leyenda div{display:none}
+#leyenda div.v{display:block}
+body.on #leyenda.vacia{display:none}
 body.on main{max-width:none;background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72));border-radius:0 0 16px 16px;padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
 body:not(.on) #rumbo,body:not(.on) #mejor,body:not(.on) #lista{display:none}
 body.on #hero,body.on #extras{display:none}
@@ -224,7 +226,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="etq"></div>
 <div id="mira"></div>
 <div id="foco" aria-hidden="true"></div>
-<div id="leyenda" aria-hidden="true"><div><span style="color:#ff4d6d">●</span> ciudad</div><div><span style="color:#ffd60a">●</span> pueblo</div><div><span style="color:#00e5ff">●</span> aldea</div><div class="lpk"><span style="color:#80ed99">▲</span> Pico</div></div>
+<div id="leyenda" aria-hidden="true"><div id="lgC"><span style="color:#ff4d6d">●</span> ciudad</div><div id="lgP"><span style="color:#ffd60a">●</span> pueblo</div><div id="lgA"><span style="color:#00e5ff">●</span> aldea</div><div id="lgK"><span style="color:#80ed99">▲</span> Pico</div></div>
 <main>
 <button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button>
 <section id="hero">
@@ -527,11 +529,13 @@ function actualizarEstado(){
   else if(prec!==null&&prec>20)b=["av","Brújula ⚠ ±"+Math.round(prec)+"°"];
   else b=["ok","Brújula ✓"+(prec!==null?" ±"+Math.round(prec)+"°":"")];
   if(prec!==null&&(prec<0||prec>20))ocho8=false;
-  c=(off||Object.keys(tab).length||ocho8)?["ok","Calibrada ✓"]:["av","Sin calibrar"];
-  var k=g.join()+b.join()+c.join();
+  // «Sin calibrar» solo se muestra cuando la brújula lo necesita (sin calibrar o imprecisa); si no hace falta, no aparece
+  var calOk=!!(off||Object.keys(tab).length||ocho8),imprecisa=prec!==null&&(prec<0||prec>20);
+  c=calOk?["ok","Calibrada ✓"]:imprecisa?["av","Sin calibrar"]:null;
+  var k=g.join()+b.join()+(c?c.join():"-");
   if(k===estC)return;
   estC=k;
-  [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);e.className="ch "+x[1][0];e.textContent=x[1][1]});
+  [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);if(!x[1]){e.style.display="none";return}e.style.display="";e.className="ch "+x[1][0];e.textContent=x[1][1]});
 }
 var rafP=0;
 // Agrupa todas las peticiones de repintado en un solo dibujo por fotograma
@@ -716,9 +720,9 @@ function aplicarBD(datos){
   BD=datos.length?datos:null;BDlisto=false;
   $("avisoCob").style.display=BD?"none":"block";
   if(BD&&pos){P=unir();BDlisto=true}
+  marcarHechas();
   var n=Object.keys(hechas).length;
   $("info").textContent=BD?"Base local: "+BD.length+" localidades de "+n+(n===1?" provincia":" provincias"):"";
-  PROV.forEach(function(p){var e=$("ok-"+p[0]);if(e)e.textContent=hechas[p[0]]?" ✓ descargada":""});
   etqDl();
 }
 var selGuardada=[];
@@ -731,8 +735,10 @@ function etqDl(){
 function guardarSel(){etqDl();
   try{localStorage.setItem("provSel",JSON.stringify([].filter.call(document.querySelectorAll("#plist input"),function(i){return i.checked}).map(function(i){return i.value})))}catch(e){}
 }
+// Las provincias con los pueblos ya descargados se ven en verde y en negrita; el resto, con el color normal
+function marcarHechas(){PROV.forEach(function(p){var e=$("pl-"+p[0]);if(e)e.classList.toggle("hecha",!!hechas[p[0]])})}
 function pintarLista(){
-  $("plist").innerHTML=PROV.map(function(p){return '<label><input type="checkbox" value="'+p[0]+'"'+(selGuardada.indexOf(p[0])>=0?' checked':'')+'> '+p[1]+'<span id="ok-'+p[0]+'"></span></label>'}).join("");
+  $("plist").innerHTML=PROV.map(function(p){return '<label id="pl-'+p[0]+'"'+(hechas[p[0]]?' class="hecha"':'')+'><input type="checkbox" value="'+p[0]+'"'+(selGuardada.indexOf(p[0])>=0?' checked':'')+'> '+p[1]+'</label>'}).join("");
   [].forEach.call(document.querySelectorAll("#plist input"),function(i){i.onchange=guardarSel});
   $("todas").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=true});guardarSel()};
   $("ninguna").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=false});guardarSel()};
@@ -807,7 +813,7 @@ function salir(){camErr="";camBusy=false;camSes++;iniciando=false;$("go").disabl
   cerrarOcho();$("cal").style.display="none";
   $("go").style.display="";
   limpiarEtq();pan=null;hzOff=0;hzPrev=null;hzDet=null;dibujarSilueta(0);
-  verPicos=false;document.body.classList.remove("picos");$("picosb").classList.remove("act");$("picosb").setAttribute("aria-pressed","false");
+  verPicos=false;actAldeasBtn();document.body.classList.remove("picos");$("picosb").classList.remove("act");$("picosb").setAttribute("aria-pressed","false");
   zoom=1;pista=null;capZoom=null;modosFoco=[];capDist=null;clearTimeout(tFoco);$("fdw").className="";$("cam").style.transform="";$("zval").textContent=fmtZoom(1);clearTimeout(tToast);clearTimeout(tCons);$("toast").className="";$("calbtn").classList.remove("pista");$("conf").style.display="none";
   pos=null;sm=null;oriN=0;oriNorte=false;oriAbs=false;oriT0=0;modoCoche=false;velAlta=0;velBaja=0;rumboGPS=null;pantallaEncendida(false);
   $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
@@ -1249,14 +1255,17 @@ $("picosb").onclick=function(){
   verPicos=!verPicos;
   this.classList.toggle("act",verPicos);this.setAttribute("aria-pressed",verPicos?"true":"false");
   document.body.classList.toggle("picos",verPicos);
+  actAldeasBtn();
   if(verPicos)cargarPicos();
   pintar();
 };
+function actAldeasBtn(){var b=$("aldeas");b.disabled=verPicos;b.style.opacity=verPicos?".45":"";b.title=verPicos?"No disponible mientras se muestran los picos":"Mostrar u ocultar aldeas pequeñas"}
 function etiquetas(pe,hdc){
   var W=innerWidth,H=innerHeight,f=fEff(),med=Math.atan((W/2)/f)/R+3,c=[],i;
   var cand=enRecuadro(pe.latitude,pe.longitude,0.75,0.95);
   for(i=0;i<cand.length;i++){
     var p=cand[i],t=p[3]||"city",corto=(t==="hamlet"||t==="isolated_dwelling");
+    if(verPicos&&t!=="city")continue; // con picos activados solo se dibujan ciudades, no pueblos ni aldeas
     if(corto&&!verAldeas)continue;
     if(Math.abs(p[1]-pe.latitude)>0.75||Math.abs(p[2]-pe.longitude)>0.95)continue;
     var d=envolver(brg(pe.latitude,pe.longitude,p[1],p[2])-hdc);
@@ -1267,7 +1276,7 @@ function etiquetas(pe,hdc){
   }
   // El pueblo señalado por la mira va primero y siempre se dibuja
   c.sort(function(a,b){return (b.sel?1:0)-(a.sel?1:0)||a.dk-b.dk});
-  var out=[],used=[];
+  var out=[],used=[],fc=0,fp=0,fa=0;
   function hueco(x,w,yb){
     for(var L=0;L<6;L++){
       var y2=yb-L*34,r={a:x-w/2-3,b:x+w/2+3,c:y2-31,d:y2};
@@ -1287,6 +1296,7 @@ function etiquetas(pe,hdc){
     var L=hueco(x,w,y-8);
     if(L<0){if(!q.sel)continue;L=0}
     var ty=y-8-L*34;n++;
+    if(q.t==="city")fc=1;else if(q.t==="hamlet"||q.t==="isolated_dwelling")fa=1;else fp=1;
     out.push({k:"ln",x:Math.round(x),y:Math.round(ty),h:Math.max(0,Math.round(y-ty)),c:col});
     out.push({k:"pt",x:Math.round(x),y:Math.round(y),c:col,sel:q.sel});
     out.push({k:"et",x:Math.round(x),y:Math.round(ty),c:col,sel:q.sel,html:esc(q.n)+'<small> '+(q.dk<10?q.dk.toFixed(1):Math.round(q.dk))+' km</small>'});
@@ -1320,7 +1330,16 @@ function etiquetas(pe,hdc){
       out.push({k:"et",x:Math.round(px),y:Math.round(pty),c:COLPK,html:esc(txt)+'<small>'+esc(sub)+'</small>'});
     }
   }
+  leyenda(fc,fp,fa,!!np);
   pintarEtq(out);
+}
+var legC="";
+// La leyenda solo muestra los tipos de localidad que hay dibujados en este momento (y los picos si se ven)
+function leyenda(c,p,a,k){
+  var key=(c?1:0)+""+(p?1:0)+(a?1:0)+(k?1:0);
+  if(key===legC)return;legC=key;
+  $("lgC").className=c?"v":"";$("lgP").className=p?"v":"";$("lgA").className=a?"v":"";$("lgK").className=k?"v":"";
+  $("leyenda").className=(c||p||a||k)?"":"vacia";
 }
 // Los elementos de las etiquetas se crean una vez y se reutilizan; solo se escribe lo que cambia y se mueven con transform
 var etqPool={ln:[],pt:[],pk:[],et:[]};
@@ -1351,7 +1370,7 @@ function pintarEtq(out){
 function ocultarSobrantes(n){
   for(var k in etqPool){var pool=etqPool[k],used=n?n[k]:0;for(var i=used;i<pool.length;i++){if(!pool[i]._oc){pool[i].style.display="none";pool[i]._oc=true}}}
 }
-function limpiarEtq(){ocultarSobrantes(null)}
+function limpiarEtq(){ocultarSobrantes(null);leyenda(0,0,0,0)}
 // ---- Alinear la brújula con el horizonte ----
 function skyline(g,w,h){
   var E=[],x,y,k,lim=Math.floor(h*0.85);
