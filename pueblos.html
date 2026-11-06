@@ -81,7 +81,7 @@ body.mapa #hero,body.mapa #extras{display:none}
 #confno{background:linear-gradient(90deg,#15803d,#0f766e)}
 #confsi{background:#b91c1c;border:2px solid #fecaca;box-shadow:none}
 #estado{display:none}
-body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 4px}
+body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:4px 0 2px}
 .ch{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.2;color:#fff;border:2px solid transparent}
 .ch.ok{background:#15803d;border-color:#86efac}
 .ch.av{background:#b45309;border-color:#fcd34d}
@@ -139,7 +139,20 @@ body.on #leyenda{display:block;position:fixed;z-index:1;left:8px;top:50%;transfo
 #leyenda div{display:none}
 #leyenda div.v{display:block}
 body.on #leyenda.vacia{display:none}
-body.on main{max-width:none;background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72));border-radius:0 0 16px 16px;padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
+body.on main{max-width:none;background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72));border-radius:0 0 16px 16px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 8px}
+/* Panel compacto: deja más cámara a la vista para los pueblos */
+body.on #rumbo{font-size:14px;margin:4px 0 2px;padding:3px 10px;max-width:calc(100% - 120px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+body.on .ch{min-height:34px;padding:2px 4px;border-radius:12px;font-size:13px}
+body.on #mejor{min-height:36px;margin:2px 0;line-height:1.15}
+body.on .it{padding:5px 10px;margin:3px 0;font-size:14px}
+body.on #msg{margin-top:4px;font-size:13px;line-height:1.25}
+body.on #msg.aviso{font-size:14px;padding:6px 10px}
+body.on #brj{margin-top:3px;font-size:12px;line-height:1.25}
+body.on #info{display:none}
+/* Pestaña para plegar el panel: solo quedan el rumbo y el nombre del pueblo */
+#plegar{display:none}
+body.on #plegar{display:block;position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);width:68px;min-height:0;height:26px;padding:0;border:1px solid rgba(255,255,255,.4);border-top:0;border-radius:0 0 14px 14px;background:rgba(37,40,120,.88);box-shadow:none;font-size:13px;line-height:1;z-index:3}
+body.on main.plegado #estado,body.on main.plegado #lista,body.on main.plegado #msg,body.on main.plegado #brj,body.on main.plegado #rumbo{display:none}
 body:not(.on) #rumbo,body:not(.on) #mejor,body:not(.on) #lista{display:none}
 body.on #hero,body.on #extras{display:none}
 /* Solo con la cámara activa se bloquea el zoom del navegador (el pellizco controla el zoom de la cámara) */
@@ -155,7 +168,7 @@ body.on #bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:f
 @media (prefers-reduced-motion:reduce){#calbtn.pista{animation:none;outline:3px solid #ffe259}}
 /* Terminar: arriba a la derecha, lejos de la barra, y siempre con confirmación */
 #salir{display:none}
-body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;position:absolute;z-index:3;top:8px;right:12px;width:auto;min-width:48px;min-height:48px;padding:8px 16px;border:2px solid #fecaca;border-radius:999px;background:#b91c1c;box-shadow:none;font-size:15px;font-weight:700}
+body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;position:absolute;z-index:3;top:8px;right:12px;width:auto;min-width:44px;min-height:40px;padding:6px 14px;border:2px solid #fecaca;border-radius:999px;background:#b91c1c;box-shadow:none;font-size:15px;font-weight:700}
 /* Interruptores: color + «Sí/No» siempre visibles */
 #bar .tg[aria-pressed="true"]{background:#15803d;border-color:#86efac}
 #bar .tg[aria-pressed="false"]{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.55)}
@@ -233,6 +246,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="foco" aria-hidden="true"></div>
 <div id="leyenda" aria-hidden="true"><div id="lgC"><span style="color:#ff4d6d">●</span> ciudad</div><div id="lgP"><span style="color:#ffd60a">●</span> pueblo</div><div id="lgA"><span style="color:#00e5ff">●</span> aldea</div><div id="lgK"><span style="color:#80ed99">▲</span> Pico</div></div>
 <main>
+<button id="plegar" type="button" aria-label="Ocultar o mostrar el panel" aria-expanded="true">▲</button>
 <button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button>
 <section id="hero">
 <svg class="logo" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a11cb"/><stop offset=".5" stop-color="#2575fc"/><stop offset="1" stop-color="#00c9a7"/></linearGradient><clipPath id="lc"><rect width="96" height="96" rx="22"/></clipPath></defs><rect width="96" height="96" rx="22" fill="url(#lg)"/><g clip-path="url(#lc)"><path d="M0 96V66l22-20 20 24 18-16 36 28v14z" fill="#28105a" opacity=".6"/><path d="M0 96V78l26-14 22 14 20-10 28 14v14z" fill="#140a3c" opacity=".75"/></g><circle cx="48" cy="38" r="20" fill="none" stroke="#fff" stroke-width="4"/><path d="M48 10v10M48 56v10M20 38h10M66 38h10" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="48" cy="38" r="6" fill="#ff2d95"/></svg>
@@ -590,7 +604,7 @@ function pintarYa(){
   // El aviso depende del pueblo mostrado (o de un fallo global reciente), no de la última consulta suelta
   var sinRel=vis?(panVis(vis)===null&&sinRelK[clave(vis)]===true):(!pan&&Date.now()<bloqRel);
   $("mejor").textContent=vis?vis.n:"—";
-  $("mejor").style.fontSize=(vis?(SZ[vis.t]||32):34)+"px";
+  $("mejor").style.fontSize=Math.round(vis?(SZ[vis.t]||32)*0.8:28)+"px";
   $("lista").innerHTML=vis?'<div class="it" style="border-left-color:'+colorDe(vis)+'"><span style="font-size:'+(SZL[vis.t]||15)+'px"><b style="color:'+colorDe(vis)+'">●</b> '+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
   $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRel?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?(panEnCurso?"Descargando el relieve de la zona… "+panProg:"Comprobando visibilidad…"):(sinRel?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":sinPueblos(pe,hdc,r));
   $("msg").className=(!fuera&&!vis&&!pend&&!sinRel)?"aviso":"";
@@ -856,6 +870,14 @@ function cerrar(){
   $("adios").style.display="flex";
 }
 $("cerrar").onclick=cerrar;
+var plegado=false;try{plegado=localStorage.getItem("plegado")==="1"}catch(e){}
+function aplicarPlegado(){
+  document.querySelector("main").classList.toggle("plegado",plegado);
+  $("plegar").textContent=plegado?"▼":"▲";$("plegar").setAttribute("aria-expanded",plegado?"false":"true");
+  pintar();
+}
+$("plegar").onclick=function(){plegado=!plegado;try{localStorage.setItem("plegado",plegado?"1":"0")}catch(e){}aplicarPlegado()};
+aplicarPlegado();
 // El botón se ve siempre. En la app Android cierra de verdad; en iPhone y navegadores una web no puede cerrarse sola,
 // así que apaga cámara, GPS y brújula y muestra cómo quitar la app
 function botonSalir(){$("cerrar").style.display=""}
@@ -1222,18 +1244,20 @@ function quitarDuplicados(lista){
   });
   return ok;
 }
+// #info no se ve con la cámara activa: los mensajes importantes salen también como aviso
+function infoCam(t){$("info").textContent=t;if(document.body.classList.contains("on"))avisar(t,3500)}
 function usarPicos(c,aviso){
   PK=quitarDuplicados(c.datos.map(function(d){return{n:d[0],la:d[1],lo:d[2],e:d[3]}}));
   PK.forEach(function(q){elevC[ek(q)]=q.e});
   pkCentro={la:c.la,lo:c.lo};
-  $("info").textContent="⛰ "+PK.length+" picos cargados"+(aviso||"");
+  infoCam("⛰ "+PK.length+" picos cargados"+(aviso||""));
   pintar();
 }
 async function cargarPicos(){
   if(pkCargando||!pos)return;
   var la=pos.latitude,lo=pos.longitude;
   if(pkCentro&&PK.length&&dst(la,lo,pkCentro.la,pkCentro.lo)<20)return;
-  pkCargando=true;$("info").textContent="Buscando picos de la zona…";
+  pkCargando=true;infoCam("Buscando picos de la zona…");
   var c=null;
   try{c=await bdGet("picos")}catch(e){}
   if(c&&c.datos&&c.datos.length&&dst(la,lo,c.la,c.lo)<20){usarPicos(c);pkCargando=false;return}
@@ -1261,7 +1285,7 @@ async function cargarPicos(){
   }else if(c&&c.datos&&c.datos.length&&dst(la,lo,c.la,c.lo)<60){
     usarPicos(c," (guardados, sin conexión)");
   }else{
-    $("info").textContent="No pude descargar los picos: sin conexión. Prueba de nuevo con cobertura.";
+    infoCam("No pude descargar los picos: sin conexión. Prueba de nuevo con cobertura.");
   }
   pkCargando=false;
 }
@@ -1301,9 +1325,12 @@ function etiquetas(pe,hdc){
   // El pueblo señalado por la mira va primero y siempre se dibuja
   c.sort(function(a,b){return (b.sel?1:0)-(a.sel?1:0)||a.dk-b.dk});
   var out=[],used=[],fc=0,fp=0,fa=0;
+  // Las etiquetas no se colocan debajo del panel superior (quedarían tapadas)
+  var topMin=document.body.classList.contains("on")?document.querySelector("main").getBoundingClientRect().bottom+4:0;
   function hueco(x,w,yb){
     for(var L=0;L<6;L++){
       var y2=yb-L*34,r={a:x-w/2-3,b:x+w/2+3,c:y2-31,d:y2};
+      if(r.c<topMin)break;
       if(!used.some(function(o){return r.a<o.b&&r.b>o.a&&r.c<o.d&&r.d>o.c})){used.push(r);return L}
     }
     return -1;
@@ -1344,7 +1371,7 @@ function etiquetas(pe,hdc){
       if(vv===null)vv=m.dk<=10;
       if(vv!==true)continue;
       var px=W/2+f*Math.tan(m.d*R),py=H/2-f*Math.tan(elev(m,m.e,m.dk)-pit*R);
-      if(py<90||py>H-100)continue;
+      if(py<topMin+14||py>H-100)continue;
       var txt='▲ '+m.n,sub=' '+Math.round(m.e).toLocaleString("es-ES")+' m · '+(m.dk<10?m.dk.toFixed(1):Math.round(m.dk))+' km',pw=8*(txt.length+sub.length)*0.95+24;
       var PL=hueco(px,pw,py-10);
       if(PL<0)continue;
