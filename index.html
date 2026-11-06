@@ -821,19 +821,24 @@ async function descargar(){
     var c=sel[i],nom=nombreProv(c);
     $("barraI").style.width=(100*i/sel.length)+"%";$("barra").setAttribute("aria-valuenow",Math.round(100*i/sel.length));
     B.textContent=(actualizar?"Actualizando ":"Descargando ")+nom+" ("+(i+1)+" de "+sel.length+")…";
-    var bb=BBOX[c];
-    var q=bb?'[out:csv(::lat,::lon,name,place;false;"|")][timeout:90];node["place"~"^(city|town|village|hamlet|isolated_dwelling)$"]["name"]('+bb.join(",")+');out;'
-            :'[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet|isolated_dwelling)$"]["name"];out;';
+    var bb=BBOX[c],PL='"place"~"^(city|town|village|hamlet|isolated_dwelling)$"';
+    var qArea='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)['+PL+']["name"];out;';
+    var qBox=bb?'[out:csv(::lat,::lon,name,place;false;"|")][timeout:90];node['+PL+']["name"]('+bb.join(",")+');out;':null;
+    // Primero la consulta exacta (solo los pueblos de la provincia); el servidor 1 se prueba dos veces.
+    // Si todo falla, se usa la caja de coordenadas (más ligera, pero con algunos pueblos vecinos).
+    var plan=[[0,"A"],[0,"A"],[1,"A"],[2,"A"]];
+    if(qBox)plan=plan.concat([[0,"B"],[1,"B"],[2,"B"],[3,"B"]]);
+    var aprox=false;
     var ok=false,all={},motivos={};
-    for(var s=0;s<SERV.length+2&&!ok;s++){
-      var sv=SERV[s%SERV.length],resp=null;
-      dlMsg((actualizar?"Actualizando ":"Descargando ")+nom+"… puede tardar un minuto (servidor "+(s%SERV.length+1)+" de "+SERV.length+")");
+    for(var s=0;s<plan.length&&!ok;s++){
+      var sv=SERV[plan[s][0]],resp=null,q=plan[s][1]==="A"?qArea:qBox;
+      dlMsg((actualizar?"Actualizando ":"Descargando ")+nom+"… puede tardar un minuto (servidor "+(plan[s][0]+1)+" de "+SERV.length+(plan[s][1]==="B"?", modo ligero":"")+")");
       try{
         resp=await fetchT(sv,{method:"POST",body:"data="+encodeURIComponent(q)},100000);
         if(!resp.ok)throw new Error("error "+resp.status);
         parseLineas(await resp.text(),all);
         if(Object.keys(all).length<((c==="CE"||c==="ML")?1:5))throw new Error("respuesta vacía o incompleta");
-        ok=true;
+        ok=true;aprox=plan[s][1]==="B";
       }catch(e){
         all={};motivos[sv.split("/")[2]]=motivoErr(e);
         await espera(resp&&[429,502,503,504].indexOf(resp.status)>=0?8000:2500);
@@ -841,7 +846,7 @@ async function descargar(){
     }
     if(ok){
       var datos=Object.keys(all).map(function(k){return all[k]});
-      try{await bdSet("prov:"+c,{fecha:new Date().toLocaleDateString("es-ES"),datos:datos});buenas.push(nom+" ("+datos.length+" localidades)")}
+      try{await bdSet("prov:"+c,{fecha:new Date().toLocaleDateString("es-ES"),datos:datos});buenas.push(nom+" ("+datos.length+" localidades"+(aprox?", incluye pueblos vecinos de la frontera":"")+")")}
       catch(e){fallos.push(nom+": no se pudo guardar en el móvil ("+motivoErr(e)+")");continue}
     }else fallos.push(nom+": "+Object.keys(motivos).map(function(h){return h+": "+motivos[h]}).join("; "));
     await espera(500);
