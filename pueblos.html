@@ -319,8 +319,9 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="calst" role="status" aria-live="polite"></div>
 </div>
 <div id="conf" role="alertdialog" aria-modal="true" aria-labelledby="confT"><div class="emoji" aria-hidden="true">⏹</div><h2 id="confT">¿Terminar la identificación?</h2><p>Se apagarán la cámara, el GPS y la brújula.</p><button id="confno" type="button">Seguir mirando</button><button id="confsi" type="button">Sí, terminar</button></div>
-<div id="permisos" role="dialog" aria-modal="true" aria-labelledby="permT"><h2 id="permT">Antes de empezar</h2><p>Tu móvil te pedirá tres permisos. Pulsa «Permitir» en cada uno:</p>
-<ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b><br>Para saber hacia dónde apuntas.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b><br>Para saber dónde estás y buscar los pueblos y el relieve a tu alrededor.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b><br>Para ver lo que apuntas. La imagen no sale de tu móvil.</span></li></ul>
+<div id="permisos" role="dialog" aria-modal="true" aria-labelledby="permT"><h2 id="permT">Antes de empezar</h2><p>Para funcionar, la app necesita tres permisos. Tu móvil te los pedirá al pulsar «Iniciar identificación»: pulsa «Permitir» en cada uno.</p>
+<ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b><br>Para saber hacia dónde apuntas. Sin ella no puedo saber qué pueblo tienes delante.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b><br>Para saber dónde estás y buscar los pueblos y el relieve a tu alrededor. Solo se usa mientras la app está abierta.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b><br>Para ver lo que apuntas y poner los nombres sobre la imagen. La imagen no sale de tu móvil y no se guarda.</span></li></ul>
+<p><b>Los tres son necesarios:</b> si rechazas alguno, la app no podrá identificar pueblos. Si lo rechazas sin querer, puedes volver a activarlo en los ajustes del navegador o del móvil.</p>
 <button id="permok" type="button">Entendido, continuar</button><button id="permno" type="button">Ahora no</button></div>
 <div id="guia" role="dialog" aria-modal="true" aria-labelledby="guiaT"><h2 id="guiaT">Cómo se usa</h2>
 <div id="guiaPerm" style="display:none;width:100%;max-width:38ch"><h3>Permisos que te pedirá el móvil</h3><ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b>: para saber hacia dónde apuntas.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b>: para saber dónde estás y buscar los pueblos y el relieve.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b>: para ver lo que apuntas. La imagen no sale de tu móvil.</span></li></ul></div>
@@ -329,7 +330,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <h3>Botones de la cámara</h3>
 <ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Sí/No): muestra u oculta las aldeas pequeñas.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
 <button id="guiaok" type="button">Entendido</button></div>
-<div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>Para cerrar del todo, desliza hacia arriba desde el borde inferior del iPhone y quita la app.</p><button id="volver" type="button">Volver</button></div>
+<div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>La cámara, la ubicación y la brújula están apagadas. Para cerrar del todo, quita la app desde el selector de apps (en iPhone, desliza hacia arriba desde el borde inferior).</p><button id="volver" type="button">Volver</button></div>
 <script>
 (function(){
 "use strict";
@@ -848,8 +849,9 @@ function cerrar(){
   $("adios").style.display="flex";
 }
 $("cerrar").onclick=cerrar;
-// En iPhone y navegadores una web no puede cerrarse sola: el botón solo aparece en la app Android
-function botonSalir(){$("cerrar").style.display=(window.AndroidApp&&AndroidApp.cerrar)?"":"none"}
+// El botón se ve siempre. En la app Android cierra de verdad; en iPhone y navegadores una web no puede cerrarse sola,
+// así que apaga cámara, GPS y brújula y muestra cómo quitar la app
+function botonSalir(){$("cerrar").style.display=""}
 botonSalir();window.addEventListener("load",botonSalir);
 $("volver").onclick=function(){$("adios").style.display="none"};
 // ---- Calibración de la brújula y filtro de aldeas ----
@@ -1565,12 +1567,21 @@ $("go").onclick=function(){
   if(visto){iniciar();return}
   $("permisos").style.display="flex";$("permok").focus();
 };
+var permInicio=false;
 $("permok").onclick=function(){
   $("permisos").style.display="none";
   try{localStorage.setItem("permisosVistos","1")}catch(e){}
+  // Si se mostró al abrir la app, los permisos se piden después al pulsar «Iniciar identificación»
+  if(permInicio){permInicio=false;return}
   iniciar();
 };
-$("permno").onclick=function(){$("permisos").style.display="none"};
+$("permno").onclick=function(){$("permisos").style.display="none";permInicio=false};
+// Primera vez que se abre la app: lo primero que se ve es qué permisos hacen falta y por qué
+(function(){
+  var visto=false;try{visto=localStorage.getItem("permisosVistos")==="1"}catch(e){}
+  if(visto)return;
+  permInicio=true;$("permisos").style.display="flex";$("permok").focus();
+})();
 // ---- App instalable: guarda la página para abrirla sin conexión ----
 if("serviceWorker" in navigator&&location.protocol!=="file:"&&!window.AndroidApp)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
 })();
