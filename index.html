@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¿Qué pueblo es?</title>
+<meta name="description" content="Apunta con el móvil al horizonte y descubre qué pueblo tienes delante.">
+<meta name="theme-color" content="#0b1026">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="¿Qué pueblo?">
+<style>
+/* ---- Base ---- */
+:root{color-scheme:dark;box-sizing:border-box}
+html{background:#0b1026}
+html,body{color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{margin:0;background:linear-gradient(160deg,#6a11cb 0%,#2575fc 50%,#00c9a7 100%) fixed}
+body:not(.on){background:radial-gradient(60% 40% at 12% 0%,rgba(124,58,237,.6),transparent 70%),radial-gradient(50% 40% at 100% 18%,rgba(0,201,167,.45),transparent 70%),radial-gradient(70% 50% at 50% 100%,rgba(37,117,252,.55),transparent 70%),#0b1026;background-attachment:fixed;min-height:100vh}
+main{position:relative;z-index:2;max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+p{color:#eef2ff;margin:4px 0 14px;font-size:15px}
+button{width:100%;min-height:48px;padding:14px;font-size:17px;font-family:inherit;border:0;border-radius:12px;background:linear-gradient(90deg,#d63a12,#b8420a);box-shadow:0 8px 20px rgba(0,0,0,.3);color:#fff;font-weight:600}
+button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffe259;outline-offset:2px}
+
+/* ---- Portada ---- */
+#hero{text-align:center;padding:22px 0 6px}
+.logo{width:104px;height:104px;display:block;margin:0 auto 14px;filter:drop-shadow(0 14px 24px rgba(0,0,0,.5))}
+#hero h1{font-size:36px;line-height:1.1;margin:0 0 8px;letter-spacing:-.5px;background:linear-gradient(90deg,#ffe259,#ff9a9e 55%,#7ee8fa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#hero p{font-size:16px;line-height:1.4;margin:0 auto 22px;max-width:30ch;color:#dfe6ff}
+#go{font-size:19px;padding:17px;border-radius:999px;background:linear-gradient(90deg,#e03a1b,#c01b64);animation:pulso 2.4s infinite}
+@keyframes pulso{0%,100%{box-shadow:0 8px 22px rgba(221,36,118,.45),0 0 0 0 rgba(255,81,47,.45)}50%{box-shadow:0 8px 22px rgba(221,36,118,.45),0 0 0 14px rgba(255,81,47,0)}}
+@media (prefers-reduced-motion:reduce){#go{animation:none}}
+#avisoCob{display:none;width:100%;margin:0 auto 16px;max-width:34ch;min-height:0;padding:10px 14px;font-size:15px;font-weight:600;line-height:1.35;border-radius:14px;background:rgba(255,226,89,.16);border:1px solid rgba(255,226,89,.6);box-shadow:none;color:#fff}
+#go .go1{display:block;font-size:21px;font-weight:800;line-height:1.2}
+#go .go2{display:block;font-size:13px;font-weight:500;line-height:1.3;margin-top:4px;opacity:.95}
+.pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 14px}
+.pasos div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px 8px;text-align:center;font-size:13px;line-height:1.3;color:#eef2ff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pasos b{display:flex;width:28px;height:28px;margin:0 auto 8px;border-radius:50%;align-items:center;justify-content:center;font-size:15px;color:#1b1040;background:linear-gradient(135deg,#ffe259,#ff9a9e)}
+#prov{padding:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:16px;font-size:15px}
+#prov summary{font-weight:600;font-size:16px;cursor:pointer}
+#plist{max-height:260px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:8px}
+#plist label{display:flex;gap:10px;align-items:center;min-height:44px;font-size:16px}
+#plist label.hecha{color:#86efac;font-weight:700}
+#plist input{accent-color:#ffe259;width:22px;height:22px;flex:none}
+.fila{display:flex;gap:8px;margin-top:8px}
+.fila button{min-height:48px;padding:12px;font-size:16px;background:rgba(255,255,255,.3);box-shadow:none}
+#dl{margin-top:12px;border-radius:999px;background:linear-gradient(90deg,#1d4ed8,#0f766e);box-shadow:none;font-size:17px;font-weight:700;min-height:52px;padding:14px}
+#dl:disabled{opacity:.6}
+#dlst{font-size:15px;line-height:1.4;margin-top:10px;text-align:center}
+#dlst:empty{display:none}
+#dlst.mal{background:rgba(185,28,28,.4);border:1px solid #fecaca;border-radius:12px;padding:10px 12px}
+#barra{display:none;height:8px;border-radius:99px;background:rgba(255,255,255,.2);margin-top:10px;overflow:hidden}
+#barraI{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe259,#ff9a9e);transition:width .3s}
+#probar,#cerrar,#volverMapa,#vconsejos{border-radius:999px;background:transparent;box-shadow:none}
+#masop{margin-top:6px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);padding:0 14px}
+#masop summary{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:600;cursor:pointer;list-style:none}
+#masop summary::-webkit-details-marker{display:none}
+#masop summary::after{content:"▾";transition:transform .2s}
+#masop[open] summary::after{transform:rotate(180deg)}
+#masop[open]{padding-bottom:14px}
+#abrirmapa{min-height:52px;padding:14px;font-size:16px;font-weight:700;text-align:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:16px;box-shadow:none;margin-bottom:12px}
+#mapaPant{display:none}
+body.mapa #mapaPant{display:block}
+body.mapa #hero,body.mapa #extras{display:none}
+#mapaPant h2{margin:10px 0 4px;font-size:26px}
+#mapaAviso{display:none;background:rgba(255,226,89,.16);border:1px solid rgba(255,226,89,.55);border-radius:14px;padding:11px 13px;font-size:14px;line-height:1.45;margin:0 0 14px;color:#fff}
+#mapaPant #plist{max-height:50vh}
+#volverMapa{margin-top:18px;border:2px solid rgba(255,255,255,.45);font-size:16px;padding:12px}
+#probres{font-size:14px;line-height:1.5;margin-top:8px;text-align:center;color:#ffe259}
+#probar{margin-top:4px;border:2px solid rgba(255,255,255,.35);font-size:16px;min-height:48px;padding:11px}
+#vconsejos{margin-top:12px;border:2px solid rgba(255,255,255,.35);font-size:16px;min-height:48px;padding:12px}
+#cerrar{margin-top:12px;border:2px solid rgba(255,255,255,.45);font-size:16px;min-height:48px;padding:12px}
+#adios{display:none;position:fixed;inset:0;z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:30px;color:#fff;background:radial-gradient(60% 40% at 12% 0%,rgba(124,58,237,.7),transparent 70%),radial-gradient(70% 50% at 50% 100%,rgba(37,117,252,.6),transparent 70%),#0b1026}
+#conf{display:none;position:fixed;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px;color:#fff;background:rgba(5,7,20,.94)}
+#conf h2{margin:0;font-size:24px}
+#conf p{max-width:30ch;color:#dfe6ff;margin:0 0 6px;font-size:17px}
+#conf button{max-width:300px;min-height:56px;font-size:18px;font-weight:700}
+#confno{background:linear-gradient(90deg,#15803d,#0f766e)}
+#confsi{background:#b91c1c;border:2px solid #fecaca;box-shadow:none}
+#estado{display:none}
+body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:4px 0 2px}
+.ch{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.2;color:#fff;border:2px solid transparent}
+.ch.ok{background:#15803d;border-color:#86efac}
+.ch.av{background:#b45309;border-color:#fcd34d}
+.ch.mal{background:#b91c1c;border-color:#fecaca}
+.ch.n{background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.55)}
+#permisos{display:none;position:fixed;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;color:#fff;background:rgba(5,7,20,.96);overflow:auto}
+#autor{display:block;margin:-4px 0 12px;font-size:12px;letter-spacing:.04em;color:#dfe6ff;opacity:.7;text-align:center}
+#permisos h2{margin:0;font-size:24px;text-align:center}
+#permisos p{max-width:34ch;margin:0;text-align:center;color:#dfe6ff;font-size:15px}
+#permisos ul{list-style:none;margin:0;padding:0;max-width:34ch;display:grid;gap:10px}
+#permisos li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.35;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:12px}
+#permisos .pi{font-size:28px;line-height:1}
+#permisos button{max-width:300px;min-height:56px;font-size:18px;font-weight:700}
+#permok{background:linear-gradient(90deg,#15803d,#0f766e)}
+#permno{background:transparent;border:2px solid rgba(255,255,255,.6);box-shadow:none}
+#adios h2{margin:0}
+#adios p{max-width:28ch;color:#dfe6ff;margin:0 0 10px}
+#adios button{max-width:240px}
+.emoji{font-size:54px}
+
+/* ---- Resultados ---- */
+#rumbo{display:inline-block;background:rgba(255,255,255,.22);padding:4px 14px;border-radius:999px;font-size:20px;font-weight:700;color:#fff;margin:16px 0 4px}
+#mejor{font-size:34px;font-weight:700;margin:6px 0;min-height:48px;word-break:break-word;background:linear-gradient(90deg,#ffe259,#ff9a9e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.it{background:rgba(255,255,255,.2);border:0;border-left:6px solid #ffe259;border-radius:10px;padding:10px 12px;margin:6px 0;display:flex;justify-content:space-between;gap:8px;font-size:15px;color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.it:nth-child(2){border-left-color:#ff6ec4}
+.it:nth-child(3){border-left-color:#7ee8fa}
+.it span:last-child{color:#fff;opacity:.85;white-space:nowrap}
+#msg{color:#fff;opacity:.9;font-size:14px;margin-top:12px;text-align:center}
+#msg.aviso{opacity:1;font-size:16px;font-weight:600;line-height:1.4;padding:10px 12px;border-radius:12px;background:rgba(255,226,89,.18);border:1px solid rgba(255,226,89,.6)}
+#brj{font-size:13px;color:#ffe259;text-align:center;margin-top:6px}
+#info{font-size:12px;opacity:.85;margin-top:6px;text-align:center}
+
+/* ---- Modo cámara (body.on) ---- */
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:#000;display:none;transform-origin:center center}
+#mira{display:none;position:fixed;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border:2px solid #00f5d4;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 18px #00f5d4;z-index:1;pointer-events:none;transition:top .2s}
+#mira::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;background:#ff2d95;border-radius:50%;box-shadow:0 0 10px #ff2d95}
+#sil{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:none}
+#etq{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+#etq>i,#etq>div{left:0;top:0;will-change:transform}
+.et{position:absolute;transform:translate(-50%,-100%);padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.82);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:15px;font-weight:700;white-space:nowrap}
+.et small{font-weight:500;opacity:.95}
+body.on #cam,body.on #mira{display:block}
+.pt{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.7),0 0 6px rgba(0,0,0,.8)}
+.pt.sel{width:22px;height:22px;margin:-11px 0 0 -11px;border-width:3px;animation:lat 1.2s infinite}
+@keyframes lat{0%{box-shadow:0 0 0 0 rgba(255,255,255,.85)}100%{box-shadow:0 0 0 16px rgba(255,255,255,0)}}
+@media (prefers-reduced-motion:reduce){.pt.sel{animation:none}}
+.ln{position:absolute;width:2px;margin-left:-1px;opacity:.85}
+.pk{position:absolute;width:0;height:0;margin-left:-8px;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:15px solid #80ed99;filter:drop-shadow(0 0 2px #000)}
+.et{border-width:2px}
+.et.sel{font-size:18px;color:#111}
+.et.sel small{opacity:.9}
+#leyenda{display:none}
+body.on #leyenda{display:block;position:fixed;z-index:1;left:8px;top:50%;transform:translateY(-50%);padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.75);font-size:14px;font-weight:600;line-height:1.6;pointer-events:none}
+#leyenda i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid #fff}
+#leyenda div{display:none}
+#leyenda div.v{display:block}
+body.on #leyenda.vacia{display:none}
+body.on main{max-width:none;background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72));border-radius:0 0 16px 16px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 8px}
+/* Panel compacto: deja más cámara a la vista para los pueblos */
+body.on #rumbo{font-size:14px;margin:4px 0 2px;padding:3px 10px;flex:1 1 auto;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+body.on .ch{min-height:34px;padding:2px 4px;border-radius:12px;font-size:13px}
+body.on #mejor{min-height:36px;margin:2px 0;line-height:1.15}
+body.on .it{padding:5px 10px;margin:3px 0;font-size:14px}
+body.on #msg{margin-top:4px;font-size:13px;line-height:1.25}
+body.on #msg.aviso{font-size:14px;padding:6px 10px}
+body.on #brj{margin-top:3px;font-size:12px;line-height:1.25}
+body.on #info{display:none}
+/* Pestaña para plegar el panel: solo quedan el rumbo y el nombre del pueblo */
+#plegar{display:none}
+body.on #plegar{display:block;position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);width:68px;min-height:0;height:26px;padding:0;border:1px solid rgba(255,255,255,.4);border-top:0;border-radius:0 0 14px 14px;background:rgba(37,40,120,.88);box-shadow:none;font-size:13px;line-height:1;z-index:3}
+body.on main.plegado #estado,body.on main.plegado #lista,body.on main.plegado #msg,body.on main.plegado #brj,body.on main.plegado #rumbo{display:none}
+body:not(.on) #rumbo,body:not(.on) #mejor,body:not(.on) #lista{display:none}
+body.on #hero,body.on #extras{display:none}
+/* Solo con la cámara activa se bloquea el zoom del navegador (el pellizco controla el zoom de la cámara) */
+body.on,body.on *{touch-action:pan-x pan-y}
+#bar,#zoom{display:none}
+/* Barra inferior: icono + texto bajo cada botón */
+body.on #bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;z-index:5;left:0;right:0;bottom:0;padding:8px 8px calc(env(safe-area-inset-bottom,0px) + 8px);background:rgba(8,10,28,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.2)}
+#bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:0;min-height:68px;padding:6px 2px;border:2px solid rgba(255,255,255,.55);border-radius:14px;background:rgba(255,255,255,.14);box-shadow:none;font-size:14px;font-weight:700;line-height:1.15;text-align:center}
+#bar .ic{font-size:24px;line-height:1}
+#bar #calbtn{background:#1d4ed8;border-color:#bfdbfe}
+#calbtn.pista{animation:pista 1s ease-in-out 6}
+@keyframes pista{0%,100%{box-shadow:0 0 0 0 rgba(255,226,89,.9)}50%{box-shadow:0 0 0 8px rgba(255,226,89,0)}}
+@media (prefers-reduced-motion:reduce){#calbtn.pista{animation:none;outline:3px solid #ffe259}}
+/* Terminar: arriba a la derecha, lejos de la barra, y siempre con confirmación */
+/* Terminar: en la primera fila del panel, a la derecha del rumbo, sin tapar los botones de estado */
+#fila1{display:none}
+body.on #fila1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;flex:none;margin-left:auto;width:auto;min-width:44px;min-height:36px;padding:4px 12px;border:2px solid #fecaca;border-radius:999px;background:#b91c1c;box-shadow:none;font-size:14px;font-weight:700}
+/* Interruptores: color + «Sí/No» siempre visibles */
+#bar .tg[aria-pressed="true"]{background:#15803d;border-color:#86efac}
+#bar .tg[aria-pressed="false"]{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.55)}
+.est{display:inline-block;min-width:40px;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:800;line-height:1.3}
+.tg[aria-pressed="true"] .est{background:#fff;color:#14532d}
+.tg[aria-pressed="false"] .est{background:rgba(255,255,255,.22);color:#fff}
+.tg[aria-pressed="true"] .est::after{content:"Sí"}
+.tg[aria-pressed="false"] .est::after{content:"No"}
+/* Aldeas: dice qué se ve (pueblos y aldeas, o solo pueblos) en vez de Sí/No */
+#aldeas .est{min-width:0;padding:1px 6px;font-size:11px;line-height:1.15;white-space:normal;text-align:center;border-radius:10px}
+#aldeas[aria-pressed="true"] .est::after{content:"Con aldeas"}
+#aldeas[aria-pressed="false"] .est::after{content:"Solo pueblos"}
+/* Más lejos: muestra el alcance real en km en vez de Sí/No */
+#lejosb[aria-pressed="false"] .est::after{content:"40 km"}
+#lejosb[aria-pressed="true"] .est::after{content:"80 km"}
+/* Zoom con nivel visible + botón de enfoque con texto */
+body.on #zoom{display:flex;flex-direction:column;align-items:center;gap:6px;position:fixed;z-index:5;right:8px;top:50%;transform:translateY(-50%);padding:8px 6px;border-radius:18px;background:rgba(0,0,0,.55)}
+#zoom button{display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;height:52px;padding:0;border:2px solid rgba(255,255,255,.6);border-radius:14px;font-size:26px;line-height:1;background:rgba(255,255,255,.2);box-shadow:none}
+#zoom #enf{height:58px;font-size:12px;font-weight:700;gap:2px;margin-top:4px}
+#zoom #enf .ic{font-size:22px;line-height:1}
+#toast{display:none;position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 176px);transform:translateX(-50%);width:max-content;max-width:86vw;padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.6);font-size:16px;font-weight:600;text-align:center;pointer-events:none}
+#toast.v{display:block;animation:tst 6s ease forwards}
+@keyframes tst{0%{opacity:0}8%{opacity:1}85%{opacity:1}100%{opacity:0}}
+#foco{position:fixed;width:74px;height:74px;margin:-37px 0 0 -37px;border:2px solid #ffe259;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.5);z-index:1;pointer-events:none;display:none}
+#foco.v{display:block;animation:foc 1.2s ease-out forwards}
+#giro{display:none}
+@media (orientation:landscape) and (pointer:coarse){body.on #giro{display:flex;position:fixed;inset:0;z-index:40;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;box-sizing:border-box;background:rgba(5,7,20,.94);color:#fff;font-size:20px;font-weight:700;text-align:center}body.on #giro small{font-size:14px;font-weight:500;opacity:.9}}
+#toque{position:fixed;left:0;top:0;z-index:3;pointer-events:none;display:none;max-width:80vw;box-sizing:border-box;padding:8px 14px;border-radius:14px;background:rgba(0,0,0,.88);border:2px solid #ffe259;color:#fff;font-size:18px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+#toque small{display:block;font-weight:500;font-size:13px;opacity:.9}
+@keyframes foc{0%{transform:scale(1.6);opacity:.2}25%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
+#fdw{display:none}
+body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5;left:12%;right:12%;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.7);font-size:15px;font-weight:600}
+#fdw input{flex:1;width:auto;min-width:0;height:32px}
+#fdw button{width:auto;min-height:48px;padding:8px 16px;font-size:15px;box-shadow:none;background:rgba(255,255,255,.3)}
+#zval{font-size:13px;font-weight:800;color:#fff;text-shadow:0 1px 3px #000;white-space:nowrap;padding:2px 0}
+
+/* ---- Panel de calibración (compacto, deja visible la mira) ---- */
+#cal{display:none;position:fixed;z-index:15;left:0;right:0;bottom:0;max-height:46vh;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 14px);background:rgba(10,12,30,.98);color:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+#cal h3{margin:0 0 4px;font-size:17px}
+#cal p{font-size:13px;line-height:1.35;margin:0 0 8px;color:#dfe6ff}
+#cal select{width:100%;min-height:48px;padding:10px;font-size:16px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:#1a1d3a;color:#fff;margin-bottom:6px}
+#cal .chk{display:flex;gap:10px;align-items:center;font-size:15px;min-height:44px;margin:0}
+#cal .chk input{width:22px;height:22px;flex:none}
+.cs{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:15px;line-height:1.3;font-weight:600}
+.cs b{display:inline-flex;flex:none;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;font-size:14px;color:#1b1040;background:#ffe259}
+#cal button{margin-top:0;min-height:48px;font-size:16px;padding:12px 8px}
+#cal #calreset,#cal #calcerrar{background:transparent;border:2px solid rgba(255,255,255,.6);box-shadow:none}
+#cal #calocho,#cal #calhor,#cal #calgps,#cal #calreset{margin-top:8px;width:100%}
+#calok{background:linear-gradient(90deg,#15803d,#0f766e);font-weight:800;font-size:17px}
+#calgps{background:linear-gradient(90deg,#1d4ed8,#0f766e)}
+#calocho{background:linear-gradient(90deg,#6d28d9,#1d4ed8)}
+#calhor{background:linear-gradient(90deg,#0f766e,#1d4ed8)}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.calok2{grid-template-columns:2fr 1fr}
+#calst{font-size:14px;line-height:1.4;color:#ffe259;margin:8px 0 0;min-height:20px}
+#ocho{text-align:center}
+#ochot{font-size:15px;line-height:1.4;margin:6px 0 10px;color:#ffe259}
+#cal.menu{max-height:74vh}
+#cal .cv{display:none}
+#cal .cm{display:flex;gap:12px;align-items:center;justify-content:flex-start;text-align:left;width:100%;margin-top:8px;min-height:64px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);box-shadow:none;font-size:16px;font-weight:700;line-height:1.25}
+#cal .cm small{display:block;font-weight:400;font-size:13px;opacity:.92}
+#cal .cm .ic{font-size:26px;line-height:1;flex:none}
+#cal .cback{background:transparent;border:2px solid rgba(255,255,255,.6);box-shadow:none;margin-bottom:8px;min-height:44px;padding:8px 14px;width:auto}
+#cal .nota{font-size:13px;line-height:1.4;color:#dfe6ff;margin:8px 0 0}
+#guia{display:none;position:fixed;inset:0;z-index:32;flex-direction:column;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(env(safe-area-inset-bottom,0px) + 18px);color:#fff;background:rgba(5,7,20,.97);overflow:auto;-webkit-overflow-scrolling:touch}
+#guia h2{margin:0;font-size:24px;text-align:center}
+#guia h3{margin:8px 0 0;font-size:17px;color:#ffe259;width:100%;max-width:38ch}
+#guia ul{list-style:none;margin:0;padding:0;max-width:38ch;width:100%;display:grid;gap:8px}
+#guia li{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.35;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:10px 12px}
+#guia .pi{font-size:24px;line-height:1;flex:none;width:30px;text-align:center}
+#guia button{max-width:300px;min-height:56px;font-size:18px;font-weight:700;margin-top:6px;flex:none;background:linear-gradient(90deg,#15803d,#0f766e)}
+</style>
+</head>
+<body>
+<video id="cam" playsinline muted autoplay></video>
+<canvas id="sil" aria-hidden="true"></canvas>
+<div id="etq"></div>
+<div id="mira"></div>
+<div id="foco" aria-hidden="true"></div>
+<div id="giro" role="status">📱 Pon el móvil en vertical<small>La brújula y las etiquetas solo funcionan con el móvil en posición vertical.</small></div>
+<div id="toque" role="status" aria-live="polite"></div>
+<div id="leyenda" aria-hidden="true"><div id="lgC"><span style="color:#ff4d6d">●</span> ciudad</div><div id="lgP"><span style="color:#ffd60a">●</span> pueblo</div><div id="lgA"><span style="color:#00e5ff">●</span> aldea</div><div id="lgK"><span style="color:#80ed99">▲</span> Pico</div></div>
+<main>
+<button id="plegar" type="button" aria-label="Ocultar o mostrar el panel" aria-expanded="true">▲</button>
+<section id="hero">
+<svg class="logo" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a11cb"/><stop offset=".5" stop-color="#2575fc"/><stop offset="1" stop-color="#00c9a7"/></linearGradient><clipPath id="lc"><rect width="96" height="96" rx="22"/></clipPath></defs><rect width="96" height="96" rx="22" fill="url(#lg)"/><g clip-path="url(#lc)"><path d="M0 96V66l22-20 20 24 18-16 36 28v14z" fill="#28105a" opacity=".6"/><path d="M0 96V78l26-14 22 14 20-10 28 14v14z" fill="#140a3c" opacity=".75"/></g><circle cx="48" cy="38" r="20" fill="none" stroke="#fff" stroke-width="4"/><path d="M48 10v10M48 56v10M20 38h10M66 38h10" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="48" cy="38" r="6" fill="#ff2d95"/></svg>
+<h1>¿Qué pueblo es?</h1>
+<p>Apunta con el móvil al horizonte y descubre qué pueblo tienes delante.</p>
+<small id="autor">Miguel Marín</small>
+<button id="avisoCob" type="button">⚠️ Sin cobertura no podré identificar pueblos: descarga tu provincia</button>
+<button id="go" type="button"><span class="go1">Iniciar identificación</span><span class="go2">Activar GPS y brújula mientras se usa</span></button>
+</section>
+<div id="fila1"><div id="rumbo"></div><button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button></div>
+<div id="estado" aria-label="Estado de GPS, brújula y calibración"><span id="eGps" class="ch n">GPS …</span><span id="eBrj" class="ch n">Brújula …</span><span id="eCal" class="ch n">Sin calibrar</span></div>
+<div id="mejor" aria-live="polite" aria-atomic="true"></div>
+<div id="lista"></div>
+<div id="msg" role="status"></div>
+<div id="brj"></div>
+<div id="info"></div>
+<section id="extras">
+<div class="pasos"><div><b aria-hidden="true">1</b>Activa GPS y brújula</div><div><b aria-hidden="true">2</b>Apunta al horizonte</div><div><b aria-hidden="true">3</b>Lee el nombre del pueblo</div></div>
+<button id="abrirmapa" type="button">🗺️ Descargar pueblos (para usar sin cobertura)</button>
+<button id="probar" type="button">🔎 Probar relieve</button>
+<div id="probres" role="status" aria-live="polite"></div>
+<button id="vconsejos" type="button">💡 Consejos y avisos</button>
+<button id="cerrar" type="button">Salir de la app</button>
+</section>
+<section id="mapaPant">
+<h2>🗺️ Descargar pueblos</h2>
+<p>Elige las provincias y descárgalas para usar la app sin cobertura.</p>
+<p id="mapaAviso">👋 <b>¡Bienvenido!</b> Para empezar, marca tu provincia (o las que vayas a visitar) y pulsa «Descargar provincias elegidas». Así los pueblos se identifican también sin cobertura. Si prefieres hacerlo más tarde, pulsa «Volver»: lo encontrarás en «Descargar pueblos».</p>
+<div id="prov"><div id="plist"></div><div class="fila"><button id="todas" type="button">Todas</button><button id="ninguna" type="button">Ninguna</button></div></div>
+<button id="dl" type="button">Descargar provincias elegidas</button>
+<div id="barra" role="progressbar" aria-label="Progreso de la descarga" aria-valuemin="0" aria-valuemax="100"><i id="barraI"></i></div>
+<div id="dlst" role="status" aria-live="polite"></div>
+<button id="volverMapa" type="button">← Volver</button>
+</section>
+<div id="zoom" role="group" aria-label="Zoom y enfoque de la cámara"><button id="zmas" type="button" aria-label="Acercar (más zoom)">＋</button><span id="zval">Zoom ×1</span><button id="zmenos" type="button" aria-label="Alejar (menos zoom)">−</button><button id="enf" type="button"><span class="ic" aria-hidden="true">◎</span><span>Enfocar</span></button></div>
+<nav id="bar" aria-label="Controles de la cámara">
+<button id="calbtn" type="button" title="Ajusta la brújula con un lugar que veas"><span class="ic" aria-hidden="true">🎯</span><span>Calibrar</span></button>
+<button id="aldeas" class="tg" type="button" aria-pressed="true" title="Mostrar u ocultar aldeas pequeñas"><span class="ic" aria-hidden="true">🏘</span><span class="est" aria-hidden="true"></span></button>
+<button id="picosb" class="tg" type="button" aria-pressed="false" title="Mostrar u ocultar nombres de picos"><span class="ic" aria-hidden="true">⛰</span><span>Picos</span><span class="est" aria-hidden="true"></span></button>
+<button id="lejosb" class="tg" type="button" aria-pressed="false" aria-label="Más lejos: alcance 40 km" title="Alcance 40 km. Pulsa para ampliar a 80 km"><span class="ic" aria-hidden="true">🔭</span><span>Más lejos</span><span class="est" aria-hidden="true"></span></button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="fdw"><span>Foco</span><input type="range" id="fdist" min="0" max="1" step="0.01" value="1" aria-label="Distancia de enfoque (cerca a lejos)"><button id="fauto" type="button">Auto</button></div>
+</main>
+<div id="cal" role="dialog" aria-labelledby="calT" class="menu">
+<div id="calmenu"><h3 id="calT">Calibrar la brújula</h3>
+<p>Elige cómo quieres calibrar. Al pulsar una opción te explico los pasos.</p>
+<button class="cm" id="cm1" type="button"><span class="ic" aria-hidden="true">📍</span><span>Con un lugar que veo<small>Recomendado: pones la mira sobre un pueblo conocido.</small></span></button>
+<button class="cm" id="cm2" type="button"><span class="ic" aria-hidden="true">🚶</span><span>Andando o en coche<small>Se calibra sola al avanzar en línea recta.</small></span></button>
+<button class="cm" id="cm3" type="button"><span class="ic" aria-hidden="true">∞</span><span>Hacer el 8 en el aire<small>Ajusta el sensor de la brújula del móvil.</small></span></button>
+<button class="cm" id="cm4" type="button"><span class="ic" aria-hidden="true">🏔</span><span>Con el horizonte<small>Compara las montañas de la cámara con el relieve.</small></span></button>
+<button class="cm" id="cm5" type="button"><span class="ic" aria-hidden="true">⚙️</span><span>Ajustes automáticos<small>Afinar sola al moverme, horizonte y silueta.</small></span></button>
+<div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div>
+</div>
+<div class="cv" id="calv1"><button class="cback" type="button">← Otras opciones</button>
+<h3>📍 Con un lugar que veo</h3>
+<div class="cs"><b>1</b>Elige un lugar que veas</div>
+<select id="calsel" aria-label="Lugar de referencia"></select>
+<div class="cs"><b>2</b><span>Pon la mira encima (el punto <span style="color:#ff2d95">●</span> rosa). Solo importa que quede alineada de lado a lado; la altura da igual.</span></div>
+<div class="cs"><b>3</b>Pulsa «Está en la mira»</div>
+<label class="chk"><input type="checkbox" id="cal2"> Usar dos lugares (más preciso)</label>
+<button id="calok" type="button">✓ Está en la mira</button>
+</div>
+<div class="cv" id="calv2"><button class="cback" type="button">← Otras opciones</button>
+<h3>🚶 Andando o en coche</h3>
+<div class="cs"><b>1</b>Pulsa «Empezar»</div>
+<div class="cs"><b>2</b>Avanza en línea recta unos 30 m con el móvil en vertical apuntando hacia delante (en coche, que lo haga el acompañante)</div>
+<div class="cs"><b>3</b>Al terminar se calibra sola</div>
+<button id="calgps" type="button">▶ Empezar</button>
+</div>
+<div class="cv" id="calv3"><button class="cback" type="button">← Otras opciones</button>
+<h3>∞ Hacer el 8 en el aire</h3>
+<div class="cs"><b>1</b>Dibuja un 8 en el aire girando la muñeca, unos 10 segundos</div>
+<div class="cs"><b>2</b>Sigue el punto amarillo de la figura</div>
+<div class="cs"><b>3</b>Cuando diga «✓ Brújula calibrada», pulsa «Listo»</div>
+<div id="ocho"><svg viewBox="0 0 120 70" width="150" height="88" aria-hidden="true"><path id="p8" d="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="3"/><circle r="6" fill="#ffe259"><animateMotion dur="3s" repeatCount="indefinite" path="M15,35 C15,5 55,5 60,35 C65,65 105,65 105,35 C105,5 65,5 60,35 C55,65 15,65 15,35 Z"/></circle></svg><div id="ochot"></div><button id="ochocerrar" type="button">Listo</button></div>
+</div>
+<div class="cv" id="calv4"><button class="cback" type="button">← Otras opciones</button>
+<h3>🏔 Con el horizonte</h3>
+<div class="cs"><b>1</b>Apunta a un horizonte despejado con montañas, con el zoom en ×1 y el móvil recto</div>
+<div class="cs"><b>2</b>Pulsa «Alinear ahora»</div>
+<button id="calhor" type="button">🏔 Alinear ahora</button>
+</div>
+<div class="cv" id="calv5"><button class="cback" type="button">← Otras opciones</button>
+<h3>⚙️ Ajustes automáticos</h3>
+<label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
+<label class="chk"><input type="checkbox" id="hzauto"> 📷 Corregir el rumbo con el horizonte de la cámara</label>
+<label class="chk"><input type="checkbox" id="hzsil"> Dibujar la silueta del relieve sobre la cámara</label>
+</div>
+<div id="calst" role="status" aria-live="polite"></div>
+</div>
+<div id="conf" role="alertdialog" aria-modal="true" aria-labelledby="confT"><div class="emoji" aria-hidden="true">⏹</div><h2 id="confT">¿Terminar la identificación?</h2><p>Se apagarán la cámara, el GPS y la brújula.</p><button id="confno" type="button">Seguir mirando</button><button id="confsi" type="button">Sí, terminar</button></div>
+<div id="permisos" role="dialog" aria-modal="true" aria-labelledby="permT"><h2 id="permT">Antes de empezar</h2><p>Para funcionar, la app necesita tres permisos. Tu móvil te los pedirá al pulsar «Iniciar identificación»: pulsa «Permitir» en cada uno.</p>
+<ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b><br>Para saber hacia dónde apuntas. Sin ella no puedo saber qué pueblo tienes delante.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b><br>Para saber dónde estás y buscar los pueblos y el relieve a tu alrededor. Solo se usa mientras la app está abierta.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b><br>Para ver lo que apuntas y poner los nombres sobre la imagen. La imagen no sale de tu móvil y no se guarda.</span></li></ul>
+<p><b>Los tres son necesarios:</b> si rechazas alguno, la app no podrá identificar pueblos. Si lo rechazas sin querer, puedes volver a activarlo en los ajustes del navegador o del móvil.</p>
+<button id="permok" type="button">Entendido, continuar</button><button id="permno" type="button">Ahora no</button></div>
+<div id="guia" role="dialog" aria-modal="true" aria-labelledby="guiaT"><h2 id="guiaT">Cómo se usa</h2>
+<div id="guiaPerm" style="display:none;width:100%;max-width:38ch"><h3>Permisos que te pedirá el móvil</h3><ul><li><span class="pi" aria-hidden="true">🧭</span><span><b>Brújula</b>: para saber hacia dónde apuntas.</span></li><li><span class="pi" aria-hidden="true">📍</span><span><b>Ubicación</b>: para saber dónde estás y buscar los pueblos y el relieve.</span></li><li><span class="pi" aria-hidden="true">📷</span><span><b>Cámara</b>: para ver lo que apuntas. La imagen no sale de tu móvil.</span></li></ul></div>
+<h3>Consejos</h3>
+<ul><li><span class="pi" aria-hidden="true">👆</span><span>Apunta al horizonte con el móvil en vertical. El nombre grande es el pueblo que está bajo el punto rosa de la mira.</span></li><li><span class="pi" aria-hidden="true">🎯</span><span>Si el nombre no coincide con lo que ves, calibra la brújula.</span></li><li><span class="pi" aria-hidden="true">👀</span><span>La franja de arriba dice cuándo fiarte: <b>GPS</b>, <b>Brújula</b> (con su margen de error) y si está <b>Calibrada</b>.</span></li><li><span class="pi" aria-hidden="true">👉</span><span>Toca la pantalla para enfocar; pellizca para hacer zoom.</span></li></ul>
+<h3>Botones de la cámara</h3>
+<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Con aldeas / Solo pueblos): indica si se ven pueblos y aldeas, o solo pueblos.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
+<button id="guiaok" type="button">Entendido</button></div>
+<div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>La cámara, la ubicación y la brújula están apagadas. Para cerrar del todo, quita la app desde el selector de apps (en iPhone, desliza hacia arriba desde el borde inferior).</p><button id="volver" type="button">Volver</button></div>
+<script>
+(function(){
+"use strict";
+// [nombre, lat, lon] — localidades de España (aprox.)
+var BASE=[["Madrid",40.417,-3.704],["Barcelona",41.387,2.170],["Valencia",39.470,-0.376],["Sevilla",37.389,-5.984],["Zaragoza",41.649,-0.887],["Málaga",36.721,-4.421],["Murcia",37.992,-1.131],["Palma",39.570,2.650],["Bilbao",43.263,-2.935],["Alicante",38.346,-0.483],["Córdoba",37.888,-4.779],["Valladolid",41.652,-4.724],["Vigo",42.240,-8.721],["Gijón",43.532,-5.661],["A Coruña",43.362,-8.411],["Granada",37.177,-3.599],["Vitoria",42.847,-2.673],["Elche",38.267,-0.698],["Oviedo",43.361,-5.849],["Cartagena",37.600,-0.986],["Jerez de la Frontera",36.686,-6.137],["Pamplona",42.812,-1.645],["Almería",36.834,-2.464],["San Sebastián",43.318,-1.981],["Burgos",42.344,-3.697],["Santander",43.462,-3.810],["Castellón",39.986,-0.037],["Albacete",38.995,-1.859],["Logroño",42.466,-2.445],["Badajoz",38.879,-6.970],["Salamanca",40.970,-5.664],["Huelva",37.261,-6.945],["Lleida",41.617,0.620],["Tarragona",41.119,1.245],["León",42.599,-5.567],["Cádiz",36.527,-6.289],["Jaén",37.779,-3.785],["Ourense",42.336,-7.864],["Girona",41.979,2.821],["Lugo",43.012,-7.556],["Cáceres",39.476,-6.372],["Toledo",39.863,-4.027],["Ciudad Real",38.986,-3.927],["Guadalajara",40.633,-3.167],["Cuenca",40.070,-2.137],["Segovia",40.943,-4.109],["Ávila",40.656,-4.700],["Soria",41.764,-2.469],["Teruel",40.345,-1.107],["Huesca",42.140,-0.408],["Palencia",42.010,-4.531],["Zamora",41.503,-5.744],["Pontevedra",42.431,-8.644],["Santiago de Compostela",42.878,-8.544],["Ronda",36.742,-5.167],["Marbella",36.510,-4.886],["Antequera",37.019,-4.561],["Úbeda",38.013,-3.370],["Baeza",37.994,-3.470],["Guadix",37.300,-3.140],["Motril",36.745,-3.518],["Lorca",37.671,-1.701],["Benidorm",38.538,-0.131],["Dénia",38.841,0.106],["Gandía",38.968,-0.181],["Sagunto",39.680,-0.278],["Xàtiva",38.990,-0.520],["Alcoy",38.705,-0.474],["Aranjuez",40.031,-3.603],["Alcalá de Henares",40.482,-3.364],["Talavera de la Reina",39.963,-4.831],["Mérida",38.916,-6.343],["Plasencia",40.030,-6.088],["Peñíscola",40.358,0.408],["Morella",40.620,-0.100],["Albarracín",40.408,-1.442],["Calatayud",41.353,-1.643],["Tortosa",40.812,0.521],["Reus",41.156,1.107],["Vic",41.930,2.255],["Figueres",42.267,2.961],["Manresa",41.730,1.826],["Andújar",38.039,-4.051],["Linares",38.095,-3.636],["Lucena",37.409,-4.485],["Écija",37.542,-5.082],["Carmona",37.471,-5.646],["Algeciras",36.133,-5.455],["Tarifa",36.014,-5.606],["Sanlúcar de Barrameda",36.778,-6.352],["Vélez-Málaga",36.775,-4.100],["Nerja",36.745,-3.875],["Baza",37.490,-2.771],["Loja",37.168,-4.150],["Órgiva",36.900,-3.425],["Mojácar",37.139,-1.851]];
+var P=BASE.slice();
+// Une una lista detallada (OSM o base local) con la lista básica. Una ciudad básica solo se descarta
+// si ya hay una localidad con el mismo nombre a menos de ~5 km (así no se pierden pueblos homónimos lejanos).
+function fusionar(det,base){
+  var idx={};det.forEach(function(p){(idx[p[0]]=idx[p[0]]||[]).push(p)});
+  return det.concat(base.filter(function(b){return !(idx[b[0]]||[]).some(function(o){return Math.abs(o[1]-b[1])<0.045&&Math.abs(o[2]-b[2])<0.06})}));
+}
+var TOL=3,pos=null,hd=0,sm=null;
+// Índice espacial: cuadrícula de 0,1° que se recalcula solo cuando P cambia de lista
+var GRID=0.1,gridP=null,gridM=null;
+function gridKey(i,j){return i*4000+j}
+function enRecuadro(la,lo,dLa,dLo){
+  if(gridP!==P){
+    gridM=new Map();
+    for(var n=0;n<P.length;n++){var q=P[n],k=gridKey(Math.floor(q[1]/GRID),Math.floor(q[2]/GRID)),c=gridM.get(k);if(c)c.push(q);else gridM.set(k,[q])}
+    gridP=P;
+  }
+  var out=[],i0=Math.floor((la-dLa)/GRID),i1=Math.floor((la+dLa)/GRID),j0=Math.floor((lo-dLo)/GRID),j1=Math.floor((lo+dLo)/GRID),i,j,c,n;
+  for(i=i0;i<=i1;i++)for(j=j0;j<=j1;j++){c=gridM.get(gridKey(i,j));if(c)for(n=0;n<c.length;n++)out.push(c[n])}
+  return out; // candidatos de las celdas tocadas: quien llama aplica su filtro exacto
+}
+var $=function(i){return document.getElementById(i)};
+var R=Math.PI/180;
+function brg(a,b,c,d){var L=(d-b)*R,y=Math.sin(L)*Math.cos(c*R),x=Math.cos(a*R)*Math.sin(c*R)-Math.sin(a*R)*Math.cos(c*R)*Math.cos(L);return (Math.atan2(y,x)/R+360)%360}
+function dst(a,b,c,d){var p=(c-a)*R,q=(d-b)*R,h=Math.sin(p/2)*Math.sin(p/2)+Math.cos(a*R)*Math.cos(c*R)*Math.sin(q/2)*Math.sin(q/2);return 12742*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))}
+function dif(a,b){return Math.abs(((a-b+540)%360)-180)}
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+var cacheV={},enCurso={},sinRelK={},pit=0,ocho8=false;
+var visCache={},visUso={},gV=0;
+try{visCache=JSON.parse(localStorage.getItem("vis")||"{}");if(!visCache||typeof visCache!=="object")visCache={}}catch(e){visCache={}}
+Object.keys(visCache).forEach(function(k){cacheV[k]=visCache[k]});
+function guardarVis(fuerza){
+  if(!fuerza&&Date.now()-gV<5000)return;
+  gV=Date.now();
+  var ks=Object.keys(visCache);
+  if(ks.length>2500){
+    // fuera las 500 menos usadas (el sort es estable: a igualdad se va primero la más antigua)
+    ks.sort(function(a,b){return (visUso[a]||0)-(visUso[b]||0)});
+    ks.slice(0,500).forEach(function(k){delete visCache[k];delete cacheV[k];delete visUso[k]});
+  }
+  try{localStorage.setItem("vis",JSON.stringify(visCache))}catch(e){}
+}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")guardarVis(true)});
+var SZ={city:40,town:36,village:32,hamlet:28,isolated_dwelling:24},SZL={city:19,town:17,village:15,hamlet:13,isolated_dwelling:12};
+function clave(p){var g=modoCoche?0.03:0.01;return p.n+p.la.toFixed(3)+p.lo.toFixed(3)+"|"+Math.round(pos.latitude/g)+","+Math.round(pos.longitude/g)+"|"+Math.round((pos.altitude||0)/300)}
+// Altitudes del terreno: Open-Meteo y, si falla, OpenTopoData. Guarda el motivo si no hay datos.
+var errRel="";
+function espera2(ms){return new Promise(function(r){setTimeout(r,ms)})}
+// fetch con tiempo máximo: si la red se cuelga, no se bloquean la cola ni el panorama
+function fetchT(u,o,ms){
+  o=o||{};var c=typeof AbortController!=="undefined"?new AbortController():null;if(c)o.signal=c.signal;
+  var t=setTimeout(function(){if(c)c.abort()},ms||15000);
+  return fetch(u,o).finally(function(){clearTimeout(t)});
+}
+function valida(h,n){return h&&h.length===n&&h.every(function(x){return typeof x==="number"&&isFinite(x)})}
+var bloqRel=0;
+var omUso=[],otUlt=0;
+// Open-Meteo cuenta cada coordenada como una llamada (máx. 600 por minuto): llevo la cuenta y me quedo por debajo
+function omCupo(n){var t=Date.now();omUso=omUso.filter(function(e){return t-e[0]<60000});return omUso.reduce(function(s,e){return s+e[1]},0)+n<=450}
+async function viaOM(lats,lons){
+  var r=await fetchT("https://api.open-meteo.com/v1/elevation?latitude="+lats.join(",")+"&longitude="+lons.join(","));
+  var j=await r.json();
+  if(valida(j.elevation,lats.length))return{h:j.elevation,f:"Open-Meteo"};
+  throw new Error(j.reason||("error "+r.status));
+}
+// OpenTopoData admite 1 petición por segundo y 100 puntos cada vez
+async function viaOT(lats,lons){
+  var w=otUlt+1200-Date.now();if(w>0)await espera2(w);otUlt=Date.now();
+  var loc=lats.map(function(a,i){return a+","+lons[i]}).join("|");
+  var r=await fetchT("https://api.opentopodata.org/v1/srtm90m?locations="+encodeURIComponent(loc));
+  var j=await r.json();
+  var h=(j.results||[]).map(function(x){return x.elevation});
+  if(valida(h,lats.length))return{h:h,f:"OpenTopoData"};
+  throw new Error(j.error||("error "+r.status));
+}
+// Pedidos grandes (panorama): primero OpenTopoData. Pedidos pequeños: primero Open-Meteo.
+async function altitudes(lats,lons){
+  if(Date.now()<bloqRel)return null;
+  var n=lats.length,orden=n>40?["OpenTopoData","Open-Meteo"]:["Open-Meteo","OpenTopoData"],motivos=[];
+  for(var o=0;o<2;o++){
+    var f=orden[o];
+    try{
+      if(f==="Open-Meteo"){if(!omCupo(n))throw new Error("cupo por minuto agotado");omUso.push([Date.now(),n])}
+      var a=f==="Open-Meteo"?await viaOM(lats,lons):await viaOT(lats,lons);
+      errRel="";return a;
+    }catch(e){motivos.push(f+": "+(e&&e.name==="AbortError"?"tiempo agotado":(e&&e.message&&e.message!=="Load failed")?e.message:"sin conexión o bloqueado"))}
+  }
+  errRel=motivos.join("; ");bloqRel=Date.now()+25000;return null;
+}
+var fuenteRel="";
+// Comprueba si el pueblo p se ve desde aquí: relieve + curvatura de la Tierra (con refracción)
+var colaV=[],activosV=0;
+function verificar(p){
+  var k=clave(p);
+  if(enCurso[k]||cacheV[k]!==undefined)return;
+  enCurso[k]=2;
+  colaV.push({p:p,k:k});
+  while(colaV.length>6){var x=colaV.shift();delete enCurso[x.k]}
+  sigueCola();
+}
+function sigueCola(){
+  while(activosV<3&&colaV.length){
+    var x=colaV.shift();activosV++;
+    verificarReal(x.p,x.k).then(function(){activosV--;sigueCola()},function(){activosV--;sigueCola()});
+  }
+}
+async function verificarReal(p,k){
+  if(!pos){delete enCurso[k];return}
+  enCurso[k]=1;
+  var la=pos.latitude,lo=pos.longitude,D=p.k*1000;
+  var n=Math.max(6,Math.min(60,Math.ceil(p.k/1.5)));
+  var lats=[],lons=[],ds=[],i;
+  for(i=0;i<=n;i++){var f=i/n;lats.push((la+(p.la-la)*f).toFixed(5));lons.push((lo+(p.lo-lo)*f).toFixed(5));ds.push(D*f)}
+  var al=await altitudes(lats,lons);
+  if(!pos){delete enCurso[k];return}
+  var rel=!!al,h,H0,H1,gps=pos.altitude;
+  if(rel){
+    h=al.h;fuenteRel=al.f;
+    // Solo uso la altitud del GPS si claramente estoy muy por encima del suelo (avión, cumbre)
+    H0=(typeof gps==="number"&&gps>h[0]+150)?gps:h[0]+2;
+    H1=h[n]+10;
+  }else{
+    // Sin datos de relieve no puedo saber si hay montañas: solo curvatura y solo lo cercano
+    h=[];for(i=0;i<=n;i++)h.push(0);
+    H0=(typeof gps==="number"&&gps>2500)?gps:2;
+    H1=10;
+  }
+  if(rel)delete sinRelK[k];else sinRelK[k]=true;
+  var RT=7300000,ok=true;
+  for(i=1;i<n;i++){
+    var d=ds[i],bulto=d*(D-d)/(2*RT);
+    if(h[i]+bulto>H0+(H1-H0)*d/D){ok=false;break}
+  }
+  if(!rel&&p.k>10)ok=false;
+  cacheV[k]=ok;
+  delete enCurso[k];
+  if(rel){visCache[k]=ok;visUso[k]=Date.now();guardarVis()}
+  else setTimeout(function(){delete cacheV[k];delete sinRelK[k]},30000);
+  pintar();
+}
+var ochoActivo=false;
+function actOcho(){
+  var t=$("ochot");
+  if(prec===null){t.textContent="Tu móvil no informa de la precisión, así que no puedo comprobar si el 8 ha funcionado. Dibújalo unos 10 segundos; para estar seguro, calibra también con un lugar que veas.";return}
+  if(prec<0){t.textContent="Brújula sin calibrar. Sigue dibujando el 8 en el aire girando la muñeca…";return}
+  if(prec<=10)ocho8=true;
+  t.textContent=(prec<=10?"✓ Brújula calibrada. Ya puedes pulsar «Listo». ":"Sigue dibujando el 8… ")+"Precisión: ±"+Math.round(prec)+"°"+(prec<=10?"":" (objetivo: ±10° o menos)");
+}
+function cerrarOcho(){ochoActivo=false}
+// Cuenta localidades a menos de km (en cualquier dirección o solo en la que apunta el móvil)
+function contarPueblos(pe,hdc,km,soloDir){
+  var dLa=km/111,dLo=km/(111*Math.max(0.2,Math.cos(pe.latitude*R))),n=0,i,p,k;
+  var cand=enRecuadro(pe.latitude,pe.longitude,dLa,dLo);
+  for(i=0;i<cand.length;i++){
+    p=cand[i];
+    if(Math.abs(p[1]-pe.latitude)>=dLa||Math.abs(p[2]-pe.longitude)>=dLo)continue;
+    k=dst(pe.latitude,pe.longitude,p[1],p[2]);
+    if(k<=0.5||k>km)continue;
+    if(soloDir&&dif(brg(pe.latitude,pe.longitude,p[1],p[2]),hdc)>TOL)continue;
+    n++;
+  }
+  return n;
+}
+// Explica por qué no sale ningún pueblo y qué probar (se calcula solo si cambia la situación)
+var spC={k:"",t:""};
+function sinPueblos(pe,hdc,r){
+  if(r.length)return "Hay pueblos en esa dirección, pero el relieve (las montañas) los tapa desde aquí. Prueba a apuntar un poco hacia un lado.";
+  var k=[pe.latitude.toFixed(2),pe.longitude.toFixed(2),Math.round(hdc/3),alcance,verAldeas?1:0,P.length].join("|");
+  if(spC.k===k)return spC.t;
+  var t;
+  if(!BD&&P.length<=BASE.length){
+    t="No tengo los pueblos de esta zona: sin cobertura y sin provincia descargada solo conozco las ciudades grandes. Descarga tu provincia en «Descargar pueblos».";
+  }else if(!contarPueblos(pe,hdc,alcance,false)){
+    t="No tengo pueblos a menos de "+alcance+" km de aquí.";
+    if(alcance<80&&contarPueblos(pe,hdc,80,false)>0)t+=" Prueba con «Más lejos» (80 km).";
+    else if(!BD)t+=" Si estás sin cobertura, descarga antes tu provincia en «Descargar pueblos».";
+  }else if(!contarPueblos(pe,hdc,alcance,true)){
+    t="No hay pueblos en esa dirección a menos de "+alcance+" km."+((alcance<80&&contarPueblos(pe,hdc,80,true)>0)?" Prueba con «Más lejos» (80 km) o gira hacia otro lado.":" Gira hacia otro lado.");
+  }else t=verAldeas?"No veo ningún pueblo en esa dirección.":"Solo hay aldeas en esa dirección: activa «Aldeas» para verlas.";
+  spC={k:k,t:t};return t;
+}
+// Indicadores de estado siempre visibles: GPS, brújula y calibración
+var estC="";
+function actualizarEstado(){
+  var g,b,c,a;
+  if(pos&&typeof pos.accuracy==="number"){a=pos.accuracy;g=a<=30?["ok","GPS ✓"]:a<=100?["av","GPS ⚠ ±"+Math.round(a)+" m"]:["mal","GPS ✕ ±"+Math.round(a)+" m"]}
+  else g=["n","GPS …"];
+  if(oriN>20&&!oriNorte)b=["mal","Brújula ✕ no fiable"];
+  else if(oriN===0)b=(oriT0&&Date.now()-oriT0>4000)?["mal","Brújula ✕ sin datos"]:["n","Brújula …"];
+  else if(prec!==null&&prec<0)b=["mal","Brújula ✕ haz el 8"];
+  else if(prec!==null&&prec>20)b=["av","Brújula ⚠ ±"+Math.round(prec)+"°"];
+  else b=["ok","Brújula ✓"+(prec!==null?" ±"+Math.round(prec)+"°":"")];
+  if(prec!==null&&(prec<0||prec>20))ocho8=false;
+  // Verde si la brújula está bien (calibrada, o precisa sin necesidad de calibrar); ámbar «Sin calibrar» si hace falta; gris si el móvil no informa de la precisión
+  var calOk=!!(off||Object.keys(tab).length||ocho8),imprecisa=prec!==null&&(prec<0||prec>20);
+  c=calOk?["ok","Calibrada ✓"]:imprecisa?["av","Sin calibrar"]:prec!==null?["ok","Calibración ✓"]:["n","Calibración …"];
+  var k=g.join()+b.join()+c.join();
+  if(k===estC)return;
+  estC=k;
+  [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);e.className="ch "+x[1][0];e.textContent=x[1][1]});
+}
+actAldeasBtn();
+var rafP=0;
+// Agrupa todas las peticiones de repintado en un solo dibujo por fotograma
+function pintar(){
+  if(rafP)return;
+  rafP=requestAnimationFrame(function(){rafP=0;pintarYa()});
+}
+function pintarYa(){
+  if(!pos){return}
+  var pe=posEfectiva();
+  var hdc=rumboC();
+  if(!panEnCurso&&Date.now()>=panBloq&&(!pan||pan.alc!==alcance||Math.abs(envolver(hdc-pan.c))>25||dst(pan.la,pan.lo,pos.latitude,pos.longitude)>1.5))construirPano();
+  $("rumbo").textContent="Rumbo: "+Math.round(hdc)+"° · Inclinación: "+Math.round(pit)+"°";
+  actualizarEstado();
+  var av=[];
+  if(prec!==null){if(prec<0)av.push("Brújula sin calibrar: dibuja un 8 con el móvil.");else if(prec>20)av.push("Brújula poco precisa (±"+Math.round(prec)+"°): dibuja un 8 con el móvil.")}
+  var nT=Object.keys(tab).length;
+  if(off||nT)av.push("Calibrada: "+fmtOff(offPara(hd))+(nT?" ("+nT+" de 8 direcciones)":""));
+  if(!modoCoche&&Date.now()-autoT<5000)av.push("Brújula afinada con el GPS ("+fmtOff(offPara(hd))+").");
+  if(modoCoche)av.push("🚗 Modo coche: que lo use el acompañante."+(Date.now()-autoT<5000?" Brújula corregida con el GPS ("+fmtOff(offPara(hd))+").":""));
+  if(hzAuto&&Date.now()-hzT<8000)av.push("📷 Rumbo corregido con el horizonte ("+fmtOff(hzPara(hd))+", confianza "+Math.round(hzConf*100)+"%).");
+  // Sin referencia al norte (Android sin brújula absoluta) o sin datos de orientación: el rumbo no es fiable
+  if(oriN>20&&!oriNorte)av.unshift("⚠ Este navegador no da el rumbo respecto al norte: los resultados pueden no ser fiables. Prueba con Chrome o Safari actualizados.");
+  else if(oriN===0&&oriT0&&Date.now()-oriT0>4000)av.unshift("⚠ No llegan datos de la brújula. Comprueba que el móvil tiene brújula y que el navegador tiene permiso.");
+  if(camErr)av.unshift("📷 "+camErr);
+  $("brj").textContent=av.join(" ");
+  var r=[],vis=null,pend=false,i,fuera=(pit<-40||pit>30);
+  if(!fuera&&!verPicos){
+    // Prefiltro rápido por recuadro (la base local puede tener decenas de miles de localidades y esto corre 10 veces/s)
+    var dmax=alcance,dLa=dmax/111,dLo=dmax/(111*Math.max(0.2,Math.cos(pe.latitude*R)));
+    r=enRecuadro(pe.latitude,pe.longitude,dLa,dLo).filter(function(p){return Math.abs(p[1]-pe.latitude)<dLa&&Math.abs(p[2]-pe.longitude)<dLo}).map(function(p){return{t:p[3]||"city",n:p[0],la:p[1],lo:p[2],d:dif(brg(pe.latitude,pe.longitude,p[1],p[2]),hdc),k:dst(pe.latitude,pe.longitude,p[1],p[2])}})
+      .filter(function(p){return p.d<=TOL&&p.k>0.5&&p.k<=alcance&&(verAldeas||(p.t!=="hamlet"&&p.t!=="isolated_dwelling"))&&!((p.t==="hamlet"||p.t==="isolated_dwelling")&&p.k>12)}).sort(function(a,b){return (a.d+0.04*a.k)-(b.d+0.04*b.k)}).slice(0,modoCoche?4:8);
+    for(i=0;i<r.length;i++){
+      var v=estadoVis(r[i]);
+      if(v===true){vis=r[i];break}
+      if(v===undefined){
+        pend=true;lanzarVis(r[i]);
+        if(i+1<r.length&&estadoVis(r[i+1])===undefined)lanzarVis(r[i+1]);
+        break;
+      }
+    }
+  }
+  selVis=vis;
+  // El aviso depende del pueblo mostrado (o de un fallo global reciente), no de la última consulta suelta
+  var sinRel=vis?(panVis(vis)===null&&sinRelK[clave(vis)]===true):(!pan&&Date.now()<bloqRel);
+  $("mejor").textContent=vis?vis.n:"—";
+  $("mejor").style.fontSize=Math.round(vis?(SZ[vis.t]||32)*0.8:28)+"px";
+  $("lista").innerHTML=vis?'<div class="it" style="border-left-color:'+colorDe(vis)+'"><span style="font-size:'+(SZL[vis.t]||15)+'px"><b style="color:'+colorDe(vis)+'">●</b> '+esc(vis.n)+'</span><span>'+vis.k.toFixed(0)+' km · ±'+vis.d.toFixed(1)+'°</span></div>':"";
+  $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":vis?(sinRel?"⚠ Sin datos de relieve"+(errRel?" ("+errRel+")":"")+": solo compruebo lo cercano (menos de 10 km).":"Relieve comprobado ("+fuenteRel+")"):pend?(panEnCurso?"Descargando el relieve de la zona… "+panProg:"Comprobando visibilidad…"):(sinRel?"No veo ningún pueblo cercano. Sin datos de relieve"+(errRel?" ("+errRel+")":"")+" no puedo comprobar lo lejano.":sinPueblos(pe,hdc,r));
+  $("msg").className=(!fuera&&!vis&&!pend&&!sinRel)?"aviso":"";
+  if(verPicos){
+    // Modo picos: el panel habla de picos, no de pueblos
+    if(pos&&!pkCargando&&Date.now()>pkProx&&(!PK.length||(pkCentro&&dst(pos.latitude,pos.longitude,pkCentro.la,pkCentro.lo)>=20)))cargarPicos();
+    var pm=(!fuera&&PK.length)?picoMira(pe,hdc):null;
+    $("mejor").textContent=pm?"▲ "+pm.n:"—";
+    $("mejor").style.fontSize=pm?"28px":"28px";
+    $("lista").innerHTML=pm?'<div class="it" style="border-left-color:'+COLPK+'"><span style="font-size:17px"><b style="color:'+COLPK+'">▲</b> '+esc(pm.n)+'</span><span>'+Math.round(pm.e).toLocaleString("es-ES")+' m · '+(pm.dk<10?pm.dk.toFixed(1):Math.round(pm.dk))+' km</span></div>':"";
+    $("msg").className=(pkEstado==="error"||(!fuera&&PK.length&&!pm&&pan))?"aviso":"";
+    $("msg").textContent=fuera?"Apunta hacia el horizonte con el móvil en vertical.":
+      pkEstado==="cargando"&&!PK.length?"Descargando los picos de tu zona (radio de 80 km)…":
+      pkEstado==="error"&&!PK.length?"No pude descargar los picos (sin conexión o servidor ocupado). Reintentando…":
+      !PK.length?"Aún no hay picos cargados.":
+      !pan?"Descargando el relieve de la zona… "+panProg:
+      pm?PK.length+" picos cargados · alcance "+alcance+" km":
+      "Ningún pico en la mira (hasta "+alcance+" km). Prueba a girar o pulsa «Más lejos».";
+  }
+  if(document.body.classList.contains("on")&&!fuera)etiquetas(pe,hdc);else limpiarEtq();
+  dibujarSilueta(hdc);
+  if(ochoActivo)actOcho();
+}
+function setH(n){
+  if(sm===null)sm=n;
+  var d=((n-sm+540)%360)-180; sm=(sm+0.2*d+360)%360; hd=sm; if(Date.now()-tp>100){tp=Date.now();pintar()}
+}
+var oriAbs=false,oriN=0,oriNorte=false,oriT0=0;
+function onOri(e){
+  // Hay navegadores sin sensor que disparan los eventos con valores vacíos: esos no cuentan
+  var hayDatos=typeof e.webkitCompassHeading==="number"||(typeof e.alpha==="number"&&typeof e.beta==="number"&&typeof e.gamma==="number");
+  if(!hayDatos)return;
+  oriN++;
+  var abs=e.type==="deviceorientationabsolute"||e.absolute===true;
+  if(typeof e.webkitCompassHeading==="number"||abs)oriNorte=true;
+  if(typeof e.beta==="number")pit=e.beta-90;
+  if(typeof e.webkitCompassAccuracy==="number")prec=e.webkitCompassAccuracy;
+  if(typeof e.webkitCompassHeading==="number"){setH(e.webkitCompassHeading);return}
+  // Android: si hay evento absoluto con datos, ignoro el relativo (su alpha no apunta al norte y mezclarlos hace saltar el rumbo)
+  if(abs)oriAbs=true;
+  else if(oriAbs)return;
+  var a=e.alpha*R,b=e.beta*R,g=e.gamma*R;
+  var rA=-Math.cos(a)*Math.sin(g)-Math.sin(a)*Math.sin(b)*Math.cos(g);
+  var rB=-Math.sin(a)*Math.sin(g)+Math.cos(a)*Math.sin(b)*Math.cos(g);
+  setH((Math.atan2(rA,rB)/R+360)%360);
+}
+var cargando=false,ultimo=null,intento=0;
+// ¿Hay pueblos descargados alrededor? (al menos 3 a menos de 20 km)
+function cercaBD(la,lo){
+  var n=0,dLa=20/111,dLo=20/(111*Math.max(0.2,Math.cos(la*R)));
+  for(var i=0;i<BD.length;i++){var p=BD[i];if(Math.abs(p[1]-la)<dLa&&Math.abs(p[2]-lo)<dLo&&dst(la,lo,p[1],p[2])<=20&&++n>=3)return true}
+  return false;
+}
+async function masPueblos(){
+  if(BD){
+    if(!BDlisto){P=unir();BDlisto=true}
+    // Dentro de las provincias descargadas (o sin conexión) basta la base local; fuera de ellas, pido a OpenStreetMap
+    if(cercaBD(pos.latitude,pos.longitude)||navigator.onLine===false){ultimo={la:pos.latitude,lo:pos.longitude};return}
+  }
+  if(cargando||Date.now()-intento<15000)return;
+  cargando=true;intento=Date.now();
+  // Prueba varios servidores y radios hasta que uno responda
+  var intentos=[["https://overpass-api.de/api/interpreter",80000,"city|town|village|hamlet"],["https://overpass.kumi.systems/api/interpreter",80000,"city|town|village|hamlet"],["https://overpass-api.de/api/interpreter",30000,"city|town|village"]];
+  var ok=false;
+  for(var t=0;t<intentos.length&&!ok;t++){
+    try{
+      var q='[out:json][timeout:30];(node["place"~"'+intentos[t][2]+'"]["name"](around:'+intentos[t][1]+','+pos.latitude+','+pos.longitude+');'+(t<2?'node["place"="isolated_dwelling"]["name"](around:20000,'+pos.latitude+','+pos.longitude+');':'')+');out;';
+      var resp=await fetchT(intentos[t][0],{method:"POST",body:"data="+encodeURIComponent(q)},40000);
+      var j=await resp.json();
+      if(!j.elements)throw 0;
+      ultimo={la:pos.latitude,lo:pos.longitude};
+      P=fusionar(j.elements.filter(function(e){return e.tags&&e.tags.name}).map(function(e){return[e.tags.name,e.lat,e.lon,e.tags.place]}),BD?unir():BASE);
+      ok=true;
+    }catch(e){}
+  }
+  $("info").textContent=ok?"Datos: "+P.length+" localidades cargadas (OpenStreetMap"+(BD?" + base local":"")+")":BD?"Fuera de las provincias descargadas y sin respuesta de OpenStreetMap: descarga también esta provincia.":"Datos: solo "+P.length+" localidades de la lista básica (no se pudo usar OpenStreetMap)";
+  cargando=false;
+}
+var camBusy=false,camErr="",camSes=0;
+function mensajeCamara(e){
+  var n=e&&e.name?e.name:"";
+  if(n==="NotAllowedError"||n==="SecurityError")return "Cámara sin permiso. Actívala en Ajustes > Apps > ¿Qué pueblo es? > Permisos > Cámara y vuelve a la app.";
+  if(n==="NotFoundError"||n==="OverconstrainedError")return "No se encuentra ninguna cámara en este dispositivo.";
+  if(n==="NotReadableError"||n==="AbortError")return "La cámara la está usando otra aplicación. Ciérrala e inténtalo de nuevo.";
+  if(n==="NoApi")return "Este navegador no permite usar la cámara.";
+  return "No se pudo abrir la cámara"+(n?" ("+n+")":"")+".";
+}
+async function camara(keep){
+  if(camBusy)return;camBusy=true;var ses=camSes;
+  // Cámara trasera de fondo, para ver hacia dónde apunta la mira. Si se deniega, la mira sigue funcionando.
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw {name:"NoApi"};
+    var st;
+    // Pide más resolución (por defecto algunos móviles dan 640x480 y al hacer zoom se ve borroso)
+    try{st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false})}
+    catch(e1){st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false})}
+    // Si se pulsó «Terminar» mientras se abría la cámara, la apago en vez de dejarla encendida
+    if(ses!==camSes||!document.body.classList.contains("on")){st.getTracks().forEach(function(t){t.stop()});if(ses===camSes)camBusy=false;return}
+    stream=st;var v=$("cam");v.srcObject=st;v.play();
+    pista=st.getVideoTracks()[0];
+    var cp={};
+    try{cp=pista.getCapabilities?pista.getCapabilities():{};capZoom=cp.zoom||null}catch(e){capZoom=null}
+    modosFoco=cp.focusMode||[];capDist=cp.focusDistance||null;
+    zMax=capZoom?capZoom.max:6;
+    aplicarZoom(keep?zoom:1);
+    iniciarFoco();camErr="";camBusy=false;
+  }catch(e){
+    if(ses!==camSes)return;
+    camBusy=false;camErr=mensajeCamara(e);
+    try{pintar()}catch(e2){}
+  }
+}
+
+// ---- Base de datos local por provincias (IndexedDB) ----
+var watchId=null,stream=null;
+var BD=null,BDlisto=false,tp=0,hechas={};
+var PROV=[["C","A Coruña"],["CE","Ceuta"],["ML","Melilla"],["VI","Álava"],["AB","Albacete"],["A","Alicante"],["AL","Almería"],["O","Asturias"],["AV","Ávila"],["BA","Badajoz"],["PM","Baleares"],["B","Barcelona"],["BI","Bizkaia"],["BU","Burgos"],["CC","Cáceres"],["CA","Cádiz"],["S","Cantabria"],["CS","Castellón"],["CR","Ciudad Real"],["CO","Córdoba"],["CU","Cuenca"],["GI","Girona"],["GR","Granada"],["GU","Guadalajara"],["SS","Gipuzkoa"],["H","Huelva"],["HU","Huesca"],["J","Jaén"],["LO","La Rioja"],["GC","Las Palmas"],["LE","León"],["L","Lleida"],["LU","Lugo"],["M","Madrid"],["MA","Málaga"],["MU","Murcia"],["NA","Navarra"],["OR","Ourense"],["P","Palencia"],["PO","Pontevedra"],["SA","Salamanca"],["TF","Santa Cruz de Tenerife"],["SG","Segovia"],["SE","Sevilla"],["SO","Soria"],["T","Tarragona"],["TE","Teruel"],["TO","Toledo"],["V","Valencia"],["VA","Valladolid"],["ZA","Zamora"],["Z","Zaragoza"]];
+PROV.sort(function(a,b){return a[1].localeCompare(b[1],"es")});
+function nombreProv(c){for(var i=0;i<PROV.length;i++)if(PROV[i][0]===c)return PROV[i][1];return c}
+// Una sola conexión reutilizada (antes se abría una por operación)
+var dbP=null;
+function idb(){
+  if(!dbP){
+    dbP=new Promise(function(res,rej){var q=indexedDB.open("pueblos",1);q.onupgradeneeded=function(){q.result.createObjectStore("kv")};q.onsuccess=function(){var d=q.result;d.onversionchange=function(){d.close();dbP=null};res(d)};q.onerror=function(){rej(q.error)}});
+    dbP.catch(function(){dbP=null});
+  }
+  return dbP;
+}
+async function bdSet(k,v){var d=await idb();return new Promise(function(res,rej){var t=d.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=function(){res()};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)}})}
+async function bdGet(k){var d=await idb();return new Promise(function(res,rej){var q=d.transaction("kv").objectStore("kv").get(k);q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}})}
+async function bdDel(ks){var d=await idb();return new Promise(function(res,rej){var t=d.transaction("kv","readwrite"),s=t.objectStore("kv");ks.forEach(function(k){s.delete(k)});t.oncomplete=function(){res()};t.onerror=function(){rej(t.error)}})}
+// Lee solo las claves con ese prefijo (el relieve guardado no se carga al abrir la app)
+async function bdAll(pre){var d=await idb();return new Promise(function(res,rej){var out={};var c=d.transaction("kv").objectStore("kv").openCursor(pre?IDBKeyRange.bound(pre,pre+"\uffff"):undefined);c.onsuccess=function(){var cur=c.result;if(cur){out[cur.key]=cur.value;cur.continue()}else res(out)};c.onerror=function(){rej(c.error)}})}
+function parseLineas(txt,all){
+  txt.split("\n").forEach(function(l){
+    var c=l.split("|");
+    if(c.length<4)return;
+    var la=parseFloat(c[0]),lo=parseFloat(c[1]),pl=c[c.length-1].trim(),nom=c.slice(2,-1).join("|").trim();
+    if(isNaN(la)||isNaN(lo)||!nom)return;
+    all[nom+"|"+la+"|"+lo]=[nom,la,lo,pl];
+  });
+}
+function reconstruir(all){
+  var partes=[];hechas={};
+  Object.keys(all).forEach(function(k){if(k.indexOf("prov:")===0&&all[k]&&all[k].datos){hechas[k.slice(5)]=all[k].fecha;partes.push(all[k].datos)}});
+  return [].concat.apply([],partes);
+}
+// Une la base local con las ciudades de la lista básica (las que no estén ya)
+function unir(){return fusionar(BD,BASE)}
+function aplicarBD(datos){
+  BD=datos.length?datos:null;BDlisto=false;
+  $("avisoCob").style.display=BD?"none":"block";
+  if(BD&&pos){P=unir();BDlisto=true}
+  marcarHechas();
+  var n=Object.keys(hechas).length;
+  $("info").textContent=BD?"Base local: "+BD.length+" localidades de "+n+(n===1?" provincia":" provincias"):"";
+  etqDl();
+}
+var selGuardada=[];
+try{selGuardada=JSON.parse(localStorage.getItem("provSel")||"[]")}catch(e){}
+function etqDl(){
+  var B=$("dl");if(B.disabled)return;
+  var sel=[].map.call(document.querySelectorAll("#plist input:checked"),function(i){return i.value});
+  B.textContent=(sel.length&&sel.every(function(c){return hechas[c]}))?"Actualizar provincias elegidas":"Descargar provincias elegidas";
+}
+function guardarSel(){etqDl();
+  try{localStorage.setItem("provSel",JSON.stringify([].filter.call(document.querySelectorAll("#plist input"),function(i){return i.checked}).map(function(i){return i.value})))}catch(e){}
+}
+// Las provincias con los pueblos ya descargados se ven en verde y en negrita; el resto, con el color normal
+function marcarHechas(){PROV.forEach(function(p){var e=$("pl-"+p[0]);if(e)e.classList.toggle("hecha",!!hechas[p[0]])})}
+function pintarLista(){
+  $("plist").innerHTML=PROV.map(function(p){return '<label id="pl-'+p[0]+'"'+(hechas[p[0]]?' class="hecha"':'')+'><input type="checkbox" value="'+p[0]+'"'+(selGuardada.indexOf(p[0])>=0?' checked':'')+'> '+p[1]+'</label>'}).join("");
+  [].forEach.call(document.querySelectorAll("#plist input"),function(i){i.onchange=guardarSel});
+  $("todas").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=true});guardarSel()};
+  $("ninguna").onclick=function(){[].forEach.call(document.querySelectorAll("#plist input"),function(i){i.checked=false});guardarSel()};
+}
+pintarLista();
+(async function(){
+  try{
+    aplicarBD(reconstruir(await bdAll("prov:")));
+    // Las provincias ya descargadas aparecen marcadas al abrir la aplicación
+    [].forEach.call(document.querySelectorAll("#plist input"),function(i){if(hechas[i.value])i.checked=true});
+    guardarSel();
+    // Primera vez que se abre la app (sin ninguna provincia descargada): va directa a elegir y descargar provincia
+    if(!Object.keys(hechas).length&&localStorage.getItem("primeraDescarga")!=="1"){
+      $("mapaAviso").style.display="block";
+      abrirMapa();
+    }
+  }catch(e){}
+})();
+function espera(ms){return new Promise(function(r){setTimeout(r,ms)})}
+var SERV=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+function dlMsg(t,mal){var e=$("dlst");e.textContent=t;e.className=mal?"mal":""}
+async function descargar(){
+  var sel=[].map.call(document.querySelectorAll("#plist input:checked"),function(i){return i.value});
+  if(!sel.length){dlMsg("Marca al menos una provincia.",true);return}
+  if(navigator.onLine===false){dlMsg("Sin conexión a internet: conéctate a datos o wifi para descargar.",true);return}
+  var faltan=sel.filter(function(c){return !hechas[c]});
+  var actualizar=faltan.length===0;
+  if(!actualizar)sel=faltan;
+  var B=$("dl");B.disabled=true;$("barra").style.display="block";$("barraI").style.width="0%";
+  var fallos=[],buenas=[];
+  for(var i=0;i<sel.length;i++){
+    var c=sel[i],nom=nombreProv(c);
+    $("barraI").style.width=(100*i/sel.length)+"%";$("barra").setAttribute("aria-valuenow",Math.round(100*i/sel.length));
+    B.textContent=(actualizar?"Actualizando ":"Descargando ")+nom+" ("+(i+1)+" de "+sel.length+")…";
+    var q='[out:csv(::lat,::lon,name,place;false;"|")][timeout:120];area["ISO3166-2"="ES-'+c+'"]->.p;node(area.p)["place"~"^(city|town|village|hamlet|isolated_dwelling)$"]["name"];out;';
+    var ok=false,all={},motivos=[];
+    for(var s=0;s<SERV.length+2&&!ok;s++){
+      var sv=SERV[s%SERV.length],resp=null;
+      dlMsg((actualizar?"Actualizando ":"Descargando ")+nom+"… puede tardar un minuto (servidor "+(s%SERV.length+1)+" de "+SERV.length+")");
+      try{
+        resp=await fetchT(sv,{method:"POST",body:"data="+encodeURIComponent(q)},100000);
+        if(!resp.ok)throw new Error("error "+resp.status);
+        parseLineas(await resp.text(),all);
+        if(Object.keys(all).length<5)throw new Error("respuesta vacía o incompleta");
+        ok=true;
+      }catch(e){
+        all={};motivos.push(sv.split("/")[2]+": "+motivoErr(e));
+        await espera(resp&&(resp.status===429||resp.status===504)?6000:1500);
+      }
+    }
+    if(ok){
+      var datos=Object.keys(all).map(function(k){return all[k]});
+      try{await bdSet("prov:"+c,{fecha:new Date().toLocaleDateString("es-ES"),datos:datos});buenas.push(nom+" ("+datos.length+" localidades)")}
+      catch(e){fallos.push(nom+": no se pudo guardar en el móvil ("+motivoErr(e)+")");continue}
+    }else fallos.push(nom+": "+motivos.slice(-3).join("; "));
+    await espera(500);
+  }
+  try{aplicarBD(reconstruir(await bdAll("prov:")))}catch(e){}
+  $("barraI").style.width="100%";$("barra").setAttribute("aria-valuenow",100);
+  B.disabled=false;etqDl();
+  if(fallos.length)dlMsg((buenas.length?"✓ Guardado: "+buenas.join(", ")+". ":"")+"No se pudo descargar → "+fallos.join(" | ")+". Comprueba la conexión y vuelve a pulsar.",true);
+  else dlMsg("✓ "+buenas.join(", ")+" guardada"+(buenas.length>1?"s":"")+". Ya puedes usar la app sin cobertura.");
+}
+$("dl").onclick=descargar;
+function salir(){try{clearTimeout(tTap);tapSel=null;$("toque").style.display="none"}catch(e){}camErr="";camBusy=false;camSes++;iniciando=false;$("go").disabled=false;
+  if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}
+  window.removeEventListener("deviceorientationabsolute",onOri,true);
+  window.removeEventListener("deviceorientation",onOri,true);
+  if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}
+  $("cam").srcObject=null;
+  document.body.classList.remove("on");
+  cerrarOcho();$("cal").style.display="none";
+  $("go").style.display="";
+  limpiarEtq();pan=null;hzOff=0;hzPrev=null;hzDet=null;dibujarSilueta(0);
+  verPicos=false;actAldeasBtn();document.body.classList.remove("picos");$("picosb").classList.remove("act");$("picosb").setAttribute("aria-pressed","false");
+  zoom=1;pista=null;capZoom=null;modosFoco=[];capDist=null;clearTimeout(tFoco);$("fdw").className="";$("cam").style.transform="";$("zval").textContent=fmtZoom(1);clearTimeout(tToast);clearTimeout(tCons);$("toast").className="";$("calbtn").classList.remove("pista");$("conf").style.display="none";
+  pos=null;sm=null;oriN=0;oriNorte=false;oriAbs=false;oriT0=0;modoCoche=false;velAlta=0;velBaja=0;rumboGPS=null;pantallaEncendida(false);
+  $("rumbo").textContent="";$("mejor").textContent="";$("lista").innerHTML="";
+  $("msg").textContent="Has terminado: cámara, GPS y brújula apagados. Pulsa «Iniciar identificación» para empezar de nuevo.";
+}
+// Terminar siempre pide confirmación para que un toque accidental no apague todo
+function pedirTerminar(){$("conf").style.display="flex";$("confno").focus()}
+$("salir").onclick=pedirTerminar;
+$("confno").onclick=function(){$("conf").style.display="none"};
+$("confsi").onclick=function(){$("conf").style.display="none";salir()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){$("conf").style.display="none";$("permisos").style.display="none";$("guia").style.display="none";if($("cal").style.display==="block")$("calcerrar").onclick()}});
+function abrirMapa(){
+  document.body.classList.add("mapa");window.scrollTo(0,0);
+  try{history.pushState({mapa:1},"")}catch(e){}
+}
+function cerrarMapa(){document.body.classList.remove("mapa");window.scrollTo(0,0)}
+$("abrirmapa").onclick=abrirMapa;
+$("avisoCob").onclick=abrirMapa;
+$("volverMapa").onclick=function(){
+  if(history.state&&history.state.mapa){try{history.back();return}catch(e){}}
+  cerrarMapa();
+};
+window.addEventListener("popstate",function(){cerrarMapa()});
+// Cuando el usuario ya ha empezado una descarga o ha pulsado «Volver», no se vuelve a pedir al arrancar
+function marcarPrimera(){try{localStorage.setItem("primeraDescarga","1")}catch(e){}$("mapaAviso").style.display="none"}
+$("dl").addEventListener("click",marcarPrimera);
+$("volverMapa").addEventListener("click",marcarPrimera);
+function cerrar(){
+  if(document.body.classList.contains("on"))salir();
+  if(window.AndroidApp&&AndroidApp.cerrar){guardarVis(true);AndroidApp.cerrar();return} // app Android: cierra de verdad
+  try{window.close()}catch(e){}
+  $("adios").style.display="flex";
+}
+$("cerrar").onclick=cerrar;
+var plegado=false;try{plegado=localStorage.getItem("plegado")==="1"}catch(e){}
+function aplicarPlegado(){
+  document.querySelector("main").classList.toggle("plegado",plegado);
+  $("plegar").textContent=plegado?"▼":"▲";$("plegar").setAttribute("aria-expanded",plegado?"false":"true");
+  pintar();
+}
+$("plegar").onclick=function(){plegado=!plegado;try{localStorage.setItem("plegado",plegado?"1":"0")}catch(e){}aplicarPlegado()};
+aplicarPlegado();
+// El botón se ve siempre. En la app Android cierra de verdad; en iPhone y navegadores una web no puede cerrarse sola,
+// así que apaga cámara, GPS y brújula y muestra cómo quitar la app
+function botonSalir(){$("cerrar").style.display=""}
+botonSalir();window.addEventListener("load",botonSalir);
+$("volver").onclick=function(){$("adios").style.display="none"};
+// ---- Calibración de la brújula y filtro de aldeas ----
+var off=0,verAldeas=true,prec=null,calList=[];
+try{var so=parseFloat(localStorage.getItem("off"));if(!isNaN(so))off=so}catch(e){}
+var tab={};
+try{var st0=JSON.parse(localStorage.getItem("tab")||"{}");if(st0&&typeof st0==="object")tab=st0}catch(e){}
+function guardarOff(){try{localStorage.setItem("off",String(off));localStorage.setItem("tab",JSON.stringify(tab))}catch(e){}}
+function ponerTab(h,o){tab[Math.round(((h%360)+360)%360/45)%8]={o:o,n:1}}
+// Corrección de brújula para el rumbo h: mezcla lo aprendido en cada dirección (0°, 45°, 90°…); lejos de lo aprendido vale el ajuste global
+function offPara(h){
+  var ks=Object.keys(tab);
+  if(!ks.length)return off;
+  var sw=0,so=0,w;
+  ks.forEach(function(k){w=1/Math.pow(dif(h,k*45)+10,2);sw+=w;so+=w*tab[k].o});
+  w=1/Math.pow(100,2);sw+=w;so+=w*off;
+  return so/sw;
+}
+function maxDif(a){var m=0;for(var i=1;i<a.length;i++)m=Math.max(m,dif(a[i],a[0]));return m}
+$("aldeas").onclick=function(){verAldeas=!verAldeas;this.setAttribute("aria-pressed",verAldeas?"true":"false");actAldeasBtn();pintar()};
+$("calbtn").onclick=function(){
+  if(!pos)return;
+  calList=P.filter(function(p){return p[3]!=="hamlet"&&p[3]!=="isolated_dwelling"}).map(function(p){return{n:p[0],la:p[1],lo:p[2],k:dst(pos.latitude,pos.longitude,p[1],p[2])}}).filter(function(p){return p.k>0.5&&p.k<60}).sort(function(a,b){return a.k-b.k}).slice(0,15);
+  $("calsel").innerHTML=calList.map(function(p,i){return '<option value="'+i+'">'+esc(p.n)+' · '+p.k.toFixed(0)+' km</option>'}).join("");
+  calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
+  calVista(0);
+  $("cal").style.display="block";
+  ajustarMira();
+};
+// Menú de métodos: cada opción abre su propia vista con los pasos
+// Con el panel de calibración abierto, la mira sube al centro del hueco libre para que no quede tapada.
+// Solo cambia su altura en pantalla: la dirección (izquierda/derecha) sigue siendo la del centro del móvil.
+function ajustarMira(){
+  var cal=$("cal"),m=$("mira");
+  if(cal.style.display!=="block"||cal.className==="menu"||!document.body.classList.contains("on")){m.style.top="";return}
+  var topPanel=cal.getBoundingClientRect().top,hb=document.querySelector("main").getBoundingClientRect().bottom+30;
+  var y=Math.min(Math.max((hb+topPanel)/2,hb+50),topPanel-50);
+  if(y>hb)m.style.top=Math.round(y)+"px";else m.style.top="";
+}
+if(window.ResizeObserver)new ResizeObserver(ajustarMira).observe($("cal"));
+window.addEventListener("resize",ajustarMira);
+function calVista(v){
+  ["calmenu","calv1","calv2","calv3","calv4","calv5"].forEach(function(id,i){$(id).style.display=(i===v)?"block":"none"});
+  $("cal").className=v===0?"menu":"";
+  ajustarMira();
+  ochoActivo=(v===3);
+  calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
+  if(v===3)actOcho();
+}
+[1,2,3,4,5].forEach(function(n){$("cm"+n).onclick=function(){calVista(n)}});
+[].forEach.call(document.querySelectorAll("#cal .cback"),function(b){b.onclick=function(){calVista(0)}});
+var calAnd=null,cal2={b:null,o:null};
+calVista(0);
+function envolver(x){return ((x%360)+540)%360-180}
+function fmtOff(o){return (o>0?"+":"")+Math.round(o)+"°"}
+function finCal(txt){hzOff=0;hzPrev=null;guardarOff();$("calst").textContent=txt;pintar()}
+$("calok").onclick=function(){
+  var t=calList[+$("calsel").value];if(!t||!pos)return;
+  calAnd=null;
+  var b=brg(pos.latitude,pos.longitude,t.la,t.lo),o=envolver(b-hd);
+  if(!$("cal2").checked){off=o;ponerTab(hd,o);cal2={b:null,o:null};finCal("✓ Calibrado ("+fmtOff(o)+")");return}
+  if(cal2.o===null){
+    cal2={b:b,o:o,h:hd};
+    $("calst").textContent="Lugar 1 guardado. Elige OTRO lugar en una dirección distinta (al menos 30° de diferencia) y pulsa de nuevo.";
+    return;
+  }
+  if(dif(b,cal2.b)<30){$("calst").textContent="Ese lugar está casi en la misma dirección que el primero. Elige otro más hacia un lado.";return}
+  var d2=envolver(o-cal2.o);
+  ponerTab(cal2.h,cal2.o);ponerTab(hd,o);
+  off=envolver(cal2.o+d2/2);
+  var txt="✓ Calibrado con dos lugares ("+fmtOff(off)+")";
+  if(Math.abs(d2)>10)txt+=". Aviso: los dos errores difieren "+Math.round(Math.abs(d2))+"°, la brújula no falla igual en todas las direcciones.";
+  cal2={b:null,o:null};
+  finCal(txt);
+};
+// Método andando o en coche: compara la brújula con la dirección real del recorrido (GPS)
+$("calgps").onclick=function(){
+  if(!pos)return;
+  cal2={b:null,o:null};
+  calAnd={la:pos.latitude,lo:pos.longitude,s:[]};
+  $("calst").textContent="Avanza en línea recta con el móvil en vertical apuntando hacia delante…";
+};
+function calAndar(c){
+  if(!calAnd)return;
+  var dm=dst(calAnd.la,calAnd.lo,c.latitude,c.longitude)*1000;
+  calAnd.s.push(hd);
+  var need=Math.max(30,2.5*(c.accuracy||10));
+  if(dm<need||calAnd.s.length<2){$("calst").textContent="Camina recto… "+Math.round(dm)+" de "+Math.round(need)+" m";return}
+  var sx=0,sy=0,mal=0;
+  calAnd.s.forEach(function(a){sx+=Math.sin(a*R);sy+=Math.cos(a*R)});
+  var media=(Math.atan2(sx,sy)/R+360)%360;
+  calAnd.s.forEach(function(a){mal=Math.max(mal,dif(a,media))});
+  var b=brg(calAnd.la,calAnd.lo,c.latitude,c.longitude);
+  calAnd=null;
+  if(mal>25){$("calst").textContent="El móvil se movió demasiado (±"+Math.round(mal)+"°). Inténtalo de nuevo apuntando siempre hacia delante.";return}
+  off=envolver(b-media);ponerTab(media,off);
+  finCal("✓ Calibrado andando ("+fmtOff(off)+")");
+}
+$("calreset").onclick=function(){off=0;tab={};ocho8=false;calAnd=null;cal2={b:null,o:null};finCal("Calibración quitada")};
+$("ochocerrar").onclick=function(){calVista(0)};
+$("calcerrar").onclick=function(){cerrarOcho();calAnd=null;cal2={b:null,o:null};$("calst").textContent="";$("cal").style.display="none";ajustarMira()};
+// ---- Modo coche (se activa solo al detectar velocidad) ----
+var hdH=[],gT=0,modoCoche=false,velAlta=0,velBaja=0,posT=0,rumboGPS=null,velGPS=0,autoT=0,wl=null;
+function actualizarMarcha(c){
+  var v=(typeof c.speed==="number"&&c.speed>=0)?c.speed:0;
+  var rh=(typeof c.heading==="number"&&!isNaN(c.heading))?c.heading:null;
+  velGPS=v;rumboGPS=(v>1&&rh!==null)?rh:null;
+  if(v>=8){velAlta++;velBaja=0}else if(v<2){velBaja++;velAlta=0}
+  if(!modoCoche&&velAlta>=3)modoCoche=true;
+  if(modoCoche&&velBaja>=20)modoCoche=false;
+  // Autocalibración: una vez calibrada, afina la corrección de cada dirección con el rumbo real del GPS.
+  // Solo si vas a más de 18 km/h, el móvil está quieto y apunta casi hacia delante (menos de 20° de diferencia).
+  hdH.push(hd);if(hdH.length>3)hdH.shift();
+  var calibrada=off!==0||Object.keys(tab).length>0;
+  if($("auto").checked!==false&&calibrada&&rumboGPS!==null&&v>=5&&Math.abs(pit)<30&&hdH.length===3&&maxDif(hdH)<=8){
+    var base=offPara(hd),d=envolver(rumboGPS-(hd+base+360)%360);
+    if(Math.abs(d)<=20){
+      var k=Math.round(hd/45)%8;
+      tab[k]={o:envolver(base+0.15*d),n:(tab[k]?tab[k].n:0)+1};
+      off=envolver(off+0.05*d);autoT=Date.now();hzOff*=0.8;
+      if(Date.now()-gT>10000){gT=Date.now();guardarOff()}
+    }
+  }
+}
+// Entre dos lecturas del GPS, calcula dónde estás según velocidad y rumbo
+function posEfectiva(){
+  if(!pos)return null;
+  var dt=(Date.now()-posT)/1000;
+  if(modoCoche&&rumboGPS!==null&&velGPS>=3&&dt>0&&dt<4){
+    var dm=velGPS*dt;
+    return{latitude:pos.latitude+dm*Math.cos(rumboGPS*R)/111320,longitude:pos.longitude+dm*Math.sin(rumboGPS*R)/(111320*Math.cos(pos.latitude*R)),altitude:pos.altitude,accuracy:pos.accuracy};
+  }
+  return pos;
+}
+// Mantiene la pantalla encendida mientras se usa
+async function pantallaEncendida(on){
+  try{
+    if(on){if(navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",function(){wl=null})}}
+    else if(wl){await wl.release();wl=null}
+  }catch(e){}
+}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("on")){pantallaEncendida(true);var tr=stream&&stream.getVideoTracks()[0];
+  if(tr&&tr.readyState==="ended"){stream=null;pista=null}
+  if(!stream)camara(true)}});
+// ---- Zoom de la cámara (con dos dedos o con los botones) ----
+var zoom=1,zMax=6,pista=null,capZoom=null,pz=null,pzFin=0,modosFoco=[],capDist=null,tFoco=null,tZ=null,ultRef=0;
+function fmtZoom(z){return "Zoom ×"+String(parseFloat(z.toFixed(1))).replace(".",",")}
+function aplicarZoom(z){
+  zoom=Math.max(1,Math.min(zMax,z));
+  if(capZoom&&pista){
+    $("cam").style.transform="";
+    try{pista.applyConstraints({advanced:[{zoom:zoom}]}).catch(function(){capZoom=null;aplicarZoom(zoom)})}catch(e){capZoom=null;aplicarZoom(zoom)}
+  }else{
+    $("cam").style.transform="scale("+zoom+")";
+  }
+  $("zval").textContent=fmtZoom(zoom);
+  // Tras cambiar el zoom, vuelve a enfocar (si la cámara lo permite)
+  clearTimeout(tZ);tZ=setTimeout(function(){if(pista&&modosFoco.length)enfocar()},600);
+}
+$("zmas").onclick=function(){aplicarZoom(zoom*1.25)};
+$("zmenos").onclick=function(){aplicarZoom(zoom/1.25)};
+function dist2(t){var dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return Math.sqrt(dx*dx+dy*dy)}
+document.addEventListener("touchstart",function(e){if(document.body.classList.contains("on")&&e.touches.length===2)pz={d:dist2(e.touches),z:zoom}},{passive:true});
+document.addEventListener("touchmove",function(e){if(pz&&e.touches.length===2){e.preventDefault();aplicarZoom(pz.z*dist2(e.touches)/pz.d)}},{passive:false});
+document.addEventListener("touchend",function(e){if(e.touches.length<2){if(pz)pzFin=Date.now();pz=null}});
+// ---- Enfoque de la cámara ----
+function aplicarFoco(c){return pista?pista.applyConstraints({advanced:[c]}):Promise.reject(new Error("sin cámara"))}
+function nada(){}
+function iniciarFoco(){
+  var w=$("fdw");w.className="";
+  if(modosFoco.indexOf("continuous")>=0)aplicarFoco({focusMode:"continuous"}).catch(nada);
+  if(capDist&&modosFoco.indexOf("manual")>=0){
+    var mn=capDist.min>0?capDist.min:0.05,mx=isFinite(capDist.max)&&capDist.max>mn?capDist.max:100,f=$("fdist");
+    f.value=1;
+    f.oninput=function(){var d=mn*Math.pow(mx/mn,parseFloat(f.value));aplicarFoco({focusMode:"manual",focusDistance:d}).catch(nada)};
+    $("fauto").onclick=function(){f.value=1;aplicarFoco({focusMode:modosFoco.indexOf("continuous")>=0?"continuous":"single-shot"}).catch(nada)};
+    w.className="v";
+  }
+}
+function anilloFoco(x,y){
+  var e=$("foco");e.style.left=x+"px";e.style.top=y+"px";e.className="";void e.offsetWidth;e.className="v";
+}
+async function reiniciarCamara(){
+  // iPhone/Safari no deja controlar el foco: volver a abrir la cámara hace que enfoque de nuevo
+  if(!stream)return;
+  stream.getTracks().forEach(function(t){t.stop()});stream=null;pista=null;
+  await camara(true);
+}
+function enfocar(x,y){
+  if(!pista&&!stream)return;
+  if(x!=null)anilloFoco(x,y);
+  if(modosFoco.length){
+    var cont=modosFoco.indexOf("continuous")>=0,c={focusMode:modosFoco.indexOf("single-shot")>=0?"single-shot":(cont?"continuous":modosFoco[0])};
+    if(x!=null){
+      var v=$("cam"),W=innerWidth,H=innerHeight,vw=v.videoWidth,vh=v.videoHeight;
+      if(vw){var s=Math.max(W/vw,H/vh);c.pointsOfInterest=[{x:Math.min(1,Math.max(0,((x-W/2)/s+vw/2)/vw)),y:Math.min(1,Math.max(0,((y-H/2)/s+vh/2)/vh))}]}
+    }
+    var c2={focusMode:c.focusMode};
+    aplicarFoco(c).catch(function(){return aplicarFoco(c2)}).catch(nada);
+    clearTimeout(tFoco);
+    if(cont)tFoco=setTimeout(function(){aplicarFoco({focusMode:"continuous"}).catch(nada)},1800);
+  }else if(x!=null&&Date.now()-ultRef>3000){
+    ultRef=Date.now();reiniciarCamara();
+  }
+}
+$("cam").addEventListener("click",function(e){if(Date.now()-pzFin<500)return;enfocar(e.clientX,e.clientY);identificarToque(e.clientX,e.clientY)});
+// ---- Pulsar sobre la imagen para saber qué pueblo hay en ese punto ----
+var tapSel=null,etqHit=[],tTap=null;
+function distTxt(k){return (k<10?k.toFixed(1):Math.round(k)).toString().replace(".",",")+" km"}
+function mostrarToque(x,html){
+  var b=$("toque"),W=innerWidth,H=innerHeight;
+  b.innerHTML=html;b.style.display="block";
+  var w=b.offsetWidth,h=b.offsetHeight;
+  var l=Math.max(8,Math.min(W-w-8,x-w/2)),t=toqueY-h-50;
+  if(t<8)t=toqueY+50;
+  b.style.transform="translate("+Math.round(l)+"px,"+Math.round(t)+"px)";
+}
+var toqueY=0;
+function identificarToque(x,y){
+  clearTimeout(tTap);
+  var W=innerWidth,H=innerHeight,f=fEff(),best=null,i,p;
+  toqueY=y;
+  if(pit<-40||pit>30){tapSel=null;mostrarToque(x,"Apunta hacia el horizonte");tTap=setTimeout(finToque,3000);return}
+  // 1) Lo que ya está dibujado: punto o etiqueta bajo el dedo (el más cercano al toque)
+  var bd=1e9;
+  for(i=0;i<etqHit.length;i++){
+    p=etqHit[i];
+    var dP=Math.hypot(x-p.x,y-p.y),enEt=Math.abs(x-p.x)<=p.w/2+4&&y>=p.ty-34&&y<=p.ty+4;
+    var dd=enEt?Math.min(dP,Math.abs(x-p.x)):dP;
+    if((enEt||dP<=44)&&dd<bd){bd=dd;best=p}
+  }
+  // 2) Si no, por dirección: pueblos en la vertical del toque, cuyo relieve deje verlos
+  if(!best&&verPicos){
+    var pe2=posEfectiva(),hd2=rumboC(),bs2=1e9;
+    for(i=0;i<PK.length;i++){
+      var k=PK[i];
+      if(Math.abs(k.la-pe2.latitude)>0.75||Math.abs(k.lo-pe2.longitude)>0.95)continue;
+      var a2=envolver(brg(pe2.latitude,pe2.longitude,k.la,k.lo)-hd2);
+      if(Math.abs(a2)>60)continue;
+      var dx2=Math.abs(W/2+f*Math.tan(a2*R)-x);if(dx2>45)continue;
+      var dk2=dst(pe2.latitude,pe2.longitude,k.la,k.lo);
+      if(dk2<0.5||dk2>alcance)continue;
+      var v2=panVis(k);if(v2===null)v2=dk2<=10;
+      if(v2!==true)continue;
+      var sc2=dx2-k.e/200;
+      if(sc2<bs2){bs2=sc2;best={n:k.n,la:k.la,lo:k.lo,e:k.e,dk:dk2,pico:true}}
+    }
+  }
+  if(!best&&!verPicos){
+    var pe=posEfectiva(),hdc=rumboC();
+    var dmax=alcance,dLa=dmax/111,dLo=dmax/(111*Math.max(0.2,Math.cos(pe.latitude*R)));
+    var c=enRecuadro(pe.latitude,pe.longitude,dLa,dLo),bs=1e9;
+    for(i=0;i<c.length;i++){
+      var q=c[i],t=q[3]||"city",corto=(t==="hamlet"||t==="isolated_dwelling");
+      if(corto&&!verAldeas)continue;
+      if(verPicos)continue;
+      var dk=dst(pe.latitude,pe.longitude,q[1],q[2]);
+      if(dk<0.5||dk>alcance||(corto&&dk>12))continue;
+      var px=W/2+f*Math.tan(envolver(brg(pe.latitude,pe.longitude,q[1],q[2])-hdc)*R);
+      if(Math.abs(envolver(brg(pe.latitude,pe.longitude,q[1],q[2])-hdc))>60)continue;
+      var ddx=Math.abs(px-x);
+      if(ddx>45)continue;
+      var cand={n:q[0],la:q[1],lo:q[2],t:t,dk:dk},v=estadoVis(cand);
+      if(v===undefined||v===null)v=dk<=10;
+      if(v!==true)continue;
+      var sc=ddx+dk*0.15; // a igualdad de dirección, gana el más cercano
+      if(sc<bs){bs=sc;best=cand}
+    }
+  }
+  if(!best){tapSel=null;mostrarToque(x,(verPicos?"Aquí no veo ningún pico":"Aquí no veo ningún pueblo")+'<small>Prueba a pulsar más cerca de un punto de color</small>');tTap=setTimeout(finToque,3500);pintar();return}
+  if(best.pico){
+    tapSel=null;
+    mostrarToque(x,'<span style="color:'+COLPK+'">▲</span> '+esc(best.n)+'<small>'+Math.round(best.e).toLocaleString("es-ES")+' m · a '+distTxt(best.dk)+'</small>');
+    tTap=setTimeout(finToque,6000);pintar();return;
+  }
+  tapSel={n:best.n,la:best.la,lo:best.lo};
+  mostrarToque(x,'<span style="color:'+colorDe(best)+'">●</span> '+esc(best.n)+'<small>a '+distTxt(best.dk)+'</small>');
+  tTap=setTimeout(finToque,6000);
+  pintar();
+}
+function finToque(){tapSel=null;$("toque").style.display="none";pintar()}
+$("enf").onclick=function(){enfocar(innerWidth/2,innerHeight/2)};
+var tToast=null,tCons=null;
+function avisar(txt,ms){var t=$("toast");t.textContent=txt;t.className="";void t.offsetWidth;t.className="v";clearTimeout(tToast);tToast=setTimeout(function(){t.className=""},ms||6200)}
+// Consejos de primera vez: cada uno sale una sola vez y no vuelve (se recuerdan en localStorage)
+var CONSEJOS=[["consejoApuntar","👆 Apunta a un pueblo lejano",""],["consejoCalibrar","🎯 Si el nombre no coincide, calibra","calbtn"],["consejoEnfoque","Toca la pantalla para enfocar",""]];
+function mostrarGuia(conPermisos){
+  $("guiaPerm").style.display=conPermisos?"block":"none";
+  $("guia").style.display="flex";$("guia").scrollTop=0;$("guiaok").focus();
+}
+$("guiaok").onclick=function(){$("guia").style.display="none"};
+function consejosPrimeraVez(){
+  var visto=true;try{visto=localStorage.getItem("guiaVista")==="1"}catch(e){}
+  if(visto)return;
+  clearTimeout(tCons);
+  tCons=setTimeout(function(){
+    if(!document.body.classList.contains("on"))return;
+    try{localStorage.setItem("guiaVista","1")}catch(e){}
+    mostrarGuia(false);
+  },1500);
+}
+$("vconsejos").onclick=function(){
+  mostrarGuia(true);
+};
+["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){if(document.body.classList.contains("on"))e.preventDefault()},{passive:false})});
+// ---- Panorama del terreno: relieve en abanico de ±45° y hasta 80 km ----
+var pan=null,panEnCurso=false,panBloq=0,elevC={},colaE={},pidiendoE=false,FOVL=69.4;
+var selVis=null;
+var DS=[0.3,0.6,1,1.5,2,2.5,3,4,5,6,7,8,9,10,12,14,16,18,20,23,26,29,32,35,40,48,56,64,72,80];
+// Alcance normal 40 km; el interruptor 🔭 lo amplía a 80 km (pide solo los puntos lejanos que falten)
+var alcance=40;
+function nJ(a){var n=0;while(n<DS.length&&DS[n]<=a+0.001)n++;return n}
+function ek(p){return p.la.toFixed(4)+","+p.lo.toFixed(4)}
+function panIdx(az){return (envolver(az-pan.c)+45)/2.5}
+function Smod(az){var f=panIdx(az);if(f<0||f>pan.az.length-1)return null;var i=Math.floor(f),j=Math.min(i+1,pan.az.length-1),t=f-i;return pan.S[i]*(1-t)+pan.S[j]*t}
+// El relieve se guarda en el móvil por celdas de ~500 m y rayos fijos cada 2,5°: al repetir un sitio no se pide nada
+var demC={},panProg="";
+// Relieve guardado en IndexedDB (mucho más espacio que localStorage). Cada celda lleva la fecha de último uso
+// y, al pasar de DEM_MAX celdas, se borran solo las más antiguas en vez de todo.
+var DEM_MAX=1500,demIdx=null;
+async function cargarDemIdx(){if(!demIdx){try{demIdx=(await bdGet("demIdx3"))||{}}catch(e){demIdx={}}}return demIdx}
+async function demGet(c){
+  if(demC[c])return demC[c];
+  var d=null;
+  try{var v=await bdGet("dem3:"+c);if(v&&v.d)d=v.d}catch(e){}
+  var ks=Object.keys(demC);if(ks.length>40)ks.forEach(function(k){delete demC[k]});
+  demC[c]=d||{};
+  return demC[c];
+}
+var demCola=Promise.resolve(),demPend={};
+// Las escrituras van en cola (una a la vez) y las pendientes de una misma celda se fusionan en una sola
+function demGuardar(c,obj){
+  var ya=demPend[c]!==undefined;demPend[c]=obj;
+  if(ya)return demCola;
+  demCola=demCola.then(function(){var o=demPend[c];delete demPend[c];return demGuardarReal(c,o)});
+  return demCola;
+}
+async function demGuardarReal(c,obj){
+  try{
+    var idx=await cargarDemIdx(),t=Date.now();
+    await bdSet("dem3:"+c,{t:t,d:obj});
+    idx[c]=t;
+    var ks=Object.keys(idx);
+    if(ks.length>DEM_MAX){
+      var viejas=ks.sort(function(a,b){return idx[a]-idx[b]}).slice(0,ks.length-DEM_MAX+100);
+      viejas.forEach(function(k){delete idx[k];delete demC[k]});
+      await bdDel(viejas.map(function(k){return "dem3:"+k}));
+    }
+    await bdSet("demIdx3",idx);
+  }catch(e){}
+}
+// Pasa a IndexedDB el relieve que versiones anteriores dejaron en localStorage (y libera ese espacio)
+// Limpia el relieve de versiones anteriores: usaba otra lista de distancias y ya no sirve
+(async function limpiarDemAntiguo(){
+  try{Object.keys(localStorage).filter(function(k){return k.indexOf("dem:")===0}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}
+  try{
+    var d=await idb();
+    await new Promise(function(res){
+      var t=d.transaction("kv","readwrite"),st=t.objectStore("kv"),c=st.openKeyCursor(IDBKeyRange.bound("dem","dem:\uffff"));
+      c.onsuccess=function(){var cur=c.result,k=cur&&String(cur.key);if(cur){if(/^dem:|^dem2:|^demIdx2?$/.test(k))st.delete(cur.key);cur.continue()}};
+      t.oncomplete=res;t.onerror=res;t.onabort=res;
+    });
+  }catch(e){}
+})();
+async function construirPano(){
+  if(panEnCurso||Date.now()<panBloq||!pos)return;
+  panEnCurso=true;panProg="0%";
+  var q=0.005,la=Math.round(pos.latitude/q)*q,lo=Math.round(pos.longitude/q)*q,cel=Math.round(pos.latitude/q)+","+Math.round(pos.longitude/q);
+  var k0=Math.round(rumboC()/2.5)-18,ks=[],dem=await demGet(cel),falta=[],i,j;
+  for(i=0;i<37;i++)ks.push(((k0+i)%144+144)%144);
+  function pt(id){var s=id.split("|"),az=s[0]*2.5,d=DS[+s[1]];return[la+d*Math.cos(az*R)/111.32,lo+d*Math.sin(az*R)/(111.32*Math.cos(la*R))]}
+  if(dem.o===undefined)falta.push("o");
+  ks.forEach(function(k){for(j=0;j<nJ(alcance);j++)if(dem[k+"|"+j]===undefined)falta.push(k+"|"+j)});
+  var total=falta.length,hecho=0,nLote=0,ok=true,fuente="",alcA=alcance,nj=nJ(alcA);
+  while(falta.length&&ok&&pos){
+    var lote=falta.splice(0,100),lats=[],lons=[];
+    lote.forEach(function(id){var p=id==="o"?[la,lo]:pt(id);lats.push(p[0].toFixed(5));lons.push(p[1].toFixed(5))});
+    var al=await altitudes(lats,lons);
+    if(!al){ok=false;break}
+    fuente=al.f;lote.forEach(function(id,n){dem[id]=al.h[n]});
+    hecho+=lote.length;panProg=Math.round(100*hecho/total)+"%";if(++nLote%5===0)demGuardar(cel,dem);
+    pintar();
+  }
+  if(hecho>0)demGuardar(cel,dem); // guarda también lo descargado si el proceso se corta
+  panEnCurso=false;
+  if(!ok||!pos){panBloq=Date.now()+30000;return}
+  var gps=pos.altitude,H0=(typeof gps==="number"&&gps>dem.o+150)?gps:dem.o+2,azs=[],M=[],S=[];
+  ks.forEach(function(k){
+    azs.push(k*2.5);var m=-9,fila=[];
+    for(j=0;j<nj;j++){var dm=DS[j]*1000,ang=Math.atan2(dem[k+"|"+j]-H0-dm*dm/14.6e6,dm);if(ang>m)m=ang;fila.push(m)}
+    M.push(fila);S.push(m);
+  });
+  pan={la:la,lo:lo,c:azs[18],az:azs,M:M,S:S,H0:H0,cel:cel,alc:alcA};
+  fuenteRel=(fuente||"memoria del móvil")+", panorama";errRel="";
+  pintar();
+}
+// true/false si el pueblo se ve; undefined si falta algún dato; null si hay que usar el método anterior
+function panVis(p){
+  if(Date.now()<panBloq)return null;
+  if(!pan)return undefined;
+  var az=brg(pan.la,pan.lo,p.la,p.lo),dk=dst(pan.la,pan.lo,p.la,p.lo),f=panIdx(az);
+  if(dk>pan.alc||dk<0.4||f<0||f>pan.az.length-1)return null;
+  var e=elevC[ek(p)];
+  if(e===undefined){pedirElev(p);return undefined}
+  if(e===null)return null;
+  var i=Math.floor(f),j2=Math.min(i+1,pan.az.length-1),t=f-i,j=-1,k;
+  for(k=0;k<DS.length&&DS[k]<dk-0.05;k++)j=k;
+  if(j<0)return true;
+  var occ=pan.M[i][j]*(1-t)+pan.M[j2][j]*t,dm=dk*1000;
+  return Math.atan2(e+10-pan.H0-dm*dm/14.6e6,dm)>=occ-0.004;
+}
+// Las altitudes de los pueblos no cambian: se guardan en IndexedDB y se reutilizan entre sesiones (tope 30000)
+var elevS={},elevTim=0;
+(async function elevCargar(){
+  try{var o=await bdGet("elevP");if(o&&o.d){for(var k in o.d){if(elevC[k]===undefined)elevC[k]=o.d[k];elevS[k]=o.d[k]}}}catch(e){}
+})();
+function elevGuardar(){
+  clearTimeout(elevTim);
+  elevTim=setTimeout(async function(){
+    try{
+      var ks=Object.keys(elevS);
+      if(ks.length>30000){ks.slice(0,ks.length-25000).forEach(function(k){delete elevS[k]})}
+      await bdSet("elevP",{d:elevS});
+    }catch(e){}
+  },4000);
+}
+function pedirElev(p){colaE[ek(p)]=[p.la,p.lo];if(!pidiendoE){pidiendoE=true;setTimeout(vaciarElev,200)}}
+async function vaciarElev(){
+  var ks=Object.keys(colaE).slice(0,100),lats=[],lons=[];
+  ks.forEach(function(k){lats.push(colaE[k][0].toFixed(5));lons.push(colaE[k][1].toFixed(5))});
+  if(ks.length){
+    var al=await altitudes(lats,lons);
+    ks.forEach(function(k,i){delete colaE[k];if(al){elevC[k]=al.h[i];if(typeof al.h[i]==="number")elevS[k]=al.h[i]}else{elevC[k]=null;setTimeout(function(){delete elevC[k]},30000)}});
+    if(al)elevGuardar();
+  }
+  pidiendoE=false;
+  if(Object.keys(colaE).length){pidiendoE=true;setTimeout(vaciarElev,200)}
+  pintar();
+}
+function estadoVis(p){var v=panVis(p);if(v!==null)return v;var k=clave(p),c=cacheV[k];if(c!==undefined&&visCache[k]!==undefined)visUso[k]=Date.now();return c}
+function lanzarVis(p){if(panVis(p)===null&&cacheV[clave(p)]===undefined)verificar(p)}
+// ---- Etiquetas sobre la cámara ----
+function fEff(){
+  var v=$("cam"),W=innerWidth,H=innerHeight,vw=v.videoWidth||0,vh=v.videoHeight||0;
+  var s=vw?Math.max(W/vw,H/vh):1,fv=vw?s*Math.max(vw,vh)/2/Math.tan(FOVL/2*R):H/2/Math.tan(FOVL/2*R);
+  return fv*zoom;
+}
+var COL={city:"#ff4d6d",town:"#ffd60a",village:"#ffd60a",hamlet:"#00e5ff",isolated_dwelling:"#00e5ff"},COLPK="#80ed99";
+// El color indica el tamaño de la localidad (ciudad / pueblo / aldea); el verde queda para los picos
+function colorDe(q){return COL[q.t]||COL.city}
+// ---- Picos de montaña (OpenStreetMap, natural=peak) ----
+var PK=[],verPicos=false,pkCentro=null,pkCargando=false,pkEstado="",pkProx=0;
+// OpenStreetMap suele tener el mismo pico dos veces (dos nodos, o con nombres como «Veleta» y «Pico Veleta»).
+// Se queda solo el más alto de cada grupo: mismo nombre a menos de 3 km, o cualquier pico a menos de 300 m.
+function nombrePico(n){return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").split(/[^a-z0-9]+/).filter(function(w){return w&&!/^(pico|cerro|monte|alto|el|la|los|las|de|del)$/.test(w)}).join(" ")}
+function quitarDuplicados(lista){
+  var orden=lista.slice().sort(function(a,b){return b.e-a.e}),ok=[];
+  orden.forEach(function(q){
+    var nq=nombrePico(q.n);
+    var dup=ok.some(function(o){
+      var d=dst(q.la,q.lo,o.la,o.lo);
+      return d<0.3||(d<3&&o._n===nq);
+    });
+    if(!dup){q._n=nq;ok.push(q)}
+  });
+  return ok;
+}
+// #info no se ve con la cámara activa: los mensajes importantes salen también como aviso
+function infoCam(t){$("info").textContent=t;if(document.body.classList.contains("on"))avisar(t,3500)}
+function usarPicos(c,aviso){
+  PK=quitarDuplicados(c.datos.map(function(d){return{n:d[0],la:d[1],lo:d[2],e:d[3]}}));
+  PK.forEach(function(q){elevC[ek(q)]=q.e});
+  pkCentro={la:c.la,lo:c.lo};pkEstado="ok";
+  infoCam("⛰ "+PK.length+" picos cargados"+(aviso||""));
+  pintar();
+}
+// Pide los picos a varios servidores Overpass a la vez; devuelve el primero que responda con datos
+function parsePicos(t){
+  var out=[];
+  t.split("\n").forEach(function(l){
+    var k=l.split("|");if(k.length<4)return;
+    var a=parseFloat(k[0]),b=parseFloat(k[1]),e=parseFloat(String(k[k.length-1]).replace(",",".")),n=k.slice(2,-1).join("|").trim();
+    if(isNaN(a)||isNaN(b)||isNaN(e)||!n)return;
+    out.push([n,a,b,e]);
+  });
+  return out;
+}
+function pedirPicos(q){
+  var sv=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+  return new Promise(function(res,rej){
+    var pend=sv.length,fallos=[];
+    sv.forEach(function(u,i){
+      setTimeout(function(){
+        fetchT(u,{method:"POST",body:"data="+encodeURIComponent(q)},25000)
+          .then(function(r){if(!r.ok)throw new Error("error "+r.status);return r.text()})
+          .then(function(t){var o=parsePicos(t);if(!o.length)throw new Error("respuesta vacía");res(o)})
+          .catch(function(e){fallos.push(u.split("/")[2]+": "+motivoErr(e));if(--pend===0)rej(fallos)});
+      },i*1200);
+    });
+  });
+}
+async function cargarPicos(){
+  if(pkCargando||!pos||Date.now()<pkProx)return;
+  var la=pos.latitude,lo=pos.longitude;
+  if(pkCentro&&PK.length&&dst(la,lo,pkCentro.la,pkCentro.lo)<20)return;
+  pkCargando=true;pkEstado="cargando";infoCam("Buscando picos de la zona…");
+  var c=null;
+  try{c=await bdGet("picos")}catch(e){}
+  if(c&&c.datos&&c.datos.length&&dst(la,lo,c.la,c.lo)<20){usarPicos(c);pkCargando=false;return}
+  var q='[out:csv(::lat,::lon,name,ele;false;"|")][timeout:25];node["natural"="peak"]["name"]["ele"](around:80000,'+la.toFixed(4)+','+lo.toFixed(4)+');out;';
+  var datos=null,motivosPk=[];
+  // Se consultan varios servidores casi a la vez y gana el primero que responde (máx. 2 rondas de 25 s)
+  for(var ronda=0;ronda<2&&!datos;ronda++){
+    try{datos=await pedirPicos(q)}catch(m){motivosPk=m||[];await espera(1500)}
+  }
+  if(datos){
+    c={la:la,lo:lo,datos:datos,fecha:new Date().toLocaleDateString("es-ES")};
+    try{await bdSet("picos",c)}catch(e){}
+    usarPicos(c);
+  }else if(c&&c.datos&&c.datos.length&&dst(la,lo,c.la,c.lo)<60){
+    usarPicos(c," (guardados, sin conexión)");
+  }else{
+    pkEstado="error";pkProx=Date.now()+20000;
+    infoCam("No pude descargar los picos ("+(motivosPk.slice(0,2).join("; ")||"sin respuesta")+"). Reintentando…");
+  }
+  pkCargando=false;
+}
+$("lejosb").onclick=function(){
+  alcance=alcance===40?80:40;
+  var l=alcance===80;
+  this.classList.toggle("act",l);this.setAttribute("aria-pressed",l?"true":"false");
+  this.setAttribute("aria-label","Más lejos: alcance "+alcance+" km");
+  this.title=l?"Alcance 80 km. Pulsa para volver a 40 km":"Alcance 40 km. Pulsa para ampliar a 80 km";
+  avisar(l?"🔭 Ahora ves hasta 80 km. Puede tardar unos segundos en descargar el relieve.":"🔭 Ahora ves hasta 40 km.",4500);
+  panBloq=0;$("info").textContent="🔭 Alcance: "+alcance+" km"+(l?" (descargando relieve lejano)":"");
+  pintar();
+};
+$("picosb").onclick=function(){
+  verPicos=!verPicos;
+  this.classList.toggle("act",verPicos);this.setAttribute("aria-pressed",verPicos?"true":"false");
+  document.body.classList.toggle("picos",verPicos);
+  actAldeasBtn();
+  if(verPicos){pkProx=0;cargarPicos()}
+  pintar();
+};
+function actAldeasBtn(){var b=$("aldeas");b.disabled=verPicos;b.style.opacity=verPicos?".45":"";var t=verPicos?"No disponible mientras se muestran los picos":verAldeas?"Se ven pueblos y aldeas. Pulsa para ver solo pueblos":"Se ven solo pueblos. Pulsa para ver también las aldeas";b.title=t;b.setAttribute("aria-label","Aldeas: "+t)}
+// Pico bajo la mira: el más cercano en dirección (±3°) que el relieve deja ver
+function picoMira(pe,hdc){
+  var best=null,bs=1e9,i,k,dd,dk,vv,sc;
+  for(i=0;i<PK.length;i++){
+    k=PK[i];
+    if(Math.abs(k.la-pe.latitude)>0.75||Math.abs(k.lo-pe.longitude)>0.95)continue;
+    dd=Math.abs(envolver(brg(pe.latitude,pe.longitude,k.la,k.lo)-hdc));
+    if(dd>3)continue;
+    dk=dst(pe.latitude,pe.longitude,k.la,k.lo);
+    if(dk<0.5||dk>alcance)continue;
+    vv=panVis(k);if(vv===null)vv=dk<=10;
+    if(vv!==true)continue;
+    sc=dd-k.e/3000; // a igual dirección, gana el más alto
+    if(sc<bs){bs=sc;best={n:k.n,la:k.la,lo:k.lo,e:k.e,dk:dk}}
+  }
+  return best;
+}
+function etiquetas(pe,hdc){
+  var W=innerWidth,H=innerHeight,f=fEff(),med=Math.atan((W/2)/f)/R+3,c=[],i;
+  var cand=enRecuadro(pe.latitude,pe.longitude,0.75,0.95);
+  for(i=0;i<cand.length;i++){
+    var p=cand[i],t=p[3]||"city",corto=(t==="hamlet"||t==="isolated_dwelling");
+    if(verPicos)continue; // con picos activados solo se dibujan picos
+    if(corto&&!verAldeas)continue;
+    if(Math.abs(p[1]-pe.latitude)>0.75||Math.abs(p[2]-pe.longitude)>0.95)continue;
+    var d=envolver(brg(pe.latitude,pe.longitude,p[1],p[2])-hdc);
+    if(Math.abs(d)>med)continue;
+    var dk=dst(pe.latitude,pe.longitude,p[1],p[2]);
+    if(dk<0.4||dk>alcance||(corto&&dk>12))continue;
+    c.push({n:p[0],la:p[1],lo:p[2],t:t,dk:dk,d:d,sel:!!(selVis&&selVis.n===p[0]&&Math.abs(selVis.la-p[1])<1e-6&&Math.abs(selVis.lo-p[2])<1e-6),tap:!!(tapSel&&tapSel.n===p[0]&&Math.abs(tapSel.la-p[1])<1e-6&&Math.abs(tapSel.lo-p[2])<1e-6)});
+  }
+  // El pueblo señalado por la mira va primero y siempre se dibuja
+  c.sort(function(a,b){return ((b.sel||b.tap)?1:0)-((a.sel||a.tap)?1:0)||a.dk-b.dk});
+  etqHit=[];
+  var out=[],used=[],fc=0,fp=0,fa=0;
+  // Las etiquetas no se colocan debajo del panel superior (quedarían tapadas)
+  var topMin=document.body.classList.contains("on")?document.querySelector("main").getBoundingClientRect().bottom+4:0;
+  function hueco(x,w,yb){
+    for(var L=0;L<6;L++){
+      var y2=yb-L*34,r={a:x-w/2-3,b:x+w/2+3,c:y2-31,d:y2};
+      if(r.c<topMin)break;
+      if(!used.some(function(o){return r.a<o.b&&r.b>o.a&&r.c<o.d&&r.d>o.c})){used.push(r);return L}
+    }
+    return -1;
+  }
+  function elev(q,e,dk){return(pan&&typeof e==="number")?Math.atan2(e-pan.H0-Math.pow(dk*1000,2)/14.6e6,dk*1000):0}
+  var n=0;
+  for(i=0;i<c.length&&n<14;i++){
+    var q=c[i],v=(q.sel||q.tap)?true:panVis(q);
+    if(v===null)v=q.dk<=10;
+    if(v!==true)continue;
+    var x=W/2+f*Math.tan(q.d*R),w=8.5*q.n.length+60;
+    var e=elevC[ek(q)],el=(pan&&typeof e==="number")?Math.atan2(e+10-pan.H0-Math.pow(q.dk*1000,2)/14.6e6,q.dk*1000):0;
+    var y=H/2-f*Math.tan(el-pit*R),col=colorDe(q);
+    var L=hueco(x,w,y-8);
+    if(L<0){if(!q.sel&&!q.tap)continue;L=0}
+    var ty=y-8-L*34;n++;
+    if(q.t==="city")fc=1;else if(q.t==="hamlet"||q.t==="isolated_dwelling")fa=1;else fp=1;
+    out.push({k:"ln",x:Math.round(x),y:Math.round(ty),h:Math.max(0,Math.round(y-ty)),c:col});
+    out.push({k:"pt",x:Math.round(x),y:Math.round(y),c:col,sel:q.sel||q.tap});
+    etqHit.push({n:q.n,la:q.la,lo:q.lo,t:q.t,dk:q.dk,x:x,y:y,ty:ty,w:w});
+    out.push({k:"et",x:Math.round(x),y:Math.round(ty),c:col,sel:q.sel||q.tap,html:esc(q.n)+'<small> '+(q.dk<10?q.dk.toFixed(1):Math.round(q.dk))+' km</small>'});
+  }
+  // Picos de montaña visibles (los más altos primero)
+  if(verPicos&&PK.length&&pan){
+    var cp=[];
+    for(i=0;i<PK.length;i++){
+      var k=PK[i];
+      if(Math.abs(k.la-pe.latitude)>0.75||Math.abs(k.lo-pe.longitude)>0.95)continue;
+      var dd=envolver(brg(pe.latitude,pe.longitude,k.la,k.lo)-hdc);
+      if(Math.abs(dd)>med)continue;
+      var dkk=dst(pe.latitude,pe.longitude,k.la,k.lo);
+      if(dkk<0.5||dkk>alcance)continue;
+      cp.push({n:k.n,la:k.la,lo:k.lo,e:k.e,dk:dkk,d:dd});
+    }
+    cp.sort(function(a,b){return b.e-a.e});
+    var np=0;
+    for(i=0;i<cp.length&&np<12;i++){
+      var m=cp[i],vv=panVis(m);
+      if(vv===null)vv=m.dk<=10;
+      if(vv!==true)continue;
+      var px=W/2+f*Math.tan(m.d*R),py=H/2-f*Math.tan(elev(m,m.e,m.dk)-pit*R);
+      if(py<topMin+14||py>H-100)continue;
+      var txt='▲ '+m.n,sub=' '+Math.round(m.e).toLocaleString("es-ES")+' m · '+(m.dk<10?m.dk.toFixed(1):Math.round(m.dk))+' km',pw=8*(txt.length+sub.length)*0.95+24;
+      var PL=hueco(px,pw,py-10);
+      if(PL<0)continue;
+      var pty=py-10-PL*34;np++;
+      out.push({k:"ln",x:Math.round(px),y:Math.round(pty),h:Math.max(0,Math.round(py-pty)),c:COLPK});
+      out.push({k:"pk",x:Math.round(px),y:Math.round(py)});
+      etqHit.push({n:m.n,la:m.la,lo:m.lo,e:m.e,dk:m.dk,x:px,y:py,ty:pty,w:pw,pico:true});
+      out.push({k:"et",x:Math.round(px),y:Math.round(pty),c:COLPK,html:esc(txt)+'<small>'+esc(sub)+'</small>'});
+    }
+  }
+  leyenda(fc,fp,fa,!!np);
+  pintarEtq(out);
+}
+var legC="";
+// La leyenda solo muestra los tipos de localidad que hay dibujados en este momento (y los picos si se ven)
+function leyenda(c,p,a,k){
+  var key=(c?1:0)+""+(p?1:0)+(a?1:0)+(k?1:0);
+  if(key===legC)return;legC=key;
+  $("lgC").className=c?"v":"";$("lgP").className=p?"v":"";$("lgA").className=a?"v":"";$("lgK").className=k?"v":"";
+  $("leyenda").className=(c||p||a||k)?"":"vacia";
+}
+// Los elementos de las etiquetas se crean una vez y se reutilizan; solo se escribe lo que cambia y se mueven con transform
+var etqPool={ln:[],pt:[],pk:[],et:[]};
+function pintarEtq(out){
+  var cont=$("etq"),n={ln:0,pt:0,pk:0,et:0},i,o,el,pool,v,t;
+  for(i=0;i<out.length;i++){
+    o=out[i];pool=etqPool[o.k];el=pool[n[o.k]];
+    if(!el){el=document.createElement(o.k==="et"?"div":"i");el.className=o.k;el._cl=o.k;cont.appendChild(el);pool.push(el)}
+    n[o.k]++;
+    if(el._oc){el.style.display="";el._oc=false}
+    v=o.k+(o.sel?" sel":"");
+    if(el._cl!==v){el.className=v;el._cl=v}
+    t="translate("+o.x+"px,"+o.y+"px)"+(o.k==="et"?" translate(-50%,-100%)":"");
+    if(el._tr!==t){el.style.transform=t;el._tr=t}
+    if(o.k==="ln"){
+      if(el._h!==o.h){el.style.height=o.h+"px";el._h=o.h}
+      if(el._co!==o.c){el.style.background=o.c;el._co=o.c}
+    }else if(o.k==="pt"){
+      if(el._co!==o.c){el.style.background=o.c;el._co=o.c}
+    }else if(o.k==="et"){
+      v=o.c+"|"+(o.sel?1:0);
+      if(el._co!==v){el.style.borderColor=o.c;el.style.background=o.sel?o.c:"";el._co=v}
+      if(el._html!==o.html){el.innerHTML=o.html;el._html=o.html}
+    }
+  }
+  ocultarSobrantes(n);
+}
+function ocultarSobrantes(n){
+  for(var k in etqPool){var pool=etqPool[k],used=n?n[k]:0;for(var i=used;i<pool.length;i++){if(!pool[i]._oc){pool[i].style.display="none";pool[i]._oc=true}}}
+}
+function limpiarEtq(){etqHit=[];ocultarSobrantes(null);leyenda(0,0,0,0)}
+// ---- Alinear la brújula con el horizonte ----
+function skyline(g,w,h){
+  var E=[],x,y,k,lim=Math.floor(h*0.85);
+  for(y=0;y<h;y++)E.push(new Float32Array(w));
+  for(x=0;x<w;x++)for(y=3;y<lim;y++){var a=0,b=0;for(k=1;k<=3;k++){a+=g[(y-k)*w+x];b+=g[(y+k-1)*w+x]}E[y][x]=Math.abs(a-b)/3}
+  var dp=[],bk=[];
+  for(x=0;x<w;x++){dp.push(new Float32Array(h));bk.push(new Int16Array(h))}
+  for(y=0;y<h;y++)dp[0][y]=E[y][0];
+  for(x=1;x<w;x++)for(y=0;y<lim;y++){
+    var best=-1e9,by=y;
+    for(var dy=-2;dy<=2;dy++){var yy=y+dy;if(yy<0||yy>=lim)continue;var s=dp[x-1][yy]-1.5*Math.abs(dy);if(s>best){best=s;by=yy}}
+    dp[x][y]=best+E[y][x];bk[x][y]=by;
+  }
+  var ye=0;for(y=0;y<lim;y++)if(dp[w-1][y]>dp[w-1][ye])ye=y;
+  var ys=new Array(w),tot=0;
+  for(x=w-1;x>=0;x--){ys[x]=ye;tot+=E[ye][x];if(x>0)ye=bk[x][ye]}
+  return{y:ys,fuerza:tot/w};
+}
+function mediana(a){var b=a.slice().sort(function(m,n){return m-n});return b[Math.floor(b.length/2)]}
+// Busca cuánto hay que girar el rumbo (±15°) para que la silueta de la imagen coincida con la calculada del relieve
+function ajusteHorizonte(ys,w,h,vw,vh,pitRad,hdc){
+  var fv=Math.max(vw,vh)/2/Math.tan(FOVL/2*R),e=[],dz=[],x;
+  for(x=0;x<w;x++){
+    dz.push(Math.atan(((x+0.5)*vw/w-vw/2)/(fv*Math.cos(pitRad)))/R);
+    e.push(pitRad+Math.atan((vh/2-ys[x]*vh/h)/fv));
+  }
+  var errs=[],mejor=null,s;
+  for(s=-15;s<=15;s+=0.5){
+    var r=[],mn=9,mx=-9;
+    for(x=0;x<w;x++){var m=Smod(hdc+s+dz[x]);if(m===null)continue;r.push(e[x]-m);if(m<mn)mn=m;if(m>mx)mx=m}
+    if(r.length<w*0.6||(mx-mn)<0.026)continue;
+    var b=mediana(r),er=0;r.forEach(function(v){er+=Math.abs(v-b)});er/=r.length;
+    errs.push(er);
+    if(!mejor||er<mejor.err)mejor={s:s,err:er};
+  }
+  if(!mejor||errs.length<20)return null;
+  mejor.conf=1-mejor.err/mediana(errs);
+  return mejor;
+}
+var cvGris=null,ctxGris=null;
+function capturarGris(w){
+  var v=$("cam");if(!v.videoWidth)return null;
+  var h=Math.round(w*v.videoHeight/v.videoWidth);
+  if(!cvGris){cvGris=document.createElement("canvas");ctxGris=cvGris.getContext("2d",{willReadFrequently:true})}
+  if(cvGris.width!==w||cvGris.height!==h){cvGris.width=w;cvGris.height=h}
+  var ctx=ctxGris;ctx.drawImage(v,0,0,w,h);
+  var d=ctx.getImageData(0,0,w,h).data,g=new Float32Array(w*h);
+  for(var i=0;i<w*h;i++)g[i]=0.299*d[4*i]+0.587*d[4*i+1]+0.114*d[4*i+2];
+  return{g:g,w:w,h:h};
+}
+$("calhor").onclick=function(){
+  var st=$("calst");
+  if(!pan){st.textContent="Aún no tengo el relieve de la zona. Espera unos segundos y vuelve a pulsar.";return}
+  if(zoom>1.05){st.textContent="Pon el zoom en ×1 para alinear con el horizonte.";return}
+  var im=capturarGris(96);
+  if(!im){st.textContent="La cámara no está lista.";return}
+  var sk=skyline(im.g,im.w,im.h);
+  if(sk.fuerza<8){st.textContent="No veo un horizonte claro entre cielo y terreno. Apunta a un horizonte despejado.";return}
+  var v=$("cam"),r=ajusteHorizonte(sk.y,im.w,im.h,v.videoWidth,v.videoHeight,pit*R,rumboC());
+  if(!r){st.textContent="El horizonte es demasiado plano para compararlo. Prueba hacia unas montañas.";return}
+  if(r.conf<0.3||Math.abs(r.s)>=14.5){st.textContent="No coincide con claridad (confianza "+Math.round(r.conf*100)+"%). Mantén el móvil recto y prueba otra vez.";return}
+  var o=envolver(offPara(hd)+hzPara(hd)+r.s);
+  off=envolver(off+hzPara(hd)+r.s);ponerTab(hd,o);
+  finCal("✓ Alineado con el horizonte ("+fmtOff(o)+", confianza "+Math.round(r.conf*100)+"%)");
+};
+// ---- Corrección automática del rumbo con el horizonte de la cámara ----
+// Cada 1,5 s compara la silueta cielo/terreno de la imagen con la calculada del relieve. Solo se acepta
+// si la confianza es alta y dos capturas seguidas coinciden; la corrección se aplica poco a poco, vale
+// para la zona de rumbos donde se midió y no se guarda (la calibración guardada no se toca).
+var hzAuto=false,hzSil=false,hzOff=0,hzH=0,hzT=0,hzConf=0,hzPrev=null,hzDet=null;
+try{if(localStorage.getItem("hzAuto")==="1")hzAuto=true;if(localStorage.getItem("hzSil")==="1")hzSil=true}catch(e){}
+$("hzauto").checked=hzAuto;$("hzsil").checked=hzSil;
+$("hzauto").onchange=function(){hzAuto=this.checked;if(!hzAuto){hzOff=0;hzPrev=null}try{localStorage.setItem("hzAuto",hzAuto?"1":"0")}catch(e){}pintar()};
+$("hzsil").onchange=function(){hzSil=this.checked;try{localStorage.setItem("hzSil",hzSil?"1":"0")}catch(e){}pintar()};
+// La corrección vale entera cerca del rumbo donde se midió y se desvanece al girar más de 30° (a 90° ya no cuenta)
+function hzPara(h){if(!hzAuto||!hzOff)return 0;var d=dif(h,hzH);return d<=30?hzOff:d>=90?0:hzOff*(90-d)/60}
+function rumboC(){return (hd+offPara(hd)+hzPara(hd)+720)%360}
+function horizonteAuto(){
+  if(!hzAuto||!pos||!pan||panEnCurso||modoCoche||document.hidden||!document.body.classList.contains("on"))return;
+  if($("cal").style.display==="block"||zoom>1.05||pit<-25||pit>15)return;
+  var hc=rumboC();if(Math.abs(envolver(hc-pan.c))>20)return;
+  var h0=hd,im=capturarGris(96);if(!im)return;
+  var sk=skyline(im.g,im.w,im.h);
+  hzDet={y:sk.y,w:im.w,h:im.h,t:Date.now(),ok:false};
+  if(sk.fuerza<10){hzPrev=null;return}
+  if(dif(hd,h0)>2){hzPrev=null;return} // el móvil se movía durante la captura
+  var v=$("cam"),r=ajusteHorizonte(sk.y,im.w,im.h,v.videoWidth,v.videoHeight,pit*R,hc);
+  if(!r||r.conf<0.5||Math.abs(r.s)>=14){hzPrev=null;return}
+  hzDet.ok=true;
+  // r.s es lo que falta girar respecto al rumbo corregido actual; exijo que dos capturas coincidan (±2°)
+  var obj=envolver(hzPara(hd)+r.s);
+  if(hzPrev===null||Math.abs(envolver(obj-hzPrev))>2){hzPrev=obj;return}
+  var base=hzPara(hd);
+  hzOff=Math.max(-20,Math.min(20,envolver(base+0.5*envolver(obj-base))));
+  hzH=hd;hzT=Date.now();hzConf=r.conf;hzPrev=obj;
+  pintar();
+}
+setInterval(horizonteAuto,1500);
+// Dibuja sobre la cámara la silueta calculada del relieve (cian) y la detectada en la imagen (amarillo si coincide)
+function dibujarSilueta(hdc){
+  var c=$("sil"),W=innerWidth,H=innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  var vis=hzSil&&pan&&document.body.classList.contains("on");
+  c.style.display=vis?"block":"none";if(!vis)return;
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr)}
+  var x,ctx=c.getContext("2d"),f=fEff(),pr=pit*R,dib=false;
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.lineWidth=2.5;ctx.lineJoin="round";
+  ctx.strokeStyle="rgba(0,245,212,.95)";ctx.setLineDash([8,6]);ctx.beginPath();
+  for(x=0;x<=W;x+=4){
+    var m=Smod(hdc+Math.atan((x-W/2)/f)/R);
+    if(m===null){dib=false;continue}
+    var y=H/2-f*Math.tan(m-pr);
+    if(dib)ctx.lineTo(x,y);else{ctx.moveTo(x,y);dib=true}
+  }
+  ctx.stroke();ctx.setLineDash([]);
+  var v=$("cam");
+  if(hzDet&&Date.now()-hzDet.t<3000&&v.videoWidth&&zoom<=1.05){
+    var vw=v.videoWidth,vh=v.videoHeight,s=Math.max(W/vw,H/vh);
+    ctx.strokeStyle=hzDet.ok?"rgba(255,226,89,.9)":"rgba(255,255,255,.35)";ctx.beginPath();
+    for(x=0;x<hzDet.w;x++){
+      var sx=W/2+((x+0.5)*vw/hzDet.w-vw/2)*s,sy=H/2+(hzDet.y[x]*vh/hzDet.h-vh/2)*s;
+      if(x)ctx.lineTo(sx,sy);else ctx.moveTo(sx,sy);
+    }
+    ctx.stroke();
+  }
+}
+function motivoErr(e){return e&&e.name==="AbortError"?"tiempo agotado":(e&&e.message&&e.message!=="Load failed"&&e.message!=="Failed to fetch")?e.message:"sin conexión o bloqueado"}
+$("probar").onclick=async function(){
+  var B=$("probar"),RES=$("probres");
+  if(B.disabled)return;
+  B.disabled=true;RES.textContent="Probando los servicios de relieve…";
+  var la=[37.13,37.14],lo=[-3.7,-3.69],out=[],ok=false,pruebas=[["Open-Meteo",viaOM],["OpenTopoData",viaOT]];
+  try{
+    for(var i=0;i<pruebas.length;i++){
+      try{
+        var a=await pruebas[i][1](la,lo);
+        out.push("✓ "+pruebas[i][0]+": funciona");ok=true;
+      }catch(e){out.push("✗ "+pruebas[i][0]+": "+motivoErr(e))}
+      RES.innerHTML=out.map(esc).join("<br>")+(i<pruebas.length-1?"<br>Probando…":"");
+    }
+    if(ok){bloqRel=0;errRel=""}
+    RES.innerHTML=out.map(esc).join("<br>")+"<br>"+(ok?"✓ Relieve disponible":"✗ Sin datos de relieve: comprueba la conexión");
+  }catch(e){RES.textContent="Error en la prueba: "+motivoErr(e)}
+  B.disabled=false;
+};
+var iniciando=false;
+async function iniciar(){
+  if(iniciando||watchId!==null)return;
+  iniciando=true;$("go").disabled=true;
+  try{await iniciar2()}finally{if(watchId===null){iniciando=false;$("go").disabled=false}}
+}
+async function iniciar2(){
+  $("msg").textContent="Pidiendo permisos…";
+  try{
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      var s=await DeviceOrientationEvent.requestPermission();
+      if(s!=="granted"){$("msg").textContent="El iPhone ha denegado el acceso a la brújula (estado: "+s+"). Abre esta página en Safari, no dentro de otra app.";return}
+    }
+  }catch(e){$("msg").textContent="Error de brújula: "+(e&&e.message?e.message:e)+". Abre esta página directamente en Safari.";return}
+  if(!navigator.geolocation){$("msg").textContent="Este navegador no tiene GPS.";return}
+  var p0=await new Promise(function(res){
+    var err1=null;
+    navigator.geolocation.getCurrentPosition(res,function(e){
+      err1=e;
+      // Sin permiso no tiene sentido reintentar; si fue tiempo agotado o sin señal, pruebo con baja precisión
+      if(e.code===1){res({error:e});return}
+      navigator.geolocation.getCurrentPosition(res,function(e2){res({error:e2||err1})},{enableHighAccuracy:false,timeout:20000,maximumAge:120000});
+    },{enableHighAccuracy:true,timeout:15000});
+  });
+  if(p0.error){var e=p0.error;$("msg").textContent=e.code===1?"Sin permiso de ubicación. Actívalo en los ajustes del navegador o de la app y vuelve a intentarlo.":"No pude obtener la ubicación ("+(e.message||"sin señal")+"). Sal al exterior o activa el GPS y vuelve a intentarlo.";return}
+  (function(p){
+    pos=p.coords;posT=Date.now();$("go").style.display="none";$("msg").textContent="Ubicación obtenida.";
+    masPueblos();document.body.classList.add("on");camara();pantallaEncendida(true);consejosPrimeraVez();
+    // Sigue tu posición y recarga los pueblos al alejarte 30 km de la última descarga
+    watchId=navigator.geolocation.watchPosition(function(q){
+      pos=q.coords;posT=Date.now();actualizarMarcha(q.coords);calAndar(q.coords);
+      if(!ultimo||dst(pos.latitude,pos.longitude,ultimo.la,ultimo.lo)>30)masPueblos();
+      if(verPicos)cargarPicos();
+    },function(e){
+      // Antes se ignoraba: ahora se avisa (como mucho cada 20 s) para que no se use una posición vieja sin saberlo
+      if(Date.now()-gpsAvT<20000)return;gpsAvT=Date.now();
+      avisar(e.code===1?"📍 Se ha retirado el permiso de ubicación: los resultados no se actualizarán.":"📍 Señal GPS perdida: uso la última posición conocida.",6000);
+    },{enableHighAccuracy:true,maximumAge:5000});
+    oriT0=Date.now();setTimeout(pintar,4500);
+    window.addEventListener("deviceorientationabsolute",onOri,true);
+    window.addEventListener("deviceorientation",onOri,true);
+  })(p0);
+}
+var gpsAvT=0;
+// Antes de pedir permisos, la primera vez se explica para qué sirve cada uno
+$("go").onclick=function(){
+  var visto=false;try{visto=localStorage.getItem("permisosVistos")==="1"}catch(e){}
+  if(visto){iniciar();return}
+  $("permisos").style.display="flex";$("permok").focus();
+};
+var permInicio=false;
+$("permok").onclick=function(){
+  $("permisos").style.display="none";
+  try{localStorage.setItem("permisosVistos","1")}catch(e){}
+  // Si se mostró al abrir la app, los permisos se piden después al pulsar «Iniciar identificación»
+  if(permInicio){permInicio=false;return}
+  iniciar();
+};
+$("permno").onclick=function(){$("permisos").style.display="none";permInicio=false};
+// Primera vez que se abre la app: lo primero que se ve es qué permisos hacen falta y por qué
+(function(){
+  var visto=false;try{visto=localStorage.getItem("permisosVistos")==="1"}catch(e){}
+  if(visto)return;
+  permInicio=true;$("permisos").style.display="flex";$("permok").focus();
+})();
+// ---- App instalable: guarda la página para abrirla sin conexión ----
+if("serviceWorker" in navigator&&location.protocol!=="file:"&&!window.AndroidApp)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+})();
+</script>
+</body>
+</html>
