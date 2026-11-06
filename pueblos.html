@@ -141,7 +141,7 @@ body.on #leyenda{display:block;position:fixed;z-index:1;left:8px;top:50%;transfo
 body.on #leyenda.vacia{display:none}
 body.on main{max-width:none;background:linear-gradient(135deg,rgba(106,17,203,.8),rgba(37,117,252,.72));border-radius:0 0 16px 16px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 8px}
 /* Panel compacto: deja más cámara a la vista para los pueblos */
-body.on #rumbo{font-size:14px;margin:4px 0 2px;padding:3px 10px;max-width:calc(100% - 120px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+body.on #rumbo{font-size:14px;margin:4px 0 2px;padding:3px 10px;flex:1 1 auto;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
 body.on .ch{min-height:34px;padding:2px 4px;border-radius:12px;font-size:13px}
 body.on #mejor{min-height:36px;margin:2px 0;line-height:1.15}
 body.on .it{padding:5px 10px;margin:3px 0;font-size:14px}
@@ -167,8 +167,10 @@ body.on #bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:f
 @keyframes pista{0%,100%{box-shadow:0 0 0 0 rgba(255,226,89,.9)}50%{box-shadow:0 0 0 8px rgba(255,226,89,0)}}
 @media (prefers-reduced-motion:reduce){#calbtn.pista{animation:none;outline:3px solid #ffe259}}
 /* Terminar: arriba a la derecha, lejos de la barra, y siempre con confirmación */
-#salir{display:none}
-body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;position:absolute;z-index:3;top:8px;right:12px;width:auto;min-width:44px;min-height:40px;padding:6px 14px;border:2px solid #fecaca;border-radius:999px;background:#b91c1c;box-shadow:none;font-size:15px;font-weight:700}
+/* Terminar: en la primera fila del panel, a la derecha del rumbo, sin tapar los botones de estado */
+#fila1{display:none}
+body.on #fila1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;flex:none;margin-left:auto;width:auto;min-width:44px;min-height:36px;padding:4px 12px;border:2px solid #fecaca;border-radius:999px;background:#b91c1c;box-shadow:none;font-size:14px;font-weight:700}
 /* Interruptores: color + «Sí/No» siempre visibles */
 #bar .tg[aria-pressed="true"]{background:#15803d;border-color:#86efac}
 #bar .tg[aria-pressed="false"]{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.55)}
@@ -178,7 +180,7 @@ body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;po
 .tg[aria-pressed="true"] .est::after{content:"Sí"}
 .tg[aria-pressed="false"] .est::after{content:"No"}
 /* Aldeas: dice qué se ve (pueblos y aldeas, o solo pueblos) en vez de Sí/No */
-#aldeas .est{min-width:0;padding:1px 6px;font-size:11px;white-space:nowrap}
+#aldeas .est{min-width:0;padding:1px 6px;font-size:11px;line-height:1.15;white-space:normal;text-align:center;border-radius:10px}
 #aldeas[aria-pressed="true"] .est::after{content:"Con aldeas"}
 #aldeas[aria-pressed="false"] .est::after{content:"Solo pueblos"}
 /* Más lejos: muestra el alcance real en km en vez de Sí/No */
@@ -247,7 +249,6 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="leyenda" aria-hidden="true"><div id="lgC"><span style="color:#ff4d6d">●</span> ciudad</div><div id="lgP"><span style="color:#ffd60a">●</span> pueblo</div><div id="lgA"><span style="color:#00e5ff">●</span> aldea</div><div id="lgK"><span style="color:#80ed99">▲</span> Pico</div></div>
 <main>
 <button id="plegar" type="button" aria-label="Ocultar o mostrar el panel" aria-expanded="true">▲</button>
-<button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button>
 <section id="hero">
 <svg class="logo" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a11cb"/><stop offset=".5" stop-color="#2575fc"/><stop offset="1" stop-color="#00c9a7"/></linearGradient><clipPath id="lc"><rect width="96" height="96" rx="22"/></clipPath></defs><rect width="96" height="96" rx="22" fill="url(#lg)"/><g clip-path="url(#lc)"><path d="M0 96V66l22-20 20 24 18-16 36 28v14z" fill="#28105a" opacity=".6"/><path d="M0 96V78l26-14 22 14 20-10 28 14v14z" fill="#140a3c" opacity=".75"/></g><circle cx="48" cy="38" r="20" fill="none" stroke="#fff" stroke-width="4"/><path d="M48 10v10M48 56v10M20 38h10M66 38h10" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="48" cy="38" r="6" fill="#ff2d95"/></svg>
 <h1>¿Qué pueblo es?</h1>
@@ -256,7 +257,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <button id="avisoCob" type="button">⚠️ Sin cobertura no podré identificar pueblos: descarga tu provincia</button>
 <button id="go" type="button"><span class="go1">Iniciar identificación</span><span class="go2">Activar GPS y brújula mientras se usa</span></button>
 </section>
-<div id="rumbo"></div>
+<div id="fila1"><div id="rumbo"></div><button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button></div>
 <div id="estado" aria-label="Estado de GPS, brújula y calibración"><span id="eGps" class="ch n">GPS …</span><span id="eBrj" class="ch n">Brújula …</span><span id="eCal" class="ch n">Sin calibrar</span></div>
 <div id="mejor" aria-live="polite" aria-atomic="true"></div>
 <div id="lista"></div>
