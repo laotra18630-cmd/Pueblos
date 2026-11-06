@@ -164,6 +164,10 @@ body.on #salir{display:flex;align-items:center;justify-content:center;gap:6px;po
 .tg[aria-pressed="false"] .est{background:rgba(255,255,255,.22);color:#fff}
 .tg[aria-pressed="true"] .est::after{content:"Sí"}
 .tg[aria-pressed="false"] .est::after{content:"No"}
+/* Aldeas: dice qué se ve (pueblos y aldeas, o solo pueblos) en vez de Sí/No */
+#aldeas .est{min-width:0;padding:1px 6px;font-size:11px;white-space:nowrap}
+#aldeas[aria-pressed="true"] .est::after{content:"Con aldeas"}
+#aldeas[aria-pressed="false"] .est::after{content:"Solo pueblos"}
 /* Más lejos: muestra el alcance real en km en vez de Sí/No */
 #lejosb[aria-pressed="false"] .est::after{content:"40 km"}
 #lejosb[aria-pressed="true"] .est::after{content:"80 km"}
@@ -330,7 +334,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <h3>Consejos</h3>
 <ul><li><span class="pi" aria-hidden="true">👆</span><span>Apunta al horizonte con el móvil en vertical. El nombre grande es el pueblo que está bajo el punto rosa de la mira.</span></li><li><span class="pi" aria-hidden="true">🎯</span><span>Si el nombre no coincide con lo que ves, calibra la brújula.</span></li><li><span class="pi" aria-hidden="true">👀</span><span>La franja de arriba dice cuándo fiarte: <b>GPS</b>, <b>Brújula</b> (con su margen de error) y si está <b>Calibrada</b>.</span></li><li><span class="pi" aria-hidden="true">👉</span><span>Toca la pantalla para enfocar; pellizca para hacer zoom.</span></li></ul>
 <h3>Botones de la cámara</h3>
-<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Sí/No): muestra u oculta las aldeas pequeñas.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
+<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Con aldeas / Solo pueblos): indica si se ven pueblos y aldeas, o solo pueblos.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
 <button id="guiaok" type="button">Entendido</button></div>
 <div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>La cámara, la ubicación y la brújula están apagadas. Para cerrar del todo, quita la app desde el selector de apps (en iPhone, desliza hacia arriba desde el borde inferior).</p><button id="volver" type="button">Volver</button></div>
 <script>
@@ -540,6 +544,7 @@ function actualizarEstado(){
   estC=k;
   [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);if(!x[1]){e.style.display="none";return}e.style.display="";e.className="ch "+x[1][0];e.textContent=x[1][1]});
 }
+actAldeasBtn();
 var rafP=0;
 // Agrupa todas las peticiones de repintado en un solo dibujo por fotograma
 function pintar(){
@@ -873,7 +878,7 @@ function offPara(h){
   return so/sw;
 }
 function maxDif(a){var m=0;for(var i=1;i<a.length;i++)m=Math.max(m,dif(a[i],a[0]));return m}
-$("aldeas").onclick=function(){verAldeas=!verAldeas;this.setAttribute("aria-pressed",verAldeas?"true":"false");pintar()};
+$("aldeas").onclick=function(){verAldeas=!verAldeas;this.setAttribute("aria-pressed",verAldeas?"true":"false");actAldeasBtn();pintar()};
 $("calbtn").onclick=function(){
   if(!pos)return;
   calList=P.filter(function(p){return p[3]!=="hamlet"&&p[3]!=="isolated_dwelling"}).map(function(p){return{n:p[0],la:p[1],lo:p[2],k:dst(pos.latitude,pos.longitude,p[1],p[2])}}).filter(function(p){return p.k>0.5&&p.k<60}).sort(function(a,b){return a.k-b.k}).slice(0,15);
@@ -1202,8 +1207,23 @@ var COL={city:"#ff4d6d",town:"#ffd60a",village:"#ffd60a",hamlet:"#00e5ff",isolat
 function colorDe(q){return COL[q.t]||COL.city}
 // ---- Picos de montaña (OpenStreetMap, natural=peak) ----
 var PK=[],verPicos=false,pkCentro=null,pkCargando=false;
+// OpenStreetMap suele tener el mismo pico dos veces (dos nodos, o con nombres como «Veleta» y «Pico Veleta»).
+// Se queda solo el más alto de cada grupo: mismo nombre a menos de 3 km, o cualquier pico a menos de 300 m.
+function nombrePico(n){return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").split(/[^a-z0-9]+/).filter(function(w){return w&&!/^(pico|cerro|monte|alto|el|la|los|las|de|del)$/.test(w)}).join(" ")}
+function quitarDuplicados(lista){
+  var orden=lista.slice().sort(function(a,b){return b.e-a.e}),ok=[];
+  orden.forEach(function(q){
+    var nq=nombrePico(q.n);
+    var dup=ok.some(function(o){
+      var d=dst(q.la,q.lo,o.la,o.lo);
+      return d<0.3||(d<3&&o._n===nq);
+    });
+    if(!dup){q._n=nq;ok.push(q)}
+  });
+  return ok;
+}
 function usarPicos(c,aviso){
-  PK=c.datos.map(function(d){return{n:d[0],la:d[1],lo:d[2],e:d[3]}});
+  PK=quitarDuplicados(c.datos.map(function(d){return{n:d[0],la:d[1],lo:d[2],e:d[3]}}));
   PK.forEach(function(q){elevC[ek(q)]=q.e});
   pkCentro={la:c.la,lo:c.lo};
   $("info").textContent="⛰ "+PK.length+" picos cargados"+(aviso||"");
@@ -1263,7 +1283,7 @@ $("picosb").onclick=function(){
   if(verPicos)cargarPicos();
   pintar();
 };
-function actAldeasBtn(){var b=$("aldeas");b.disabled=verPicos;b.style.opacity=verPicos?".45":"";b.title=verPicos?"No disponible mientras se muestran los picos":"Mostrar u ocultar aldeas pequeñas"}
+function actAldeasBtn(){var b=$("aldeas");b.disabled=verPicos;b.style.opacity=verPicos?".45":"";var t=verPicos?"No disponible mientras se muestran los picos":verAldeas?"Se ven pueblos y aldeas. Pulsa para ver solo pueblos":"Se ven solo pueblos. Pulsa para ver también las aldeas";b.title=t;b.setAttribute("aria-label","Aldeas: "+t)}
 function etiquetas(pe,hdc){
   var W=innerWidth,H=innerHeight,f=fEff(),med=Math.atan((W/2)/f)/R+3,c=[],i;
   var cand=enRecuadro(pe.latitude,pe.longitude,0.75,0.95);
