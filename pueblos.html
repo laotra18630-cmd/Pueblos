@@ -81,7 +81,7 @@ body.mapa #hero,body.mapa #extras{display:none}
 #confno{background:linear-gradient(90deg,#15803d,#0f766e)}
 #confsi{background:#b91c1c;border:2px solid #fecaca;box-shadow:none}
 #estado{display:none}
-body.on #estado{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:8px 0 4px}
+body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 4px}
 .ch{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.2;color:#fff;border:2px solid transparent}
 .ch.ok{background:#15803d;border-color:#86efac}
 .ch.av{background:#b45309;border-color:#fcd34d}
@@ -270,7 +270,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="zoom" role="group" aria-label="Zoom y enfoque de la cámara"><button id="zmas" type="button" aria-label="Acercar (más zoom)">＋</button><span id="zval">Zoom ×1</span><button id="zmenos" type="button" aria-label="Alejar (menos zoom)">−</button><button id="enf" type="button"><span class="ic" aria-hidden="true">◎</span><span>Enfocar</span></button></div>
 <nav id="bar" aria-label="Controles de la cámara">
 <button id="calbtn" type="button" title="Ajusta la brújula con un lugar que veas"><span class="ic" aria-hidden="true">🎯</span><span>Calibrar</span></button>
-<button id="aldeas" class="tg" type="button" aria-pressed="true" title="Mostrar u ocultar aldeas pequeñas"><span class="ic" aria-hidden="true">🏘</span><span>Aldeas</span><span class="est" aria-hidden="true"></span></button>
+<button id="aldeas" class="tg" type="button" aria-pressed="true" title="Mostrar u ocultar aldeas pequeñas"><span class="ic" aria-hidden="true">🏘</span><span class="est" aria-hidden="true"></span></button>
 <button id="picosb" class="tg" type="button" aria-pressed="false" title="Mostrar u ocultar nombres de picos"><span class="ic" aria-hidden="true">⛰</span><span>Picos</span><span class="est" aria-hidden="true"></span></button>
 <button id="lejosb" class="tg" type="button" aria-pressed="false" aria-label="Más lejos: alcance 40 km" title="Alcance 40 km. Pulsa para ampliar a 80 km"><span class="ic" aria-hidden="true">🔭</span><span>Más lejos</span><span class="est" aria-hidden="true"></span></button>
 </nav>
@@ -536,13 +536,13 @@ function actualizarEstado(){
   else if(prec!==null&&prec>20)b=["av","Brújula ⚠ ±"+Math.round(prec)+"°"];
   else b=["ok","Brújula ✓"+(prec!==null?" ±"+Math.round(prec)+"°":"")];
   if(prec!==null&&(prec<0||prec>20))ocho8=false;
-  // «Sin calibrar» solo se muestra cuando la brújula lo necesita (sin calibrar o imprecisa); si no hace falta, no aparece
+  // Verde si la brújula está bien (calibrada, o precisa sin necesidad de calibrar); ámbar «Sin calibrar» si hace falta; gris si el móvil no informa de la precisión
   var calOk=!!(off||Object.keys(tab).length||ocho8),imprecisa=prec!==null&&(prec<0||prec>20);
-  c=calOk?["ok","Calibrada ✓"]:imprecisa?["av","Sin calibrar"]:null;
-  var k=g.join()+b.join()+(c?c.join():"-");
+  c=calOk?["ok","Calibrada ✓"]:imprecisa?["av","Sin calibrar"]:prec!==null?["ok","Calibración ✓"]:["n","Calibración …"];
+  var k=g.join()+b.join()+c.join();
   if(k===estC)return;
   estC=k;
-  [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);if(!x[1]){e.style.display="none";return}e.style.display="";e.className="ch "+x[1][0];e.textContent=x[1][1]});
+  [["eGps",g],["eBrj",b],["eCal",c]].forEach(function(x){var e=$(x[0]);e.className="ch "+x[1][0];e.textContent=x[1][1]});
 }
 actAldeasBtn();
 var rafP=0;
