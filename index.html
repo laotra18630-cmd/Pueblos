@@ -159,8 +159,8 @@ body.on #hero,body.on #extras{display:none}
 body.on,body.on *{touch-action:pan-x pan-y}
 #bar,#zoom{display:none}
 /* Barra inferior: icono + texto bajo cada botón */
-body.on #bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;z-index:5;left:0;right:0;bottom:0;padding:8px 8px calc(env(safe-area-inset-bottom,0px) + 8px);background:rgba(8,10,28,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.2)}
-#bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:0;min-height:68px;padding:6px 2px;border:2px solid rgba(255,255,255,.55);border-radius:14px;background:rgba(255,255,255,.14);box-shadow:none;font-size:14px;font-weight:700;line-height:1.15;text-align:center}
+body.on #bar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;position:fixed;z-index:5;left:0;right:0;bottom:0;padding:8px 8px calc(env(safe-area-inset-bottom,0px) + 8px);background:rgba(8,10,28,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.2)}
+#bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:0;min-height:68px;padding:6px 1px;border:2px solid rgba(255,255,255,.55);border-radius:14px;background:rgba(255,255,255,.14);box-shadow:none;font-size:13px;font-weight:700;line-height:1.15;text-align:center}
 #bar .ic{font-size:24px;line-height:1}
 #bar #calbtn{background:#1d4ed8;border-color:#bfdbfe}
 #calbtn.pista{animation:pista 1s ease-in-out 6}
@@ -294,6 +294,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <button id="aldeas" class="tg" type="button" aria-pressed="true" title="Mostrar u ocultar aldeas pequeñas"><span class="ic" aria-hidden="true">🏘</span><span class="est" aria-hidden="true"></span></button>
 <button id="picosb" class="tg" type="button" aria-pressed="false" title="Mostrar u ocultar nombres de picos"><span class="ic" aria-hidden="true">⛰</span><span>Picos</span><span class="est" aria-hidden="true"></span></button>
 <button id="lejosb" class="tg" type="button" aria-pressed="false" aria-label="Más lejos: alcance 40 km" title="Alcance 40 km. Pulsa para ampliar a 80 km"><span class="ic" aria-hidden="true">🔭</span><span>Más lejos</span><span class="est" aria-hidden="true"></span></button>
+<button id="ajbtn" type="button" title="Ajustes automáticos: afinar sola, corregir con el horizonte y dibujar la silueta"><span class="ic" aria-hidden="true">⚙️</span><span>Ajustes</span></button>
 </nav>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="fdw"><span>Foco</span><input type="range" id="fdist" min="0" max="1" step="0.01" value="1" aria-label="Distancia de enfoque (cerca a lejos)"><button id="fauto" type="button">Auto</button></div>
@@ -339,9 +340,9 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 </div>
 <div class="cv" id="calv5"><button class="cback" type="button">← Otras opciones</button>
 <h3>⚙️ Ajustes automáticos</h3>
-<label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
-<label class="chk"><input type="checkbox" id="hzauto"> 📷 Corregir el rumbo con el horizonte de la cámara</label>
-<label class="chk"><input type="checkbox" id="hzsil"> Dibujar la silueta del relieve sobre la cámara</label>
+<label class="chk"><input type="checkbox" id="auto" checked> <span>Afinar sola al moverme (&gt; 18 km/h)<small style="display:block;font-weight:400;opacity:.85">Corrige la brújula sola cuando vas andando o en coche.</small></span></label>
+<label class="chk"><input type="checkbox" id="hzauto"> <span>📷 Corregir el rumbo con el horizonte de la cámara<small style="display:block;font-weight:400;opacity:.85">Compara las montañas que ve la cámara con el relieve y ajusta el rumbo.</small></span></label>
+<label class="chk"><input type="checkbox" id="hzsil"> <span>Dibujar la silueta del relieve sobre la cámara<small style="display:block;font-weight:400;opacity:.85">Muestra una línea con la forma de las montañas para ver si encaja.</small></span></label>
 </div>
 <div id="calst" role="status" aria-live="polite"></div>
 </div>
@@ -355,7 +356,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <h3>Consejos</h3>
 <ul><li><span class="pi" aria-hidden="true">👆</span><span>Apunta al horizonte con el móvil en vertical. El nombre grande es el pueblo que está bajo el punto rosa de la mira.</span></li><li><span class="pi" aria-hidden="true">🎯</span><span>Si el nombre no coincide con lo que ves, calibra la brújula.</span></li><li><span class="pi" aria-hidden="true">👀</span><span>La franja de arriba dice cuándo fiarte: <b>GPS</b>, <b>Brújula</b> (con su margen de error) y si está <b>Calibrada</b>.</span></li><li><span class="pi" aria-hidden="true">👉</span><span>Toca la pantalla para enfocar; pellizca para hacer zoom.</span></li></ul>
 <h3>Botones de la cámara</h3>
-<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Con aldeas / Solo pueblos): indica si se ven pueblos y aldeas, o solo pueblos.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
+<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Con aldeas / Solo pueblos): indica si se ven pueblos y aldeas, o solo pueblos.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">⚙️</span><span><b>Ajustes</b>: afinar la brújula sola, corregir con el horizonte y dibujar la silueta del relieve.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
 <button id="guiaok" type="button">Entendido</button></div>
 <div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>La cámara, la ubicación y la brújula están apagadas. Para cerrar del todo, quita la app desde el selector de apps (en iPhone, desliza hacia arriba desde el borde inferior).</p><button id="volver" type="button">Volver</button></div>
 <script>
@@ -963,8 +964,16 @@ function calVista(v){
   calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
   if(v===3)actOcho();
 }
-[1,2,3,4,5].forEach(function(n){$("cm"+n).onclick=function(){calVista(n)}});
+var ajDirecto=false;
+function ajEtq(){var b=$("calv5").querySelector(".cback");b.textContent=ajDirecto?"✕ Cerrar":"← Otras opciones"}
+[1,2,3,4,5].forEach(function(n){$("cm"+n).onclick=function(){ajDirecto=false;ajEtq();calVista(n)}});
 [].forEach.call(document.querySelectorAll("#cal .cback"),function(b){b.onclick=function(){calVista(0)}});
+$("calv5").querySelector(".cback").onclick=function(){if(ajDirecto){ajDirecto=false;$("calcerrar").onclick()}else calVista(0)};
+// Botón «Ajustes» de la barra: abre directamente los ajustes automáticos (sin pasar por Calibrar)
+$("ajbtn").onclick=function(){
+  if($("cal").style.display==="block"&&ajDirecto){ajDirecto=false;$("calcerrar").onclick();return}
+  ajDirecto=true;ajEtq();calVista(5);$("cal").style.display="block";ajustarMira();
+};
 var calAnd=null,cal2={b:null,o:null};
 calVista(0);
 function envolver(x){return ((x%360)+540)%360-180}
