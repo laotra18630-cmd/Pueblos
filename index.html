@@ -86,7 +86,7 @@ body.on #estado{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:
 .ch.mal{background:#b91c1c;border-color:#fecaca}
 .ch.n{background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.55)}
 #permisos{display:none;position:fixed;inset:0;z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;color:#fff;background:rgba(5,7,20,.96);overflow:auto}
-#autor{display:block;margin:-4px 0 12px;font-size:12px;letter-spacing:.04em;color:#dfe6ff;opacity:.7;text-align:center}
+#autor{display:block;margin:14px 0 2px;font-size:12px;letter-spacing:.04em;color:#dfe6ff;opacity:.7;text-align:center}
 #permisos h2{margin:0;font-size:24px;text-align:center}
 #permisos p{max-width:34ch;margin:0;text-align:center;color:#dfe6ff;font-size:15px}
 #permisos ul{list-style:none;margin:0;padding:0;max-width:34ch;display:grid;gap:10px}
@@ -266,7 +266,6 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <svg class="logo" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a11cb"/><stop offset=".5" stop-color="#2575fc"/><stop offset="1" stop-color="#00c9a7"/></linearGradient><clipPath id="lc"><rect width="96" height="96" rx="22"/></clipPath></defs><rect width="96" height="96" rx="22" fill="url(#lg)"/><g clip-path="url(#lc)"><path d="M0 96V66l22-20 20 24 18-16 36 28v14z" fill="#28105a" opacity=".6"/><path d="M0 96V78l26-14 22 14 20-10 28 14v14z" fill="#140a3c" opacity=".75"/></g><circle cx="48" cy="38" r="20" fill="none" stroke="#fff" stroke-width="4"/><path d="M48 10v10M48 56v10M20 38h10M66 38h10" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="48" cy="38" r="6" fill="#ff2d95"/></svg>
 <h1>¿Qué pueblo es?</h1>
 <p>Apunta con el móvil al horizonte y descubre qué pueblo tienes delante.</p>
-<small id="autor">Miguel Marín</small>
 <button id="go" type="button"><span class="go1">Iniciar identificación</span><span class="go2">Activar GPS y brújula mientras se usa</span></button>
 </section>
 <div id="fila1"><div id="rumbo"></div><button id="salir" type="button" title="Termina la identificación y apaga cámara, GPS y brújula"><span aria-hidden="true">✕</span><span>Terminar</span></button></div>
@@ -280,6 +279,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div class="pasos"><div><b aria-hidden="true">1</b>Activa GPS y brújula</div><div><b aria-hidden="true">2</b>Apunta al horizonte</div><div><b aria-hidden="true">3</b>Lee el nombre del pueblo</div></div>
 <button id="vconsejos" type="button">💡 Consejos y avisos</button>
 <button id="cerrar" type="button">Salir de la app</button>
+<small id="autor">@Miguel Marín</small>
 </section>
 <div id="zoom" role="group" aria-label="Zoom y enfoque de la cámara"><button id="zmas" type="button" aria-label="Acercar (más zoom)">＋</button><span id="zval">Zoom ×1</span><button id="zmenos" type="button" aria-label="Alejar (menos zoom)">−</button><button id="enf" type="button"><span class="ic" aria-hidden="true">◎</span><span>Enfocar</span></button></div>
 <nav id="bar" aria-label="Controles de la cámara">
@@ -140831,10 +140831,13 @@ function parseLineas(txt,all){
 }
 // Une la base local con las ciudades de la lista básica (las que no estén ya)
 function unir(){return fusionar(BD,BASE)}
+// Número de picos incluidos (se cuenta una vez, sin leerlos todavía: los picos se cargan al usarlos)
+var NPICOS=(function(){var el=document.getElementById("datosPicos");return el?(el.textContent.match(/^[^|\n]*\|[^|\n]*\|[^|\n]*\|/gm)||[]).length:0})();
+function nEs(n){try{return n.toLocaleString("es-ES")}catch(e){return String(n)}}
 function aplicarBD(datos){
   BD=datos.length?datos:null;BDlisto=false;
   if(BD&&pos){P=unir();BDlisto=true}
-  $("info").textContent=BD?"Base incluida: "+BD.length+" localidades de España":"";
+  $("info").textContent=BD?"Base incluida: "+nEs(BD.length)+" localidades"+(NPICOS?" y "+nEs(NPICOS)+" picos":"")+" de España":"";
 }
 // La base de pueblos va incluida en esta misma página (no hace falta descargar nada)
 (function cargarBase(){
