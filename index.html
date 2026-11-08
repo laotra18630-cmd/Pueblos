@@ -54,7 +54,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 #dlst.mal{background:rgba(185,28,28,.4);border:1px solid #fecaca;border-radius:12px;padding:10px 12px}
 #barra{display:none;height:8px;border-radius:99px;background:rgba(255,255,255,.2);margin-top:10px;overflow:hidden}
 #barraI{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe259,#ff9a9e);transition:width .3s}
-#probar,#cerrar,#volverMapa,#vconsejos{border-radius:999px;background:transparent;box-shadow:none}
+#cerrar,#volverMapa,#vconsejos{border-radius:999px;background:transparent;box-shadow:none}
 #masop{margin-top:6px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);padding:0 14px}
 #masop summary{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:600;cursor:pointer;list-style:none}
 #masop summary::-webkit-details-marker{display:none}
@@ -69,8 +69,6 @@ body.mapa #hero,body.mapa #extras{display:none}
 #mapaAviso{display:none;background:rgba(255,226,89,.16);border:1px solid rgba(255,226,89,.55);border-radius:14px;padding:11px 13px;font-size:14px;line-height:1.45;margin:0 0 14px;color:#fff}
 #mapaPant #plist{max-height:50vh}
 #volverMapa{margin-top:18px;border:2px solid rgba(255,255,255,.45);font-size:16px;padding:12px}
-#probres{font-size:14px;line-height:1.5;margin-top:8px;text-align:center;color:#ffe259}
-#probar{margin-top:4px;border:2px solid rgba(255,255,255,.35);font-size:16px;min-height:48px;padding:11px}
 #vconsejos{margin-top:12px;border:2px solid rgba(255,255,255,.35);font-size:16px;min-height:48px;padding:12px}
 #cerrar{margin-top:12px;border:2px solid rgba(255,255,255,.45);font-size:16px;min-height:48px;padding:12px}
 #adios{display:none;position:fixed;inset:0;z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:30px;color:#fff;background:radial-gradient(60% 40% at 12% 0%,rgba(124,58,237,.7),transparent 70%),radial-gradient(70% 50% at 50% 100%,rgba(37,117,252,.6),transparent 70%),#0b1026}
@@ -280,8 +278,6 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div id="info"></div>
 <section id="extras">
 <div class="pasos"><div><b aria-hidden="true">1</b>Activa GPS y brújula</div><div><b aria-hidden="true">2</b>Apunta al horizonte</div><div><b aria-hidden="true">3</b>Lee el nombre del pueblo</div></div>
-<button id="probar" type="button">🔎 Probar relieve</button>
-<div id="probres" role="status" aria-live="polite"></div>
 <button id="vconsejos" type="button">💡 Consejos y avisos</button>
 <button id="cerrar" type="button">Salir de la app</button>
 </section>
@@ -141738,24 +141734,6 @@ function dibujarSilueta(hdc){
   }
 }
 function motivoErr(e){return e&&e.name==="AbortError"?"tiempo agotado":(e&&e.message&&e.message!=="Load failed"&&e.message!=="Failed to fetch")?e.message:"sin conexión o bloqueado"}
-$("probar").onclick=async function(){
-  var B=$("probar"),RES=$("probres");
-  if(B.disabled)return;
-  B.disabled=true;RES.textContent="Probando los servicios de relieve…";
-  var la=[37.13,37.14],lo=[-3.7,-3.69],out=[],ok=false,pruebas=[["Open-Meteo",viaOM],["OpenTopoData",viaOT]];
-  try{
-    for(var i=0;i<pruebas.length;i++){
-      try{
-        var a=await pruebas[i][1](la,lo);
-        out.push("✓ "+pruebas[i][0]+": funciona");ok=true;
-      }catch(e){out.push("✗ "+pruebas[i][0]+": "+motivoErr(e))}
-      RES.innerHTML=out.map(esc).join("<br>")+(i<pruebas.length-1?"<br>Probando…":"");
-    }
-    if(ok){bloqRel=0;errRel=""}
-    RES.innerHTML=out.map(esc).join("<br>")+"<br>"+(ok?"✓ Relieve disponible":"✗ Sin datos de relieve: comprueba la conexión");
-  }catch(e){RES.textContent="Error en la prueba: "+motivoErr(e)}
-  B.disabled=false;
-};
 var iniciando=false;
 async function iniciar(){
   if(iniciando||watchId!==null)return;
