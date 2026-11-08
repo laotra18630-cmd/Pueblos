@@ -299,7 +299,6 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <button class="cm" id="cm2" type="button"><span class="ic" aria-hidden="true">🚶</span><span>Andando o en coche<small>Se calibra sola al avanzar en línea recta.</small></span></button>
 <button class="cm" id="cm3" type="button"><span class="ic" aria-hidden="true">∞</span><span>Hacer el 8 en el aire<small>Ajusta el sensor de la brújula del móvil.</small></span></button>
 <button class="cm" id="cm4" type="button"><span class="ic" aria-hidden="true">🏔</span><span>Con el horizonte<small>Compara las montañas de la cámara con el relieve.</small></span></button>
-<button class="cm" id="cm5" type="button"><span class="ic" aria-hidden="true">⚙️</span><span>Ajustes automáticos<small>Afinar sola al moverme, horizonte y silueta.</small></span></button>
 <div class="fila2"><button id="calreset" type="button">Quitar calibración</button><button id="calcerrar" type="button">Cerrar</button></div>
 </div>
 <div class="cv" id="calv1"><div class="chead"><button class="cback" type="button" aria-label="Volver a las otras opciones">←</button><h3>📍 Con un lugar que veo</h3></div>
@@ -324,11 +323,6 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <div class="cs"><b>2</b>Pulsa «Alinear ahora»</div>
 <button id="calhor" type="button">🏔 Alinear ahora</button>
 </div>
-<div class="cv" id="calv5"><div class="chead"><button class="cback" type="button" aria-label="Volver a las otras opciones">←</button><h3>⚙️ Ajustes automáticos</h3></div>
-<label class="chk"><input type="checkbox" id="auto" checked> Afinar sola al moverme (&gt; 18 km/h)</label>
-<label class="chk"><input type="checkbox" id="hzauto"> 📷 Corregir el rumbo con el horizonte de la cámara</label>
-<label class="chk"><input type="checkbox" id="hzsil"> Dibujar la silueta del relieve sobre la cámara</label>
-</div>
 <div id="calst" role="status" aria-live="polite"></div>
 </div>
 <div id="conf" role="alertdialog" aria-modal="true" aria-labelledby="confT"><div class="emoji" aria-hidden="true">⏹</div><h2 id="confT">¿Terminar la identificación?</h2><p>Se apagarán la cámara, el GPS y la brújula.</p><button id="confno" type="button">Seguir mirando</button><button id="confsi" type="button">Sí, terminar</button></div>
@@ -341,7 +335,7 @@ body.on #fdw.v{display:flex;align-items:center;gap:10px;position:fixed;z-index:5
 <h3>Consejos</h3>
 <ul><li><span class="pi" aria-hidden="true">👆</span><span>Apunta al horizonte con el móvil en vertical. El nombre grande es el pueblo que está bajo el punto rosa de la mira.</span></li><li><span class="pi" aria-hidden="true">🎯</span><span>Si el nombre no coincide con lo que ves, calibra la brújula.</span></li><li><span class="pi" aria-hidden="true">👀</span><span>La franja de arriba dice cuándo fiarte: <b>GPS</b>, <b>Brújula</b> (con su margen de error) y si está <b>Calibrada</b>.</span></li><li><span class="pi" aria-hidden="true">👉</span><span>Toca la pantalla para enfocar; pellizca para hacer zoom.</span></li></ul>
 <h3>Botones de la cámara</h3>
-<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Con aldeas / Solo pueblos): indica si se ven pueblos y aldeas, o solo pueblos.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🏔</span><span><b>Relieve</b> (Sí/No): con «Sí» no se ven los lugares que quedan tapados por montañas; con «No» se ven todos, aunque haya montañas delante.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
+<ul><li><span class="pi" aria-hidden="true">🎯</span><span><b>Calibrar</b>: abre las formas de corregir la brújula y te explica los pasos.</span></li><li><span class="pi" aria-hidden="true">🏘</span><span><b>Aldeas</b> (Con aldeas / Solo pueblos): indica si se ven pueblos y aldeas, o solo pueblos.</span></li><li><span class="pi" aria-hidden="true">⛰</span><span><b>Picos</b> (Sí/No): muestra los nombres de los picos con su altura.</span></li><li><span class="pi" aria-hidden="true">🏔</span><span><b>Relieve</b> (Sí/No): con «Sí» no se ven los lugares que quedan tapados por montañas y se dibuja su silueta sobre la cámara; con «No» se ven todos, aunque haya montañas delante.</span></li><li><span class="pi" aria-hidden="true">🔭</span><span><b>Más lejos</b> (40 km / 80 km): amplía hasta dónde busca pueblos.</span></li><li><span class="pi" aria-hidden="true">＋ −</span><span><b>Zoom</b>: acerca o aleja la cámara.</span></li><li><span class="pi" aria-hidden="true">◎</span><span><b>Enfocar</b>: enfoca el centro de la imagen.</span></li><li><span class="pi" aria-hidden="true">✕</span><span><b>Terminar</b> (arriba a la derecha): apaga cámara, GPS y brújula.</span></li></ul>
 <button id="guiaok" type="button">Entendido</button></div>
 <div id="adios" role="dialog" aria-modal="true" aria-labelledby="adiosT"><div class="emoji" aria-hidden="true">👋</div><h2 id="adiosT">Hasta pronto</h2><p>La cámara, la ubicación y la brújula están apagadas. Para cerrar del todo, quita la app desde el selector de apps (en iPhone, desliza hacia arriba desde el borde inferior).</p><button id="volver" type="button">Volver</button></div>
 <script type="text/plain" id="datosPueblos">
@@ -140936,14 +140930,14 @@ function ajustarMira(){
 if(window.ResizeObserver)new ResizeObserver(ajustarMira).observe($("cal"));
 window.addEventListener("resize",ajustarMira);
 function calVista(v){
-  ["calmenu","calv1","calv2","calv3","calv4","calv5"].forEach(function(id,i){$(id).style.display=(i===v)?"block":"none"});
+  ["calmenu","calv1","calv2","calv3","calv4"].forEach(function(id,i){$(id).style.display=(i===v)?"block":"none"});
   $("cal").className=v===0?"menu":"";
   ajustarMira();
   ochoActivo=(v===3);
   calAnd=null;cal2={b:null,o:null};$("calst").textContent="";
   if(v===3)actOcho();
 }
-[1,2,3,4,5].forEach(function(n){$("cm"+n).onclick=function(){calVista(n)}});
+[1,2,3,4].forEach(function(n){$("cm"+n).onclick=function(){calVista(n)}});
 [].forEach.call(document.querySelectorAll("#cal .cback"),function(b){b.onclick=function(){calVista(0)}});
 var calAnd=null,cal2={b:null,o:null};
 calVista(0);
@@ -141008,7 +141002,7 @@ function actualizarMarcha(c){
   // Solo si vas a más de 18 km/h, el móvil está quieto y apunta casi hacia delante (menos de 20° de diferencia).
   hdH.push(hd);if(hdH.length>3)hdH.shift();
   var calibrada=off!==0||Object.keys(tab).length>0;
-  if($("auto").checked!==false&&calibrada&&rumboGPS!==null&&v>=5&&Math.abs(pit)<30&&hdH.length===3&&maxDif(hdH)<=8){
+  if(calibrada&&rumboGPS!==null&&v>=5&&Math.abs(pit)<30&&hdH.length===3&&maxDif(hdH)<=8){
     var base=offPara(hd),d=envolver(rumboGPS-(hd+base+360)%360);
     if(Math.abs(d)<=20){
       var k=Math.round(hd/45)%8;
@@ -141182,7 +141176,9 @@ function avisar(txt,ms){var t=$("toast");t.textContent=txt;t.className="";void t
 var CONSEJOS=[["consejoApuntar","👆 Apunta a un pueblo lejano",""],["consejoCalibrar","🎯 Si el nombre no coincide, calibra","calbtn"],["consejoEnfoque","Toca la pantalla para enfocar",""]];
 function mostrarGuia(conPermisos){
   $("guiaPerm").style.display=conPermisos?"block":"none";
-  $("guia").style.display="flex";$("guia").scrollTop=0;$("guiaok").focus();
+  $("guia").style.display="flex";
+  $("guiaok").focus({preventScroll:true}); // sin esto, al enfocar el botón de abajo la página saltaba al final
+  $("guia").scrollTop=0;setTimeout(function(){$("guia").scrollTop=0},60);
 }
 $("guiaok").onclick=function(){$("guia").style.display="none"};
 function consejosPrimeraVez(){
@@ -141208,7 +141204,24 @@ var alcance=40;
 function nJ(a){var n=0;while(n<DS.length&&DS[n]<=a+0.001)n++;return n}
 function ek(p){return p.la.toFixed(4)+","+p.lo.toFixed(4)}
 function panIdx(az){return (envolver(az-pan.c)+45)/2.5}
-function Smod(az){var f=panIdx(az);if(f<0||f>pan.az.length-1)return null;var i=Math.floor(f),j=Math.min(i+1,pan.az.length-1),t=f-i;return pan.S[i]*(1-t)+pan.S[j]*t}
+// Con el relieve incluido el horizonte se calcula con un rayo cada 0,5° y un punto cada 250 m (se guarda en pan.D)
+function Sbin(b){
+  var D=pan.D||(pan.D={}),v=D[b];if(v!==undefined)return v;
+  var a=b*0.5,ca=Math.cos(a*R)/111.32,sa=Math.sin(a*R)/(111.32*Math.cos(pan.la*R)),m=-9,d,h,dm,ang;
+  for(d=0.25;d<=pan.alc+0.001;d+=0.25){
+    h=elevLocal(pan.la+d*ca,pan.lo+d*sa);if(h===null)continue;
+    dm=d*1000;ang=Math.atan2(h-pan.H0-dm*dm/14.6e6,dm);if(ang>m)m=ang;
+  }
+  return D[b]=(m>-9?m:null);
+}
+function Smod(az){
+  var f=panIdx(az);if(f<0||f>pan.az.length-1)return null;
+  if(DEMLOC){
+    var g=(((az%360)+360)%360)*2,b=Math.floor(g),t=g-b,s0=Sbin(b%720),s1=Sbin((b+1)%720);
+    if(s0===null||s1===null)return null;
+    return s0*(1-t)+s1*t;
+  }
+  var i=Math.floor(f),j=Math.min(i+1,pan.az.length-1),t=f-i;return pan.S[i]*(1-t)+pan.S[j]*t}
 // El relieve se guarda en el móvil por celdas de ~500 m y rayos fijos cada 2,5°: al repetir un sitio no se pide nada
 var demC={},panProg="";
 // Relieve guardado en IndexedDB (mucho más espacio que localStorage). Cada celda lleva la fecha de último uso
@@ -141292,8 +141305,40 @@ async function construirPano(){
 }
 // true/false si el pueblo se ve; undefined si falta algún dato; null si hay que usar el método anterior
 var usarRelieve=true;try{usarRelieve=localStorage.getItem("usarRel")!=="0"}catch(e){}
+// Con el relieve incluido, la visibilidad se calcula con la línea de visión de cada lugar, mirando el terreno
+// cada 250 m. El método de rayos cada 2,5° y 30 distancias fijas dejaba pasar crestas estrechas entre muestra y
+// muestra y daba por visibles lugares con cientos de metros de montaña delante. Devuelve null si el relieve
+// incluido no cubre la zona (entonces se usa el método anterior).
+var losC={},losO="",losH0=null;
+function losVis(p){
+  if(!DEMLOC||!pos)return null;
+  var oc=Math.round(pos.latitude/0.0005)+","+Math.round(pos.longitude/0.0005);
+  if(oc!==losO){losO=oc;losC={};losH0=null}
+  var kk=ek(p),c=losC[kk];
+  if(c!==undefined)return c;
+  if(losH0===null){
+    var h0=elevLocal(pos.latitude,pos.longitude);if(h0===null)return null;
+    var gps=pos.altitude;losH0=(typeof gps==="number"&&gps>h0+150)?gps:h0+2;
+  }
+  var e=elevC[kk];if(typeof e!=="number")e=elevLocal(p.la,p.lo);
+  if(e===null||e===undefined)return null;
+  var D=dst(pos.latitude,pos.longitude,p.la,p.lo)*1000,ok=true;
+  if(D>=600){ // a menos de 600 m no hay nada que comprobar
+    var H0=losH0,H1=e+10,n=Math.ceil(D/250),i,f,d,h;
+    for(i=1;i<n;i++){
+      f=i/n;d=D*f;
+      if(d<300||D-d<300)continue; // el terreno pegado a cada extremo es de la misma celda de 500 m
+      h=elevLocal(pos.latitude+(p.la-pos.latitude)*f,pos.longitude+(p.lo-pos.longitude)*f);
+      if(h===null)continue;
+      // altura del terreno + curvatura de la Tierra (con refracción) frente a la línea recta entre los dos puntos
+      if(h+d*(D-d)/14.6e6>H0+(H1-H0)*f+25+0.0008*d){ok=false;break}
+    }
+  }
+  losC[kk]=ok;return ok;
+}
 function panVis(p){
   if(!usarRelieve)return true; // relieve desactivado: se ve todo, aunque haya montañas delante
+  var lv=losVis(p);if(lv!==null)return lv;
   if(Date.now()<panBloq)return null;
   if(!pan)return undefined;
   var az=brg(pan.la,pan.lo,p.la,p.lo),dk=dst(pan.la,pan.lo,p.la,p.lo),f=panIdx(az);
@@ -141457,7 +141502,7 @@ $("relb").onclick=function(){
   usarRelieve=!usarRelieve;
   try{localStorage.setItem("usarRel",usarRelieve?"1":"0")}catch(e){}
   actRelBtn();
-  avisar(usarRelieve?"🏔 Relieve activado: no se ven los lugares tapados por montañas.":"🏔 Relieve desactivado: se ven todos los lugares, aunque haya montañas delante.",5000);
+  avisar(usarRelieve?"🏔 Relieve activado: no se ven los lugares tapados por montañas y se dibuja la silueta del relieve.":"🏔 Relieve desactivado: se ven todos los lugares, aunque haya montañas delante.",5000);
   pintar();
 };
 actRelBtn();
@@ -141677,11 +141722,8 @@ $("calhor").onclick=function(){
 // Cada 1,5 s compara la silueta cielo/terreno de la imagen con la calculada del relieve. Solo se acepta
 // si la confianza es alta y dos capturas seguidas coinciden; la corrección se aplica poco a poco, vale
 // para la zona de rumbos donde se midió y no se guarda (la calibración guardada no se toca).
-var hzAuto=false,hzSil=false,hzOff=0,hzH=0,hzT=0,hzConf=0,hzPrev=null,hzDet=null;
-try{if(localStorage.getItem("hzAuto")==="1")hzAuto=true;if(localStorage.getItem("hzSil")==="1")hzSil=true}catch(e){}
-$("hzauto").checked=hzAuto;$("hzsil").checked=hzSil;
-$("hzauto").onchange=function(){hzAuto=this.checked;if(!hzAuto){hzOff=0;hzPrev=null}try{localStorage.setItem("hzAuto",hzAuto?"1":"0")}catch(e){}pintar()};
-$("hzsil").onchange=function(){hzSil=this.checked;try{localStorage.setItem("hzSil",hzSil?"1":"0")}catch(e){}pintar()};
+// La corrección con el horizonte va siempre activada; la silueta se dibuja mientras el botón Relieve está en «Sí»
+var hzAuto=true,hzOff=0,hzH=0,hzT=0,hzConf=0,hzPrev=null,hzDet=null;
 // La corrección vale entera cerca del rumbo donde se midió y se desvanece al girar más de 30° (a 90° ya no cuenta)
 function hzPara(h){if(!hzAuto||!hzOff)return 0;var d=dif(h,hzH);return d<=30?hzOff:d>=90?0:hzOff*(90-d)/60}
 function rumboC(){return (hd+offPara(hd)+hzPara(hd)+720)%360}
@@ -141709,7 +141751,7 @@ setInterval(horizonteAuto,1500);
 // Dibuja sobre la cámara la silueta calculada del relieve (cian) y la detectada en la imagen (amarillo si coincide)
 function dibujarSilueta(hdc){
   var c=$("sil"),W=innerWidth,H=innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
-  var vis=hzSil&&pan&&document.body.classList.contains("on");
+  var vis=usarRelieve&&pan&&document.body.classList.contains("on");
   c.style.display=vis?"block":"none";if(!vis)return;
   if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr)}
   var x,ctx=c.getContext("2d"),f=fEff(),pr=pit*R,dib=false;
