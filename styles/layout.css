@@ -557,3 +557,216 @@ body.on #estado {
     flex: none;
     background: linear-gradient(90deg, #15803d, #0f766e);
 }
+
+/* ================= Añadir un lugar ================= */
+#anadir {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 36;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px calc(env(safe-area-inset-bottom, 0px) + 18px);
+    color: #fff;
+    background: rgba(5, 7, 20, .97);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#anadir .caja {
+    width: 100%;
+    max-width: 42ch;
+    display: grid;
+    gap: 12px;
+}
+
+#anadir h2 {
+    margin: 0;
+    font-size: 22px;
+    text-align: center;
+}
+
+#anadir h3 {
+    margin: 6px 0 0;
+    font-size: 16px;
+    color: #ffe259;
+}
+
+#anadir p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #dfe6ff;
+}
+
+#anadir label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #dfe6ff;
+}
+
+#anadir input[type="text"],
+#anadir input[type="number"],
+#anadir select {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 16px;
+    color: #fff;
+    background: #1a1d3a;
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 12px;
+}
+
+#anadir input::placeholder {
+    color: rgba(255, 255, 255, .45);
+}
+
+#anadir .fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+#anadir .oculto {
+    display: none !important;
+}
+
+#anadir .seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+#anadir .seg button {
+    min-height: 48px;
+    padding: 8px 6px;
+    font-size: 14px;
+    border: 2px solid rgba(255, 255, 255, .45);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .1);
+    box-shadow: none;
+}
+
+#anadir .seg button.on {
+    background: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+#anadir #ausar,
+#anadir #aqui {
+    margin-top: 8px;
+    min-height: 46px;
+    font-size: 15px;
+    background: rgba(255, 255, 255, .14);
+    border: 2px solid rgba(255, 255, 255, .45);
+    box-shadow: none;
+}
+
+#anadir .btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+#anadir #aadd {
+    background: linear-gradient(90deg, #15803d, #0f766e);
+    font-weight: 800;
+}
+
+#anadir #acerra {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, .6);
+    box-shadow: none;
+}
+
+#anadir #aest {
+    min-height: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #ffe259;
+}
+
+#anadir #aosm {
+    min-height: 46px;
+    font-size: 15px;
+    background: rgba(255, 255, 255, .1);
+    border: 2px solid rgba(255, 255, 255, .35);
+    box-shadow: none;
+}
+
+#anadir #aosmres {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #dfe6ff;
+}
+
+#anadir #alistac {
+    border-top: 1px solid rgba(255, 255, 255, .18);
+    padding-top: 10px;
+}
+
+#anadir .lista {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+#anadir .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    font-size: 14px;
+    line-height: 1.25;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .22);
+    border-radius: 10px;
+}
+
+#anadir .item span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#anadir .item small {
+    display: block;
+    font-weight: 400;
+    font-size: 12px;
+    color: #cbd5ff;
+}
+
+#anadir .item button {
+    flex: none;
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    background: rgba(185, 28, 28, .85);
+    border: 1px solid #fecaca;
+    box-shadow: none;
+    font-size: 18px;
+}
+
+#anadir .nada {
+    font-size: 13px;
+    color: #aab4d4;
+}
+
+#anadir #aborrarosm {
+    margin-top: 10px;
+    min-height: 44px;
+    font-size: 14px;
+    background: rgba(185, 28, 28, .35);
+    border: 1px solid #fecaca;
+    box-shadow: none;
+}
+
+#anadir #aborrarosm[hidden] {
+    display: none;
+}

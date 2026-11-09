@@ -407,6 +407,30 @@ body.on #salir {
     font-weight: 700;
 }
 
+/* Añadir un lugar desde la cámara */
+#anadircam {
+    display: none;
+}
+
+body.on #anadircam {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: none;
+    width: auto;
+    min-width: 44px;
+    min-height: 36px;
+    padding: 4px 10px;
+    border: 2px solid #86efac;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #15803d, #0f766e);
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+}
+
 /* Interruptores: color + estado siempre visible */
 #bar .tg[aria-pressed="true"] {
     background: #15803d;

@@ -151,3 +151,48 @@
     text-align: center;
     color: var(--amarillo);
 }
+
+/* ================= Añadir / OpenStreetMap ================= */
+#faltan {
+    margin: 18px 0 6px;
+    text-align: left;
+}
+
+#faltan h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: var(--amarillo);
+}
+
+#faltan p {
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    color: #dfe6ff;
+}
+
+#osmact, #anadirb {
+    border-radius: 999px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, .35);
+    box-shadow: none;
+    font-size: 16px;
+    min-height: 48px;
+    padding: 11px;
+}
+
+#osmact {
+    margin-top: 4px;
+}
+
+#anadirb {
+    margin-top: 12px;
+}
+
+#osmres {
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: 6px;
+    text-align: center;
+    color: var(--amarillo);
+}
